@@ -1,5 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {publicProbeTargets,probeHttp} from '../lib/public-probes.js';
+import {publicProbeTargets,probeHttp,runHttpChecks,latestHttpChecks} from '../lib/public-probes.js';
+import {dbQuery} from '../lib/db.js';
 test('only verified domains are in bounded allowlist and sensitive targets omitted',()=>{
  const targets=publicProbeTargets();assert.equal(targets.length,7);
  for(const x of targets)assert.match(x.host,/^[a-z0-9.-]+\.up\.railway\.app$/);
@@ -23,4 +24,20 @@ test('arbitrary URL SSRF and re-targeting fail closed',async()=>{
  const t=publicProbeTargets()[0];
  await assert.rejects(()=>probeHttp({...t,host:'localhost'}));
  await assert.rejects(()=>probeHttp({...t,host:'169.254.169.254'}));
+});
+
+test('read-only probe observations are saved in isolated CI PostgreSQL, scoped by source and freshness',{
+ skip:!(process.env.CI==='true'&&(process.env.NEXUS_DATABASE_URL||'').includes('/nexus_test'))
+},async()=>{
+ await dbQuery("DELETE FROM nexus_observations WHERE provider='http_public'");
+ const results=await runHttpChecks({fetchImpl:async()=>({status:204})});
+ assert.equal(results.length,7);
+ assert.equal(results.every(r=>r.persisted===true),true);
+ assert.equal(results.every(r=>r.status_code===204),true);
+ const persisted=await latestHttpChecks();
+ assert.equal(persisted.length,7);
+ assert.ok(persisted.every(o=>o.state==='reachable'&&!o.stale));
+ const rows=await dbQuery("SELECT count(*)::int AS c FROM nexus_observations WHERE provider='http_public'");
+ assert.equal(rows.rows[0].c,7);
+ await dbQuery("DELETE FROM nexus_observations WHERE provider='http_public'");
 });
