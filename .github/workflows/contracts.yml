@@ -1,0 +1,22 @@
+name: Contract and architecture checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-contracts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install contract validator
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
+      - name: Validate draft 2020-12 schemas and synthetic examples
+        run: python scripts/validate_contracts.py

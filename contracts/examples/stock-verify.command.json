@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "command_id": "11afc871-0000-4000-8000-000000000002",
+  "request_id": "11afc871-0000-4000-8000-000000000003",
+  "app_id": "pneu-mouhim",
+  "environment": "mouhim",
+  "capability": "stock.verify",
+  "capability_version": "1.0.0",
+  "arguments": {
+    "summary_only": true
+  },
+  "idempotency_key": "synthetic-stock-verify-0002",
+  "issued_at": "2026-11-16T13:01:00Z",
+  "expires_at": "2026-11-16T13:02:00Z",
+  "audience": "pneu-mouhim/mouhim",
+  "nonce": "synthetic-nonce-0002",
+  "key_id": "example-key-01",
+  "approval_digest": "synthetic-readonly-approval",
+  "signature": "NOT_A_VALID_SIGNATURE_FOR_DEMO_ONLY",
+  "synthetic_example": true
+}

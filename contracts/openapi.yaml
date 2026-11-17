@@ -1,0 +1,219 @@
+openapi: 3.1.1
+info:
+  title: NEXUS Control Plane API
+  version: 0.1.0-design
+  description: |
+    Design-only API contract. No endpoint is deployed or connected today.
+    Every app/environment endpoint requires object-level authorization.
+servers:
+  - url: https://nexus.example.invalid
+security:
+  - bearerAuth: []
+tags:
+  - name: Registry
+  - name: Operations
+  - name: Actions
+  - name: Ingest
+paths:
+  /health/live:
+    get:
+      security: []
+      operationId: live
+      responses:
+        '200':
+          description: Process is responding; does not establish dependencies or backup health.
+  /health/ready:
+    get:
+      security: []
+      operationId: ready
+      responses:
+        '200':
+          description: Essential dependencies ready (sanitized response only).
+        '503':
+          description: Not ready.
+  /api/v1/apps:
+    get:
+      tags: [Registry]
+      operationId: listApps
+      parameters:
+        - in: query
+          name: cursor
+          schema: {type: string}
+      responses:
+        '200':
+          description: Authorized applications only; cursor-paginated.
+    post:
+      tags: [Registry]
+      operationId: registerApp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './application-manifest.schema.json'
+      responses:
+        '201': {description: Registered for review, not automatically connected.}
+        '403': {description: Insufficient permissions.}
+  /api/v1/apps/{appId}:
+    get:
+      tags: [Registry]
+      operationId: getApp
+      parameters:
+        - $ref: '#/components/parameters/appId'
+      responses:
+        '200': {description: Authorized app profile, never domain records.}
+        '404': {description: Not found or inaccessible.}
+  /api/v1/apps/{appId}/topology:
+    get:
+      tags: [Registry]
+      operationId: getTopology
+      parameters:
+        - $ref: '#/components/parameters/appId'
+      responses:
+        '200': {description: Scoped services and dependency edges.}
+  /api/v1/apps/{appId}/capabilities:
+    get:
+      tags: [Actions]
+      operationId: listCapabilities
+      parameters:
+        - $ref: '#/components/parameters/appId'
+      responses:
+        '200': {description: Authorized and enabled capabilities with risk classification.}
+  /api/v1/environments/{envId}/health:
+    get:
+      tags: [Operations]
+      operationId: getEnvironmentHealth
+      parameters:
+        - $ref: '#/components/parameters/envId'
+      responses:
+        '200': {description: Evidence-linked health snapshot and freshness.}
+  /api/v1/deployments:
+    get:
+      tags: [Operations]
+      operationId: listDeployments
+      responses:
+        '200': {description: Scoped deployment history.}
+  /api/v1/incidents:
+    get:
+      tags: [Operations]
+      operationId: listIncidents
+      responses:
+        '200': {description: Scoped incidents and timeline.}
+  /api/v1/incidents/{incidentId}:
+    get:
+      tags: [Operations]
+      operationId: getIncident
+      parameters:
+        - $ref: '#/components/parameters/incidentId'
+      responses:
+        '200': {description: Incident with redacted evidence.}
+  /api/v1/incidents/{incidentId}/diagnose:
+    post:
+      tags: [Operations]
+      operationId: diagnoseIncident
+      parameters:
+        - $ref: '#/components/parameters/incidentId'
+      responses:
+        '202': {description: Evidence-gathering request accepted, not completed.}
+  /api/v1/actions/requests:
+    post:
+      tags: [Actions]
+      operationId: createActionRequest
+      responses:
+        '202': {description: Policy evaluation initiated; action NOT executed.}
+        '403': {description: Unapproved capability or scope.}
+  /api/v1/actions/{actionId}:
+    get:
+      tags: [Actions]
+      operationId: getAction
+      parameters:
+        - $ref: '#/components/parameters/actionId'
+      responses:
+        '200': {description: Status and independently verified receipt.}
+  /api/v1/actions/{actionId}/approve:
+    post:
+      tags: [Actions]
+      operationId: approveAction
+      parameters:
+        - $ref: '#/components/parameters/actionId'
+      responses:
+        '202': {description: Approval decision recorded; not necessarily dispatched.}
+  /api/v1/actions/{actionId}/dispatch:
+    post:
+      tags: [Actions]
+      operationId: dispatchAction
+      parameters:
+        - $ref: '#/components/parameters/actionId'
+      responses:
+        '202': {description: Preflight and queued signed dispatch, not successful execution.}
+  /api/v1/backups/status:
+    get:
+      tags: [Operations]
+      operationId: backupStatus
+      responses:
+        '200': {description: Scoped backup age and restore-drill evidence.}
+  /api/v1/audit:
+    get:
+      tags: [Operations]
+      operationId: auditIndex
+      responses:
+        '200': {description: Scoped immutable audit index.}
+  /api/v1/ingest/events:
+    post:
+      tags: [Ingest]
+      operationId: ingestEvent
+      security:
+        - serviceSignature: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './event.schema.json'
+      responses:
+        '202': {description: Validated, deduplicated and queued (not necessarily processed).}
+        '401': {description: Invalid signature/identity.}
+        '422': {description: Invalid schema or data classification.}
+  /api/v1/ingest/receipts:
+    post:
+      tags: [Ingest]
+      operationId: ingestReceipt
+      security:
+        - serviceSignature: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './command-result.schema.json'
+      responses:
+        '202': {description: Receipt accepted pending verification.}
+  /api/v1/webhooks/github:
+    post:
+      tags: [Ingest]
+      operationId: githubWebhook
+      security:
+        - githubHmac: []
+      responses:
+        '202': {description: Authenticated and queued.}
+        '401': {description: HMAC verification failed.}
+components:
+  parameters:
+    appId: {name: appId, in: path, required: true, schema: {type: string}}
+    envId: {name: envId, in: path, required: true, schema: {type: string}}
+    incidentId: {name: incidentId, in: path, required: true, schema: {type: string}}
+    actionId: {name: actionId, in: path, required: true, schema: {type: string}}
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: OIDC access token
+    serviceSignature:
+      type: apiKey
+      in: header
+      name: X-NEXUS-Signature
+      description: Design placeholder; signature algorithm/key rotation defined by security ADR.
+    githubHmac:
+      type: apiKey
+      in: header
+      name: X-Hub-Signature-256
