@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "verified_at": "2026-11-17",
+  "source": "Railway domains listing via authorized connector; NEXUS public-only endpoint probes",
+  "scope": "HTTP reachability only, NOT application functionality or data integrity",
+  "targets": [
+    {
+      "app_id": "pneu-mouhim",
+      "environment": "mouhim",
+      "host": "pneumatiques-mouhim-mouhim.up.railway.app",
+      "label": "PNEU MOUHIM — Pilot"
+    },
+    {
+      "app_id": "rent-car",
+      "environment": "production",
+      "host": "jmr-luxe-car.up.railway.app",
+      "label": "Rent Car — Web"
+    },
+    {
+      "app_id": "alloservix",
+      "environment": "production",
+      "host": "alloservix-web-production.up.railway.app",
+      "label": "ALLOSERVIX — Web"
+    },
+    {
+      "app_id": "nexora",
+      "environment": "demo",
+      "host": "nexora-web-demo-demo.up.railway.app",
+      "label": "NEXORA — Demo"
+    },
+    {
+      "app_id": "rent-car",
+      "environment": "staging",
+      "host": "fleetora-ocr-app-staging.up.railway.app",
+      "label": "Fleetora — OCR Staging"
+    }
+  ],
+  "deliberately_unmonitored": [
+    "2M TECH PLATFORM requires employer authorization",
+    "AMANZINE public domain not verified on examined service"
+  ]
+}
