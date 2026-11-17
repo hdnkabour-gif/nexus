@@ -28,6 +28,12 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 
 | IDEA-018 | Dated source and Railway discovery for all six known product families, without falsely claiming live connection | IMPLEMENTED (metadata snapshot) | docs/19_PORTFOLIO_DISCOVERY.md |
 
+| IDEA-019 | Protected first usable NEXUS web console (Arabic RTL, app registry, topology, backups, diagnostics) | IMPLEMENTED; Next build + auth CI passed on feature PR (deployment pending verification) | docs/20_FIRST_CONSOLE.md |
+| IDEA-020 | First owner login with signed short-lived sessions, no default password | IMPLEMENTED; test-backed bootstrap, MFA/OIDC still missing | lib/auth.js |
+| IDEA-021 | Read-only manual GitHub and Railway metadata probe from scoped server-only credentials | IMPLEMENTED (helpers and protected route); LIVE PROVIDER NOT CONFIGURED | lib/external.js |
+| IDEA-022 | Live console must clearly distinguish observed historical inventory from live checks | IMPLEMENTED in first UI | app/console/page.jsx |
+| IDEA-023 | Dedicated Railway NEXUS project isolated from business app services | SETUP IN PROGRESS; independent project created | docs/20_FIRST_CONSOLE.md |
+
 ## Decisions requiring explicit ADR approval
 - OIDC provider and production 2FA method.
 - Whether NEXUS v1 is personal-only or multi-organization, and data locality/retention.
@@ -40,4 +46,5 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 ### 2026-11-17
 - Created external integration catalog, AI coding-agent governance, backup/restore orchestration and living idea log.
 - Added read-only core and mock CI, six-app discovered provider inventory and automated inventory-scope test.
+- Started protected Next.js preview app, signed bootstrap sessions and new build workflow; first independent Railway project created.
 - All features marked DESIGNED or PLANNED unless verified by actual code/tests; no live connection inferred.

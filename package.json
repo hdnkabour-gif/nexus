@@ -1,0 +1,21 @@
+{
+  "name": "nexus-control-center",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -H 0.0.0.0",
+    "build": "next build",
+    "start": "next start -H 0.0.0.0 -p ${PORT:-3000}",
+    "test": "node --test tests/*.test.mjs && npm --prefix packages/monitor-core test",
+    "check": "node --check lib/auth.js && node --check lib/data.js && node --check lib/external.js"
+  },
+  "dependencies": {
+    "next": "16.4.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
