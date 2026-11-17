@@ -1,0 +1,14 @@
+{
+  "name": "@nexus/monitor-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pure, safe, read-only operational assessment logic (no credentials and no writes)",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/backup-health.mjs && node --check src/observations.mjs && node --check src/providers.mjs"
+  }
+}

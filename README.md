@@ -1,6 +1,6 @@
 # NEXUS — Unified Application Intelligence & Control Plane
 
-**Status: architecture and contracts only. There is no running NEXUS application, deployed API, or connected agent in this repository yet.** This repository starts a controlled implementation; the documentation describes intended behavior, not completed functionality.
+**Status: architecture, contracts and tested read-only monitor-core library. There is no running NEXUS API, frontend, production connector or connected product agent yet.** This repository starts a controlled implementation; the documentation describes intended behavior, not completed functionality.
 
 NEXUS is the central *operational knowledge, reliability, diagnostics and governed control* platform for the applications we build, host, and support. It is not a second business database and it is not an unrestricted remote terminal.
 
@@ -29,6 +29,14 @@ NEXUS is the central *operational knowledge, reliability, diagnostics and govern
 | [docs/11_UX_AND_OPERATIONS.md](docs/11_UX_AND_OPERATIONS.md) | UX routes, workflows, alerts and roles |
 | [docs/12_REFERENCES.md](docs/12_REFERENCES.md) | Technical references and ADR process |
 | [docs/13_CODE_INTELLIGENCE.md](docs/13_CODE_INTELLIGENCE.md) | Deep source/route/schema/permission knowledge graph |
+| [docs/14_EXTERNAL_INTEGRATIONS.md](docs/14_EXTERNAL_INTEGRATIONS.md) | All external dependencies and provider monitoring contracts |
+| [docs/15_AI_CODING_AGENTS.md](docs/15_AI_CODING_AGENTS.md) | OpenAI/Claude and isolated coding agent governance |
+| [docs/16_BACKUP_RESTORE_ORCHESTRATION.md](docs/16_BACKUP_RESTORE_ORCHESTRATION.md) | End-to-end recovery evidence and safe restoration |
+| [docs/17_IDEA_LOG.md](docs/17_IDEA_LOG.md) | Persistent ideas, decisions and their actual status |
+| [docs/18_IMPLEMENTATION_PROGRESS.md](docs/18_IMPLEMENTATION_PROGRESS.md) | Actual implementation status and next milestones |
+| [docs/19_PORTFOLIO_DISCOVERY.md](docs/19_PORTFOLIO_DISCOVERY.md) | Dated discovery of six current application repositories and Railway projects |
+| [registry/portfolio-discovery.v1.json](registry/portfolio-discovery.v1.json) | Machine-readable provider discovery snapshot, **not** live telemetry |
+| [packages/monitor-core/](packages/monitor-core/) | Tested read-only normalization and backup health logic |
 | [contracts/](contracts/) | Versioned JSON Schema/OpenAPI contracts and synthetic examples |
 
 ## Intended application registry
@@ -41,7 +49,7 @@ NEXUS is the central *operational knowledge, reliability, diagnostics and govern
 - Future applications via the same manifest and onboarding process.
 
 ## Now / next
-- **Now:** architecture, contract specifications, threat model and onboarding design. No live integrations.
+- **Now:** architecture, testable safe monitoring primitives, contract specifications and dated provider discovery. No NEXUS live integrations.
 - **Next P0:** auth + RBAC/ABAC, app registry, GitHub/Railway read-only collectors, ingestion & alert pipeline, PNEU MOUHIM readonly adapter, audit and basic dashboard.
 - **Later P1:** incidents, verified backup health, runbooks, delegated support, signed approved commands and recovery test orchestration.
 - **Later P2:** evidence-grounded assistant, cross-service dependency graphs, anomaly forecasts and cost intelligence.

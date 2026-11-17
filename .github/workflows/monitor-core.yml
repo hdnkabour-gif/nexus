@@ -1,0 +1,22 @@
+name: Monitor core unit and safety checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  monitor-core:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax checks
+        run: npm --prefix packages/monitor-core run check
+      - name: Unit and negative tests
+        run: npm --prefix packages/monitor-core test
