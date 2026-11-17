@@ -14,9 +14,15 @@
 
 **Tests use synthetic examples and mock provider responses.** Neither GitHub nor Railway integration helpers have been exercised against dedicated production credentials. No live data, live backup operation or restore has been executed.
 
+## First-console implementation (2026-11-17)
+- Next.js Arabic/RTL owner-only web console with route-protected overview, app listing/360, topology, observability, backup, AI and integration readiness, security and settings.
+- Server-side credential bootstrap and signed sessions, secure production cookie, origin validation; tests verify fail-closed auth.
+- Protected read-only metadata API and per-app GitHub/Railway credential-optional probe endpoints; real dedicated provider credentials not yet connected.
+- CI additionally builds Next.js production app and runs auth tests.
+
 ## Not implemented
-- No running NestJS API server, Next.js dashboard, authenticated OIDC/MFA platform or PostgreSQL NEXUS DB.
-- No dedicated NEXUS Railway project/service/domain.
+- No independently verified NEXUS web deployment yet at the time of this document; Next.js source exists and is built in CI. No NestJS API server, OIDC/MFA platform or PostgreSQL NEXUS DB.
+- A dedicated NEXUS Railway project has been created; service/domain/deployment must be verified separately.
 - No credential vault, GitHub App installation or Railway token configured in NEXUS.
 - No real product agent, heartbeat, signed command execution, action approval or audit persistence.
 - No provider log reading, database introspection, backups listing, restore drilling or AI API request.

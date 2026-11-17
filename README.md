@@ -1,6 +1,6 @@
 # NEXUS — Unified Application Intelligence & Control Plane
 
-**Status: architecture, contracts and tested read-only monitor-core library. There is no running NEXUS API, frontend, production connector or connected product agent yet.** This repository starts a controlled implementation; the documentation describes intended behavior, not completed functionality.
+**Status: protected Next.js first console implemented, with mock-tested read-only monitor core. Deployment and live connectivity must be verified separately; no source product agent or production control available yet.** This repository starts a controlled implementation; the documentation describes intended behavior, not completed functionality.
 
 NEXUS is the central *operational knowledge, reliability, diagnostics and governed control* platform for the applications we build, host, and support. It is not a second business database and it is not an unrestricted remote terminal.
 
@@ -35,6 +35,7 @@ NEXUS is the central *operational knowledge, reliability, diagnostics and govern
 | [docs/17_IDEA_LOG.md](docs/17_IDEA_LOG.md) | Persistent ideas, decisions and their actual status |
 | [docs/18_IMPLEMENTATION_PROGRESS.md](docs/18_IMPLEMENTATION_PROGRESS.md) | Actual implementation status and next milestones |
 | [docs/19_PORTFOLIO_DISCOVERY.md](docs/19_PORTFOLIO_DISCOVERY.md) | Dated discovery of six current application repositories and Railway projects |
+| [docs/20_FIRST_CONSOLE.md](docs/20_FIRST_CONSOLE.md) | First protected Next.js preview, setup and boundaries |
 | [registry/portfolio-discovery.v1.json](registry/portfolio-discovery.v1.json) | Machine-readable provider discovery snapshot, **not** live telemetry |
 | [packages/monitor-core/](packages/monitor-core/) | Tested read-only normalization and backup health logic |
 | [contracts/](contracts/) | Versioned JSON Schema/OpenAPI contracts and synthetic examples |
@@ -49,7 +50,7 @@ NEXUS is the central *operational knowledge, reliability, diagnostics and govern
 - Future applications via the same manifest and onboarding process.
 
 ## Now / next
-- **Now:** architecture, testable safe monitoring primitives, contract specifications and dated provider discovery. No NEXUS live integrations.
+- **Now:** first Next.js app with protected owner login, app registry/360, topology and backup pages, safe read-only metadata probe endpoints. No dedicated provider tokens or product adapters configured; static source snapshots remain clearly labeled.
 - **Next P0:** auth + RBAC/ABAC, app registry, GitHub/Railway read-only collectors, ingestion & alert pipeline, PNEU MOUHIM readonly adapter, audit and basic dashboard.
 - **Later P1:** incidents, verified backup health, runbooks, delegated support, signed approved commands and recovery test orchestration.
 - **Later P2:** evidence-grounded assistant, cross-service dependency graphs, anomaly forecasts and cost intelligence.
