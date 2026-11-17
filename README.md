@@ -28,7 +28,8 @@ NEXUS is the central *operational knowledge, reliability, diagnostics and govern
 | [docs/10_AI_DIAGNOSTICS.md](docs/10_AI_DIAGNOSTICS.md) | Evidence-first assistant architecture |
 | [docs/11_UX_AND_OPERATIONS.md](docs/11_UX_AND_OPERATIONS.md) | UX routes, workflows, alerts and roles |
 | [docs/12_REFERENCES.md](docs/12_REFERENCES.md) | Technical references and ADR process |
-| [contracts/](contracts/) | Versioned JSON Schema contracts and synthetic examples |
+| [docs/13_CODE_INTELLIGENCE.md](docs/13_CODE_INTELLIGENCE.md) | Deep source/route/schema/permission knowledge graph |
+| [contracts/](contracts/) | Versioned JSON Schema/OpenAPI contracts and synthetic examples |
 
 ## Intended application registry
 - PNEU MOUHIM (Laravel/PostgreSQL, initial discovery and first adapter)

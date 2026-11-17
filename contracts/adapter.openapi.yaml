@@ -1,0 +1,72 @@
+openapi: 3.1.1
+info:
+  title: NEXUS Product Adapter API
+  version: 0.1.0-design
+  description: |
+    Design only. Implement separately in each authorized product.
+    MUST enforce local authorization, audience, replay/nonce, signature
+    verification, expiry, capability-specific argument schema, audit and
+    idempotency. GET endpoints are authenticated; no direct DB access granted.
+servers:
+  - url: https://product.example.invalid
+security:
+  - adapterAuth: []
+paths:
+  /internal/nexus/v1/health:
+    get:
+      operationId: adapterHealth
+      responses:
+        '200': {description: Redacted, bounded health and version snapshot.}
+        '401': {description: Not authorized.}
+  /internal/nexus/v1/capabilities:
+    get:
+      operationId: adapterCapabilities
+      responses:
+        '200': {description: Actually implemented allowlisted capabilities only.}
+  /internal/nexus/v1/diagnostics:
+    post:
+      operationId: executeReadonlyDiagnostic
+      responses:
+        '202': {description: Check accepted, not completed.}
+        '403': {description: Capability not permitted.}
+  /internal/nexus/v1/actions:
+    post:
+      operationId: receiveSignedCommand
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './command.schema.json'
+      responses:
+        '202': {description: Idempotently accepted; not execution success.}
+        '401': {description: Signature, key or audience invalid.}
+        '403': {description: Policy/role/approval denied.}
+        '409': {description: Idempotency key conflict.}
+        '410': {description: Command expired.}
+        '422': {description: Arguments fail capability schema.}
+  /internal/nexus/v1/actions/{executionId}:
+    get:
+      operationId: reconcileAction
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      responses:
+        '200':
+          description: Signed receipt from source app.
+          content:
+            application/json:
+              schema:
+                $ref: './command-result.schema.json'
+        '404': {description: Unknown execution ID.}
+components:
+  securitySchemes:
+    adapterAuth:
+      type: apiKey
+      in: header
+      name: X-NEXUS-Signature
+      description: |
+        Placeholder wire envelope. Signature canonicalization and supported
+        algorithms must be formalized in ADR-006 before implementation.
