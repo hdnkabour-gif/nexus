@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "event_id": "11afc871-0000-4000-8000-000000000001",
+  "app_id": "pneu-mouhim",
+  "environment": "mouhim",
+  "type": "business.stock.reconciliation_failed",
+  "severity": "warning",
+  "occurred_at": "2026-11-16T13:00:00Z",
+  "observed_at": "2026-11-16T13:00:04Z",
+  "correlation_id": "synthetic-reconcile-001",
+  "source": {
+    "kind": "synthetic",
+    "service": "mouhim-checker"
+  },
+  "data_classification": "operational_metadata_only",
+  "attributes": {
+    "check_id": "mouhim.stock.reconcile",
+    "outcome": "fail",
+    "count": 2,
+    "category": "ledger_mismatch"
+  },
+  "synthetic_example": true
+}

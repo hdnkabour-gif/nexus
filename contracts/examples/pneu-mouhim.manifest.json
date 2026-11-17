@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "app_id": "pneu-mouhim",
+  "display_name": "PNEU MOUHIM",
+  "category": "erp",
+  "status": "discovered",
+  "connection_status": "not_connected",
+  "owner_team": "internal-operations",
+  "source": {
+    "provider": "github",
+    "repository": "hdnkabour-gif/Pneumatiques-MOUHIM",
+    "default_branch": "main",
+    "observed_commit_sha": "2e74384a30fae895cc7aa04fee7af3879bc345e0"
+  },
+  "runtime": {
+    "language": "PHP",
+    "framework": "Laravel / Filament",
+    "database": "PostgreSQL",
+    "hosting": "Railway"
+  },
+  "environments": [
+    {
+      "key": "mouhim",
+      "classification": "pilot",
+      "provider": "Railway",
+      "service_names": [
+        "Pneumatiques-MOUHIM",
+        "Postgres-ekYj"
+      ]
+    }
+  ],
+  "data_policy": {
+    "classification": "operational_metadata_only",
+    "customer_records_allowed": false,
+    "medical_records_allowed": false
+  },
+  "planned_capabilities": [
+    {
+      "name": "stock.verify",
+      "risk": "R0",
+      "status": "planned",
+      "description": "Source-side read-only reconciliation summary"
+    },
+    {
+      "name": "backup.health",
+      "risk": "R0",
+      "status": "planned",
+      "description": "Offsite backup freshness and last isolated restore evidence"
+    },
+    {
+      "name": "user.send_reset_link",
+      "risk": "R2",
+      "status": "planned",
+      "description": "Identity-verified one-time reset link issued by source app"
+    }
+  ],
+  "provenance": {
+    "observation_type": "source_review",
+    "observed_at": "2026-11-16T22:08:00Z",
+    "source_ref": "https://github.com/hdnkabour-gif/Pneumatiques-MOUHIM",
+    "notes": "Snapshot only. Adapter not connected. Source code and provider must be rechecked before activation."
+  }
+}

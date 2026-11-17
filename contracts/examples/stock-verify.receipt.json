@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "command_id": "11afc871-0000-4000-8000-000000000002",
+  "execution_id": "11afc871-0000-4000-8000-000000000004",
+  "app_id": "pneu-mouhim",
+  "environment": "mouhim",
+  "status": "succeeded",
+  "observed_at": "2026-11-16T13:01:03Z",
+  "verification": {
+    "status": "pass",
+    "evidence_ref": "synthetic://verification/001"
+  },
+  "audit_ref": "synthetic-audit-0001",
+  "signature": "NOT_A_VALID_SIGNATURE_FOR_DEMO_ONLY",
+  "synthetic_example": true
+}

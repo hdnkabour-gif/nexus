@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nexus.invalid/contracts/command-result/1.0.0",
+  "title": "NEXUS Signed Execution Receipt 1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "command_id",
+    "execution_id",
+    "app_id",
+    "environment",
+    "status",
+    "observed_at",
+    "verification",
+    "audit_ref",
+    "signature"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "command_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "execution_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "app_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "environment": {
+      "type": "string",
+      "minLength": 2
+    },
+    "status": {
+      "enum": [
+        "accepted",
+        "running",
+        "succeeded",
+        "failed",
+        "unknown",
+        "rejected"
+      ]
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not_run",
+            "pass",
+            "fail",
+            "unknown"
+          ]
+        },
+        "evidence_ref": {
+          "type": "string",
+          "maxLength": 240
+        }
+      }
+    },
+    "audit_ref": {
+      "type": "string",
+      "minLength": 3
+    },
+    "signature": {
+      "type": "string",
+      "minLength": 16
+    },
+    "synthetic_example": {
+      "type": "boolean"
+    }
+  }
+}

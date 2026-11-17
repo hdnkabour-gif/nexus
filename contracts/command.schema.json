@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nexus.invalid/contracts/command/1.0.0",
+  "title": "NEXUS Signed Governed Command 1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "command_id",
+    "request_id",
+    "app_id",
+    "environment",
+    "capability",
+    "capability_version",
+    "arguments",
+    "idempotency_key",
+    "issued_at",
+    "expires_at",
+    "audience",
+    "nonce",
+    "key_id",
+    "approval_digest",
+    "signature"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "command_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "request_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "app_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "environment": {
+      "type": "string",
+      "minLength": 2
+    },
+    "capability": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.-]{2,120}$"
+    },
+    "capability_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "arguments": {
+      "type": "object",
+      "description": "Additional capability-specific schema, verified at both ends; never arbitrary URL, SQL or shell."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 12,
+      "maxLength": 128
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "audience": {
+      "type": "string",
+      "minLength": 5
+    },
+    "nonce": {
+      "type": "string",
+      "minLength": 12
+    },
+    "key_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "approval_digest": {
+      "type": "string",
+      "minLength": 12
+    },
+    "signature": {
+      "type": "string",
+      "minLength": 16
+    },
+    "synthetic_example": {
+      "type": "boolean"
+    }
+  }
+}
