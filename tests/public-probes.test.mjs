@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {publicProbeTargets,probeHttp,runHttpChecks,latestHttpChecks} from '../lib/public-probes.js';
-import {dbQuery} from '../lib/db.js';
+import {dbQuery,getPool} from '../lib/db.js';
 test('only verified domains are in bounded allowlist and sensitive targets omitted',()=>{
  const targets=publicProbeTargets();assert.equal(targets.length,7);
  for(const x of targets)assert.match(x.host,/^[a-z0-9.-]+\.up\.railway\.app$/);
@@ -40,4 +40,5 @@ test('read-only probe observations are saved in isolated CI PostgreSQL, scoped b
  const rows=await dbQuery("SELECT count(*)::int AS c FROM nexus_observations WHERE provider='http_public'");
  assert.equal(rows.rows[0].c,7);
  await dbQuery("DELETE FROM nexus_observations WHERE provider='http_public'");
+ await getPool().end();
 });
