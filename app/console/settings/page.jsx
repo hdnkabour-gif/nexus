@@ -3,7 +3,6 @@ import Status from '../../../components/status';
 import {isBootstrapConfigured} from '../../../lib/auth.js';
 import {databaseConfigured,dbReady} from '../../../lib/db.js';
 export const dynamic='force-dynamic';
-export const dynamic='force-dynamic';
 export default async function Settings({searchParams}){
  const params=await searchParams;
  const persistent=databaseConfigured() && await dbReady();
