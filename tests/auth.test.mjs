@@ -1,11 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomBytes,scryptSync} from 'node:crypto';
-import {verifyAdminCredentials,newSession,verifySession,isBootstrapConfigured,validateFormOrigin} from '../lib/auth.js';
+import {verifyAdminCredentials,newSession,verifySession,isBootstrapConfigured,validateFormOrigin,configuredOwnerUsername,configuredOwnerDisplayName} from '../lib/auth.js';
 const old={...process.env};
 function configure(){
  const salt=randomBytes(16);
  process.env.NEXUS_ADMIN_EMAIL='owner@internal.invalid';
+ process.env.NEXUS_ADMIN_USERNAME='owner';
+ process.env.NEXUS_ADMIN_NAME='NEXUS Owner';
  process.env.NEXUS_ADMIN_PASSWORD_HASH='scrypt$'+salt.toString('hex')+'$'+scryptSync('a-long-demo-password-with-entropy',salt,64,{N:16384,r:8,p:1,maxmem:64*1024*1024}).toString('hex');
  process.env.NEXUS_SESSION_SECRET='test-session-secret-with-adequate-entropy-only-'+randomBytes(24).toString('hex');
 }
@@ -18,8 +20,12 @@ test('unconfigured platform fails closed',()=>{
 test('valid credentials and signed session, invalid credentials rejected',()=>{
  configure();assert.equal(isBootstrapConfigured(),true);
  assert.equal(verifyAdminCredentials('owner@internal.invalid','a-long-demo-password-with-entropy'),true);
+ assert.equal(verifyAdminCredentials('OWNER','a-long-demo-password-with-entropy'),true);
+ assert.equal(configuredOwnerUsername(),'owner');
+ assert.equal(configuredOwnerDisplayName(),'NEXUS Owner');
  assert.equal(verifyAdminCredentials('owner@internal.invalid','wrong'),false);
  assert.equal(verifyAdminCredentials('different@internal.invalid','a-long-demo-password-with-entropy'),false);
+ assert.equal(verifyAdminCredentials('owner','wrong'),false);
  const now=Date.parse('2026-11-17T14:00:00Z');
  const token=newSession('owner@internal.invalid',now);
  assert.equal(verifySession(token,now+1000)?.email,'owner@internal.invalid');
@@ -28,6 +34,14 @@ test('valid credentials and signed session, invalid credentials rejected',()=>{
  const [p,m]=token.split('.');
  const tampered=p+'.'+m.replace(/^./,m[0]==='a'?'b':'a');
  assert.equal(verifySession(tampered,now),null);
+});
+test('invalid usernames never become login aliases; email remains accepted',()=>{
+ configure();process.env.NEXUS_ADMIN_USERNAME='https://bad.example.invalid';
+ assert.equal(configuredOwnerUsername(),null);
+ assert.equal(verifyAdminCredentials('https://bad.example.invalid','a-long-demo-password-with-entropy'),false);
+ assert.equal(verifyAdminCredentials('owner@internal.invalid','a-long-demo-password-with-entropy'),true);
+ process.env.NEXUS_ADMIN_NAME='<Bad Name>';
+ assert.equal(configuredOwnerDisplayName(),'<Bad Name>'); // React renders text escaped, no HTML injection.
 });
 test('cookie signing fails closed on missing signing secret',()=>{
  configure();delete process.env.NEXUS_SESSION_SECRET;

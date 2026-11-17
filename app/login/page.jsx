@@ -14,7 +14,7 @@ export default async function Login({searchParams}){
    {!ready?<div className="login-notice"><Icon name="lock" size={20}/><div><strong>المنصة قيد الإعداد الآمن</strong><p>يجب إعداد بيانات دخول المالك في Railway قبل فتح لوحة التحكم.</p></div></div>:
    <form method="POST" action="/api/auth/login" className="login-form">
     {params?.error&&<div className="login-error">بيانات الدخول غير صحيحة أو انتهت المحاولة. تأكد من المعلومات.</div>}
-    <label>البريد الإلكتروني <input type="email" name="email" autoComplete="username" required maxLength={320} placeholder="admin@example.com" dir="ltr"/></label>
+    <label>اسم الدخول أو البريد الإلكتروني <input type="text" name="login" autoComplete="username" required maxLength={320} placeholder="owner أو البريد الإلكتروني" dir="ltr"/></label>
     <label>كلمة المرور <input type="password" name="password" autoComplete="current-password" required maxLength={1024} placeholder="••••••••••••" dir="ltr"/></label>
     <button className="primary-button" type="submit"><Icon name="lock" size={18}/> دخول آمن إلى NEXUS <Icon name="arrow" size={17}/></button>
    </form>}

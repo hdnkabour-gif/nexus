@@ -37,6 +37,9 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 | IDEA-024 | Evidence report per deployment with SHA, Railway environment, startup/HTTP checks and limitations | IMPLEMENTED (documentation) | docs/21_FIRST_DEPLOYMENT_EVIDENCE.md |
 | IDEA-025 | First customer-visible UI accessible via protected Railway URL; no public portfolio data | DEPLOYED, owner acceptance/screenshot pending | docs/20_FIRST_CONSOLE.md |
 
+| IDEA-019 | Custom owner display name and username alias in Railway, without replacing existing email account | IMPLEMENTED (pending CI and Railway sync) | docs/22_OWNER_VARIABLES.md |
+| IDEA-020 | Owner password rotation via offline generated scrypt hash; never plaintext Railway variable | IMPLEMENTED (pending CI) | scripts/hash-owner-password.mjs |
+
 ## Decisions requiring explicit ADR approval
 - OIDC provider and production 2FA method.
 - Whether NEXUS v1 is personal-only or multi-organization, and data locality/retention.

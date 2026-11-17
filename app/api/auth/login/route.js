@@ -23,11 +23,11 @@ export async function POST(request){
  if(!Number.isFinite(len)||len>12_000)return denial();
  let form;
  try{form=await request.formData();}catch{return denial();}
- const email=form.get('email'),password=form.get('password');
- if(typeof email!=='string'||typeof password!=='string'||!verifyAdminCredentials(email,password)){failure(key,now);return denial();}
+ const login=form.get('login'),password=form.get('password');
+ if(typeof login!=='string'||typeof password!=='string'||!verifyAdminCredentials(login,password)){failure(key,now);return denial();}
  counters.delete(key);
  const response=Response.redirect(new URL('/console',request.url),303);
- response.headers.append('Set-Cookie',sessionCookieName()+'='+newSession(email)+'; Path=/; HttpOnly; SameSite=Lax; Max-Age=28800'+(process.env.NODE_ENV==='production'?'; Secure':''));
+ response.headers.append('Set-Cookie',sessionCookieName()+'='+newSession(process.env.NEXUS_ADMIN_EMAIL)+'; Path=/; HttpOnly; SameSite=Lax; Max-Age=28800'+(process.env.NODE_ENV==='production'?'; Secure':''));
  response.headers.set('Cache-Control','no-store');
  return response;
 }
