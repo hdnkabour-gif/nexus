@@ -37,6 +37,7 @@ NEXUS is the central *operational knowledge, reliability, diagnostics and govern
 | [docs/19_PORTFOLIO_DISCOVERY.md](docs/19_PORTFOLIO_DISCOVERY.md) | Dated discovery of six current application repositories and Railway projects |
 | [docs/20_FIRST_CONSOLE.md](docs/20_FIRST_CONSOLE.md) | First protected Next.js preview, setup and boundaries |
 | [docs/21_FIRST_DEPLOYMENT_EVIDENCE.md](docs/21_FIRST_DEPLOYMENT_EVIDENCE.md) | First production-environment rollout evidence and remaining smoke checks |
+| [docs/22_OWNER_VARIABLES.md](docs/22_OWNER_VARIABLES.md) | Owner name, username and safe password rotation via Railway Variables |
 | [registry/portfolio-discovery.v1.json](registry/portfolio-discovery.v1.json) | Machine-readable provider discovery snapshot, **not** live telemetry |
 | [packages/monitor-core/](packages/monitor-core/) | Tested read-only normalization and backup health logic |
 | [contracts/](contracts/) | Versioned JSON Schema/OpenAPI contracts and synthetic examples |
@@ -45,7 +46,7 @@ NEXUS is the central *operational knowledge, reliability, diagnostics and govern
 - Owner-only login: https://nexus-control-center.up.railway.app/login
 - Dedicated Railway project: NEXUS Control Center (separate from product apps).
 - Initial deployment status: SUCCESS; Next.js runtime READY; Railway-origin POST requests reached the correct service and its HTTP/CSRF guards returned expected 405 and 403 respectively.
-- Credentials are Railway service variables only; **never commit or publish password, hash, session secret or API tokens**.
+- Credentials are Railway service variables only; **never commit or publish password, hash, session secret or API tokens**. Owner can use `NEXUS_ADMIN_USERNAME` or `NEXUS_ADMIN_EMAIL`; owner name is `NEXUS_ADMIN_NAME`. Generate a new password hash via `npm run owner:hash` and edit `NEXUS_ADMIN_PASSWORD_HASH` in Railway.
 - No live product API credentials/agent, no production backups/restores or AI provider are active.
 
 ## Intended application registry

@@ -18,8 +18,10 @@ Public `/login`, `/api/health`. Auth-only `/console`, `/console/apps`, `/console
 Actions: POST `/api/auth/login` and `/api/auth/logout`, origin-checked.
 
 ## Required env variables
+- `NEXUS_ADMIN_NAME`: optional display name shown in the owner header (default Owner).
+- `NEXUS_ADMIN_USERNAME`: optional lowercase login alias, 3–32 chars `[a-z0-9._-]`, must start with letter; login accepts either alias or email.
 - `NEXUS_ADMIN_EMAIL`: first owner account.
-- `NEXUS_ADMIN_PASSWORD_HASH`: `scrypt$<32-hex-salt>$<128-hex-hash>`. Generate with Node.js scrypt securely, never commit plaintext/password hash into GitHub.
+- `NEXUS_ADMIN_PASSWORD_HASH`: `scrypt$<32-hex-salt>$<128-hex-hash>`. To rotate safely run `npm run owner:hash` from a local interactive terminal and paste only the hash into Railway Variables. Never add plaintext `NEXUS_ADMIN_PASSWORD` or commit any secret.
 - `NEXUS_SESSION_SECRET`: cryptographically random 32+ character secret, not shared across apps.
 - `NEXUS_GITHUB_READ_TOKEN` (optional; server only): dedicated least-privilege GitHub read token for approved private repos.
 - `NEXUS_RAILWAY_READ_TOKEN` (optional; server only): dedicated scoped Railway API token. Confirm provider GraphQL permissions/staging.
