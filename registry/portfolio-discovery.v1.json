@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0.0",
+  "observed_on": "2026-11-17",
+  "observation_channel": "user-authorized ChatGPT GitHub/Railway connectors; NOT a NEXUS connection",
+  "connection_status": "discovery_only",
+  "data_classification": "operational_metadata_only",
+  "apps": [
+    {
+      "app_id": "pneu-mouhim",
+      "name": "PNEU MOUHIM",
+      "repository": "hdnkabour-gif/Pneumatiques-MOUHIM",
+      "main_sha": "181095a79d7ea16bee82a24d9da694522c217a23",
+      "railway_projects": [
+        {
+          "id": "8cb69dd8-2bca-41d6-9760-2a5fda1d8de8",
+          "name": "lucid-playfulness",
+          "shared": true
+        },
+        {
+          "id": "da9818fd-7480-4e37-b0e0-bcd8359564b8",
+          "name": "PNEU MOUHIM - STAGING",
+          "shared": false
+        }
+      ],
+      "environment_mapping_verified": false,
+      "adapter_connected": false,
+      "notes": "Shared main Railway project also has rent-car-app. Staging project includes app, worker and Postgres. No current backup/restore validation in NEXUS."
+    },
+    {
+      "app_id": "rent-car",
+      "name": "RENT CAR / Fleetora",
+      "repository": "hdnkabour-gif/rent-car-app",
+      "main_sha": "1e934d36601145f252941918dd38f8df8d42a433",
+      "railway_projects": [
+        {
+          "id": "8cb69dd8-2bca-41d6-9760-2a5fda1d8de8",
+          "name": "lucid-playfulness",
+          "shared": true
+        },
+        {
+          "id": "5985f4ff-7d6d-4c7b-954a-d773d166ae50",
+          "name": "Fleetora OCR Staging",
+          "shared": false
+        }
+      ],
+      "environment_mapping_verified": false,
+      "adapter_connected": false,
+      "notes": "OCR staging separate project, main shared with PNEU MOUHIM."
+    },
+    {
+      "app_id": "amanzine",
+      "name": "AMANZINE",
+      "repository": "hdnkabour-gif/amanzine2",
+      "main_sha": "4ff08a99d4949a8d543ea8a41528da0331e8dbfb",
+      "railway_projects": [
+        {
+          "id": "98aca76b-eb17-4616-80e6-25cf8a29b68c",
+          "name": "spectacular-victory",
+          "shared": true
+        }
+      ],
+      "environment_mapping_verified": false,
+      "adapter_connected": false,
+      "notes": "Additional repo hdnkabour-gif/AMANZINE exists and requires owner classification; railway project has multiple environments and services."
+    },
+    {
+      "app_id": "alloservix",
+      "name": "ALLOSERVIX",
+      "repository": "hdnkabour-gif/Alloservix",
+      "main_sha": "188b928dafe3da27cab11edbf27e3f9b2483f986",
+      "railway_projects": [
+        {
+          "id": "649dcba3-91d2-43d8-916c-e6d10278f51f",
+          "name": "ALLOSERVIX Website",
+          "shared": false
+        }
+      ],
+      "environment_mapping_verified": false,
+      "adapter_connected": false,
+      "notes": "Observed environment name production; this is not launch readiness evidence."
+    },
+    {
+      "app_id": "nexora",
+      "name": "NEXORA",
+      "repository": "hdnkabour-gif/Nexora",
+      "main_sha": "aed95a384acd102cbb0e8d52dc70b8a9c47068a2",
+      "railway_projects": [
+        {
+          "id": "19ee444c-5298-4d19-a109-e927de16450b",
+          "name": "NEXORA Demo",
+          "shared": false
+        }
+      ],
+      "environment_mapping_verified": false,
+      "adapter_connected": false,
+      "notes": "Healthcare: metadata-only. Observed hosting project is demo, not evidence of operational clinical platform."
+    },
+    {
+      "app_id": "tech-platform",
+      "name": "2M TECH PLATFORM",
+      "repository": "hdnkabour-gif/Tech-Platform-",
+      "main_sha": "924aa502d9b60dbee3114dbb16100290c10dfb1b",
+      "railway_projects": [
+        {
+          "id": "e83c6f79-8c86-4843-9a3c-95ed806940d9",
+          "name": "overflowing-vision",
+          "shared": false
+        }
+      ],
+      "environment_mapping_verified": false,
+      "adapter_connected": false,
+      "notes": "Employer authorization mandatory before any operational monitoring/data flows; private intranet must not be exposed."
+    }
+  ],
+  "additional_discovery": {
+    "repository_needing_owner_classification": [
+      "hdnkabour-gif/AMANZINE"
+    ],
+    "projects_with_unclear_app_mapping": [
+      {
+        "id": "98aca76b-eb17-4616-80e6-25cf8a29b68c",
+        "reason": "multiple services/environments (AMANZINE and Tech)"
+      }
+    ]
+  }
+}

@@ -10,6 +10,7 @@
   * unit/negative tests under Node.js 22 with no external dependencies.
 - A GitHub Actions CI workflow to run unit, negative and syntax tests.
 - A durable idea register and provider/AI/backup architecture.
+- Dated repository/Railway metadata discovery for six application families in registry/portfolio-discovery.v1.json (not live NEXUS telemetry).
 
 **Tests use synthetic examples and mock provider responses.** Neither GitHub nor Railway integration helpers have been exercised against dedicated production credentials. No live data, live backup operation or restore has been executed.
 

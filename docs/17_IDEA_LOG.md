@@ -18,13 +18,15 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 | IDEA-008 | Request an isolated restore drill in NEXUS, with success evidence and source-app authorization | DESIGNED | docs/16_BACKUP_RESTORE_ORCHESTRATION.md |
 | IDEA-009 | Risky production restore strictly opt-in, independent approval, fresh backup, incident and recovery plan | DESIGNED | docs/05_SECURITY_AND_ACTIONS.md |
 | IDEA-010 | Persist every new idea/decision/incident lesson in the repository with status and references | IMPLEMENTED (documentation) | this file |
-| IDEA-011 | Read-only deterministic backup health classification as first executable reusable module | PLANNED | packages/monitor-core |
-| IDEA-012 | Read-only Github/Railway collectors in a secured authenticated NEXUS service | PLANNED | docs/09_ROADMAP_AND_TESTS.md |
+| IDEA-011 | Read-only deterministic backup health classification as first executable reusable module | IMPLEMENTED; CI tests passed for prior commit | packages/monitor-core |
+| IDEA-012 | Read-only Github/Railway collectors in a secured authenticated NEXUS service | PARTIAL: library fetchers tested with mocks; secure service and live connectors NOT IMPLEMENTED | packages/monitor-core/src/providers.mjs |
 | IDEA-013 | Secrets/permissions drift checks without reading env values | DESIGNED | docs/14_EXTERNAL_INTEGRATIONS.md |
 | IDEA-014 | Future applications onboard via same signed capability/observation contracts | DESIGNED | docs/07_INTEGRATION_PLAYBOOK.md |
 | IDEA-015 | Offsite independence: Railway volume snapshots and logical dumps are complementary, not substitutes | DESIGNED | docs/16_BACKUP_RESTORE_ORCHESTRATION.md |
 | IDEA-016 | Replay-safe action reconciliation: network timeout must not cause duplicate real-world effects | DESIGNED | docs/05_SECURITY_AND_ACTIONS.md |
 | IDEA-017 | AI provider per-app data classification, provider opt-out and budget ceilings | DESIGNED | docs/15_AI_CODING_AGENTS.md |
+
+| IDEA-018 | Dated source and Railway discovery for all six known product families, without falsely claiming live connection | IMPLEMENTED (metadata snapshot) | docs/19_PORTFOLIO_DISCOVERY.md |
 
 ## Decisions requiring explicit ADR approval
 - OIDC provider and production 2FA method.
@@ -37,4 +39,5 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 ## Changelog
 ### 2026-11-17
 - Created external integration catalog, AI coding-agent governance, backup/restore orchestration and living idea log.
+- Added read-only core and mock CI, six-app discovered provider inventory and automated inventory-scope test.
 - All features marked DESIGNED or PLANNED unless verified by actual code/tests; no live connection inferred.
