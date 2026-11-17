@@ -43,6 +43,9 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 | IDEA-021 | NEXUS-owned isolated PostgreSQL and owner-internal first-time password enrollment | IMPLEMENTED (pending CI/deployment) | docs/23_PERSISTENT_OWNER_AUTH.md |
 | IDEA-022 | Persist session revocation and owner audit without business personal data | IMPLEMENTED (pending CI/deployment) | lib/owner-db.js |
 
+| IDEA-023 | Actual, credential-free HTTPS availability check of verified public app domains, with evidence age and no private data | IMPLEMENTED (pending CI and deployment) | docs/24_PUBLIC_HTTP_MONITORING.md |
+| IDEA-024 | 15-minute independent Railway Cron worker for read-only public reachability | PLANNED (until separate job deployed/tested) | scripts/public-probe.mjs |
+
 ## Decisions requiring explicit ADR approval
 - OIDC provider and production 2FA method.
 - Whether NEXUS v1 is personal-only or multi-organization, and data locality/retention.

@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0.0",
+  "verified_at": "2026-11-17",
+  "source": "Railway domains listing via authorized connector; NEXUS public-only endpoint probes",
+  "scope": "HTTP reachability only, NOT application functionality or data integrity",
+  "targets": [
+    {
+      "app_id": "pneu-mouhim",
+      "environment": "mouhim",
+      "host": "pneumatiques-mouhim-mouhim.up.railway.app",
+      "label": "PNEU MOUHIM — Pilot"
+    },
+    {
+      "app_id": "rent-car",
+      "environment": "production",
+      "host": "jmr-luxe-car.up.railway.app",
+      "label": "Rent Car — Web"
+    },
+    {
+      "app_id": "alloservix",
+      "environment": "production",
+      "host": "alloservix-web-production.up.railway.app",
+      "label": "ALLOSERVIX — Web"
+    },
+    {
+      "app_id": "nexora",
+      "environment": "demo",
+      "host": "nexora-web-demo-demo.up.railway.app",
+      "label": "NEXORA — Demo"
+    },
+    {
+      "app_id": "rent-car",
+      "environment": "staging",
+      "host": "fleetora-ocr-app-staging.up.railway.app",
+      "label": "Fleetora — OCR Staging"
+    },
+    {
+      "app_id": "amanzine",
+      "environment": "amanzine",
+      "host": "amanzine.up.railway.app",
+      "label": "AMANZINE — Web (environment Amanzine)"
+    },
+    {
+      "app_id": "amanzine",
+      "environment": "staging",
+      "host": "triumphant-courage-staging.up.railway.app",
+      "label": "AMANZINE — Staging"
+    }
+  ],
+  "deliberately_unmonitored": [
+    "2M TECH PLATFORM requires employer authorization"
+  ],
+  "observation_notes": "Railway service named AMANZINE in production uses source hdnkabour-gif/Tech-Platform-. Use hdnkabour-gif/amanzine2 services balanced-growth and amanzine-staging instead; service names alone are not application identities."
+}
