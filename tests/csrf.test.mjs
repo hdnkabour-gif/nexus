@@ -9,6 +9,7 @@ test('signed double-submit token is scoped to same-origin request and independen
   const nonce=createCsrfNonce(),token=createCsrfToken('login',nonce);
   const mk=(cookie,headers={})=>new Request('http://railway-internal.invalid/api/auth/login',{method:'POST',headers:{cookie,'sec-fetch-site':'same-origin',...headers}});
   assert.match(csrfCookieHeader(nonce),/^nexus_csrf=/);
+  assert.match(csrfCookieHeader(nonce),/SameSite=Lax/);
   assert.equal(validateCsrfForm(mk('nexus_csrf='+nonce),'login',token),true);
   assert.equal(validateCsrfForm(mk('nexus_csrf='+nonce,{'origin':'null'}),'login',token),true);
   assert.equal(validateCsrfForm(mk('nexus_csrf='+nonce,{'sec-fetch-site':'cross-site'}),'login',token),false);
