@@ -29,6 +29,12 @@ NEXUS is the central *operational knowledge, reliability, diagnostics and govern
 | [docs/11_UX_AND_OPERATIONS.md](docs/11_UX_AND_OPERATIONS.md) | UX routes, workflows, alerts and roles |
 | [docs/12_REFERENCES.md](docs/12_REFERENCES.md) | Technical references and ADR process |
 | [docs/13_CODE_INTELLIGENCE.md](docs/13_CODE_INTELLIGENCE.md) | Deep source/route/schema/permission knowledge graph |
+| [docs/14_EXTERNAL_INTEGRATIONS.md](docs/14_EXTERNAL_INTEGRATIONS.md) | All external dependencies and provider monitoring contracts |
+| [docs/15_AI_CODING_AGENTS.md](docs/15_AI_CODING_AGENTS.md) | OpenAI/Claude and isolated coding agent governance |
+| [docs/16_BACKUP_RESTORE_ORCHESTRATION.md](docs/16_BACKUP_RESTORE_ORCHESTRATION.md) | End-to-end recovery evidence and safe restoration |
+| [docs/17_IDEA_LOG.md](docs/17_IDEA_LOG.md) | Persistent ideas, decisions and their actual status |
+| [docs/18_IMPLEMENTATION_PROGRESS.md](docs/18_IMPLEMENTATION_PROGRESS.md) | Actual implementation status and next milestones |
+| [packages/monitor-core/](packages/monitor-core/) | Tested read-only normalization and backup health logic |
 | [contracts/](contracts/) | Versioned JSON Schema/OpenAPI contracts and synthetic examples |
 
 ## Intended application registry
