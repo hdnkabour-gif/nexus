@@ -1,6 +1,7 @@
 import {verifyAdminCredentials,newSession,sessionCookieName,validateFormOrigin,isBootstrapConfigured,authRedirect} from '../../../../lib/auth.js';
 import {databaseConfigured} from '../../../../lib/db.js';
 import {authenticateOwner} from '../../../../lib/owner-db.js';
+import {validateCsrfForm} from '../../../../lib/csrf.js';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 const counters=new Map();
@@ -19,12 +20,13 @@ export async function POST(request){
  const key=(request.headers.get('x-forwarded-for')||'unknown').split(',')[0].trim().slice(0,80);
  const denial=(kind='credentials')=>Response.redirect(authRedirect('/login?error='+kind,request),303);
  if(!isBootstrapConfigured())return Response.redirect(authRedirect('/login?setup=1',request),303);
- if(!validateFormOrigin(request))return denial('origin');
  if(blocked(key,now))return denial('limited');
  const len=Number(request.headers.get('content-length')||'0');
  if(!Number.isFinite(len)||len>12_000)return denial('request');
  let form;
- try{form=await request.formData();}catch{return denial();}
+ try{form=await request.formData();}catch{return denial('request');}
+ // Signed double-submit CSRF works with browsers that strip or alter Origin.
+ if(!validateCsrfForm(request,'login',form.get('csrf')))return denial('security');
  const login=form.get('login'),password=form.get('password');
  if(typeof login!=='string'||typeof password!=='string'){failure(key,now);return denial();}
  let token,bootstrap=false;

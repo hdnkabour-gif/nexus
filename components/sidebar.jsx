@@ -17,7 +17,7 @@ const groups=[
   {href:'/console/settings',title:'الإعدادات',icon:'settings'}
  ]}
 ];
-export default function Sidebar(){
+export default function Sidebar({logoutCsrf}){
  const path=usePathname();
  return <aside className="sidebar">
   <Link href="/console" className="brand" aria-label="NEXUS الرئيسية">
@@ -42,7 +42,7 @@ export default function Sidebar(){
   </nav>
   <div className="sidebar-footer">
    <div className="security-mini"><Icon name="shield" size={16}/><span>وضع التشغيل الآمن <em>READ ONLY</em></span></div>
-   <form action="/api/auth/logout" method="POST"><button className="logout-btn" type="submit"><Icon name="logout" size={17}/> تسجيل الخروج</button></form>
+   <form action="/api/auth/logout" method="POST"><input type="hidden" name="csrf" value={logoutCsrf}/><button className="logout-btn" type="submit"><Icon name="logout" size={17}/> تسجيل الخروج</button></form>
    <div className="sidebar-version">NEXUS / PREVIEW 0.1</div>
   </div>
  </aside>;

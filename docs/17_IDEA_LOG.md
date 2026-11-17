@@ -50,6 +50,8 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 
 | IDEA-026 | Explicit trusted browser origin for Railway login behind reverse proxies, safer 303 redirects and visible rate-limit/Origin diagnostics | IMPLEMENTED (pending CI and deployed smoke) | docs/23_PERSISTENT_OWNER_AUTH.md |
 
+| IDEA-027 | Browser-compatible signed double-submit CSRF across login, password setup, password change, and logout; no reliance on mobile Origin header | IMPLEMENTED (pending CI & Railway validation) | lib/csrf.js |
+
 ## Decisions requiring explicit ADR approval
 - OIDC provider and production 2FA method.
 - Whether NEXUS v1 is personal-only or multi-organization, and data locality/retention.

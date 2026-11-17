@@ -1,10 +1,14 @@
 import {redirect} from 'next/navigation';
 import {getSession,isBootstrapConfigured} from '../../lib/auth.js';
 import Icon from '../../components/icons';
+import {createCsrfToken,pageCsrfNonce} from '../../lib/csrf.js';
 export const dynamic='force-dynamic';
 export default async function Login({searchParams}){
  const session=await getSession();
  if(session)redirect(session.must_change_password?'/owner/setup':'/console');
+ const nonce=await pageCsrfNonce();
+ if(!nonce)redirect('/api/auth/prepare?next=login');
+ const csrf=createCsrfToken('login',nonce);
  const params=await searchParams;
  const ready=isBootstrapConfigured();
  return <div className="login-page">
@@ -14,7 +18,8 @@ export default async function Login({searchParams}){
    <div className="login-heading"><span className="eyebrow">UNIFIED CONTROL CENTER</span><h1>NEXUS</h1><p>قلب المنظومة. رؤية واحدة لكل التطبيقات.</p></div>
    {!ready?<div className="login-notice"><Icon name="lock" size={20}/><div><strong>المنصة قيد الإعداد الآمن</strong><p>يجب إعداد بيانات دخول المالك في Railway قبل فتح لوحة التحكم.</p></div></div>:
    <form method="POST" action="/api/auth/login" className="login-form">
-    {params?.error&&<div className="login-error">{params.error==='limited'?'عدد محاولات كبير. أعد المحاولة بعد 15 دقيقة؛ لا تضغط زر الدخول بشكل متكرر.':params.error==='origin'?'رفض المتصفح الطلب لأسباب حماية. افتح رابط NEXUS الرسمي مباشرة ثم أعد المحاولة.':params.error==='request'?'طلب غير صالح. أعد تحميل صفحة الدخول.':'تعذر تسجيل الدخول. تحقق من اسم المستخدم وكلمة المرور، ثم أعد المحاولة مرة واحدة.'}</div>}
+    <input type="hidden" name="csrf" value={csrf}/>
+    {params?.error&&<div className="login-error">{params.error==='limited'?'عدد محاولات كبير. أعد المحاولة بعد 15 دقيقة؛ لا تضغط زر الدخول بشكل متكرر.':params.error==='security'?'تعذر التحقق من رمز حماية النموذج. أعد فتح صفحة NEXUS الرسمية ثم حاول مرة واحدة.':params.error==='request'?'طلب غير صالح. أعد تحميل صفحة الدخول.':'تعذر تسجيل الدخول. تحقق من اسم المستخدم وكلمة المرور، ثم أعد المحاولة مرة واحدة.'}</div>}
     <label>اسم الدخول أو البريد الإلكتروني <input type="text" name="login" autoComplete="username" required maxLength={320} placeholder="owner أو البريد الإلكتروني" dir="ltr"/></label>
     <label>كلمة المرور <input type="password" name="password" autoComplete="current-password" required maxLength={1024} placeholder="••••••••••••" dir="ltr"/></label>
     <button className="primary-button" type="submit"><Icon name="lock" size={18}/> دخول آمن إلى NEXUS <Icon name="arrow" size={17}/></button>
