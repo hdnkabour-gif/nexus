@@ -39,7 +39,9 @@ export async function POST(request){
   token=newSession(process.env.NEXUS_ADMIN_EMAIL);
  }
  counters.delete(key);
- const response=Response.redirect(authRedirect(bootstrap?'/owner/setup':'/console',request),303);
+ // Fetch Response.redirect() has immutable headers in Node 22; a mutable
+ // Response is required to set the HttpOnly session cookie.
+ const response=new Response(null,{status:303,headers:{Location:authRedirect(bootstrap?'/owner/setup':'/console',request).toString()}});
  response.headers.append('Set-Cookie',sessionCookieName()+'='+token+'; Path=/; HttpOnly; SameSite=Lax; Max-Age='+(bootstrap?7200:28800)+(process.env.NODE_ENV==='production'?'; Secure':''));
  response.headers.set('Cache-Control','no-store');
  return response;
