@@ -1,0 +1,10 @@
+import Link from 'next/link';
+import Icon from '../../../components/icons';
+import Status from '../../../components/status';
+export default function Diagnostics(){
+ return <><div className="page-header"><div><div className="eyebrow"><span className="eyebrow-line"/> NEXUS INTELLIGENCE · 006</div><h1>العقل <span className="gradient-text">التشخيصي</span></h1><p className="subtitle">استدلال من الكود والسجلات والاختبارات مع مصادر وأدلة واضحة، وليس تخمينات.</p></div></div>
+  <section className="intelligence-hero panel"><div className="ai-orb"><div className="ai-core">✧</div></div><div><span className="section-eyebrow">EVIDENCE-FIRST ASSISTANT</span><h2>افهم سبب المشكلة، ثم قرّر بأمان.</h2><p>سيستعمل NEXUS مصادر التطبيق المصرّح بها ليقارن الكود والـDeployments والسجلات والاختبارات، ويقترح خطط تصحيح قابلة للتحقق. ربط OpenAI وClaude Code لم يُفعّل بعد.</p><Status state="not_connected" label="AI providers غير متصلين"/></div></section>
+  <div className="quick-grid"><div className="panel insight-card"><Icon name="search"/><strong>اكتشف السبب</strong><p>حوادث مرتبطة بتغييرات الكود والأحداث التشغيلية.</p></div><div className="panel insight-card"><Icon name="brain"/><strong>اقترح الحل</strong><p>فرضيات مرتبة بالأدلة والخطوات الآمنة.</p></div><div className="panel insight-card"><Icon name="code"/><strong>اختبر الإصلاح</strong><p>فرع GitHub معزول، اختبارات وطلب دمج للمراجعة.</p></div></div>
+  <section className="panel"><div className="panel-head"><div><span className="section-eyebrow">SAFE ASSISTANT</span><h3>الاستفسارات التقنية</h3></div><span className="preview-label">COMING NEXT</span></div><div className="ai-placeholder"><Icon name="bot" size={28}/><div><strong>لم نربط محرك الذكاء الاصطناعي بعد</strong><p>هذا النموذج الأول لا يرسل أسئلتك أو بيانات التطبيقات إلى أي مزوّد AI. سنبدأ بعد إعداد السياسة ومفاتيح API الخاصة بالخادم.</p></div></div><Link href="/console/apps" className="panel-bottom-link">البدء باستكشاف البيانات المتاحة <Icon name="arrow" size={15}/></Link></section>
+ </>;
+}
