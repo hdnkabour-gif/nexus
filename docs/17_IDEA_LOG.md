@@ -40,6 +40,9 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 | IDEA-019 | Custom owner display name and username alias in Railway, without replacing existing email account | IMPLEMENTED (pending CI and Railway sync) | docs/22_OWNER_VARIABLES.md |
 | IDEA-020 | Owner password rotation via offline generated scrypt hash; never plaintext Railway variable | IMPLEMENTED (pending CI) | scripts/hash-owner-password.mjs |
 
+| IDEA-021 | NEXUS-owned isolated PostgreSQL and owner-internal first-time password enrollment | IMPLEMENTED (pending CI/deployment) | docs/23_PERSISTENT_OWNER_AUTH.md |
+| IDEA-022 | Persist session revocation and owner audit without business personal data | IMPLEMENTED (pending CI/deployment) | lib/owner-db.js |
+
 ## Decisions requiring explicit ADR approval
 - OIDC provider and production 2FA method.
 - Whether NEXUS v1 is personal-only or multi-organization, and data locality/retention.

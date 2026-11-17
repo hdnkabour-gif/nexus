@@ -38,6 +38,7 @@ NEXUS is the central *operational knowledge, reliability, diagnostics and govern
 | [docs/20_FIRST_CONSOLE.md](docs/20_FIRST_CONSOLE.md) | First protected Next.js preview, setup and boundaries |
 | [docs/21_FIRST_DEPLOYMENT_EVIDENCE.md](docs/21_FIRST_DEPLOYMENT_EVIDENCE.md) | First production-environment rollout evidence and remaining smoke checks |
 | [docs/22_OWNER_VARIABLES.md](docs/22_OWNER_VARIABLES.md) | Owner name, username and safe password rotation via Railway Variables |
+| [docs/23_PERSISTENT_OWNER_AUTH.md](docs/23_PERSISTENT_OWNER_AUTH.md) | Persistent PostgreSQL owner enrollment and in-app password change |
 | [registry/portfolio-discovery.v1.json](registry/portfolio-discovery.v1.json) | Machine-readable provider discovery snapshot, **not** live telemetry |
 | [packages/monitor-core/](packages/monitor-core/) | Tested read-only normalization and backup health logic |
 | [contracts/](contracts/) | Versioned JSON Schema/OpenAPI contracts and synthetic examples |
