@@ -1,9 +1,11 @@
-import {sessionCookieName,validateFormOrigin,authRedirect} from '../../../../lib/auth.js';
+import {sessionCookieName,authRedirect} from '../../../../lib/auth.js';
 import {databaseConfigured} from '../../../../lib/db.js';
 import {revokeOwnerSession} from '../../../../lib/owner-db.js';
 import {cookies} from 'next/headers';
+import {validateCsrfForm} from '../../../../lib/csrf.js';
 export async function POST(request){
- if(!validateFormOrigin(request))return new Response('Forbidden',{status:403});
+ let form;try{form=await request.formData();}catch{return new Response('Invalid input',{status:400});}
+ if(!validateCsrfForm(request,'logout',form.get('csrf')))return new Response('Invalid security token',{status:403});
  if(databaseConfigured()){
   try{const jar=await cookies();await revokeOwnerSession(jar.get(sessionCookieName())?.value);}catch{return new Response('Logout unavailable',{status:503});}
  }

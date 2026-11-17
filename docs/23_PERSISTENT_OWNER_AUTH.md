@@ -26,6 +26,11 @@ Date 2026-11-17. Status: implementation and test gate in PR; separate database p
 - The admin must wait 15 minutes after repeated failed attempts or restart/redeploy to reset the initial in-memory attempt counter. Do not hammer the login button.
 - Integration tests simulate a valid public Origin with a different internal `x-forwarded-host`, and assert successful bootstrap cookie+redirect and database session.
 
+## Mobile-browser form protection correction (2026-11-17)
+The strict `Origin` equality check rejected legitimate Android browser posts (reported with `error=origin` in production HTTP records). The replacement uses a cryptographically random HttpOnly SameSite=Strict cookie and short-lived HMAC-SHA256 signed form token bound to the cookie and its action scope. Server-side anti-CSRF verification rejects cross-site fetch-metadata requests even with a valid token, and rejects missing or mismatched cookie/token. `GET /api/auth/prepare` issues the cookie then redirects to an allowlisted local page, and does not grant authentication. Sign-in, first owner setup, password change and logout all use signed tokens. Origin may be absent, stripped or opaque without reducing the CSRF requirement.
+
+No owner credentials, database or app data are reset. Tested with missing Origin, hostile cross-site, expired tokens, missing nonce and session persistence. **Actual Chrome Android authentication is still pending a user test after Railway deployment.**
+
 ## Security cautions
 - Never publish bootstrap password or owner hash in GitHub/issues/logs. Rotate any temporary bootstrap secret promptly.
 - Audit currently stores sanitized event *kind/result only* (no passwords or emails). Production authorization/RBAC+ABAC and comprehensive audit remain future work.

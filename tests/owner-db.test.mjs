@@ -4,6 +4,8 @@ import {randomBytes,scryptSync} from 'node:crypto';
 import {dbQuery,getPool,databaseConfigured} from '../lib/db.js';
 import {authenticateOwner,lookupOwnerSession,enrollOwner,rotateOwnerPassword,revokeOwnerSession,passwordHash,verifyPassword} from '../lib/owner-db.js';
 import {POST as loginPost} from '../app/api/auth/login/route.js';
+import {GET as prepareGet} from '../app/api/auth/prepare/route.js';
+import {createCsrfToken} from '../lib/csrf.js';
 test('scrypt hashes randomize salt and verify only the correct password',()=>{
  const p='deliberately-long-test-password-123';
  const a=passwordHash(p),b=passwordHash(p);
@@ -22,13 +24,21 @@ test('owner bootstrap -> forced setup -> persistent login -> password rotation a
   process.env.NEXUS_PUBLIC_ORIGIN='https://nexus-control-center.up.railway.app';
   await dbQuery('TRUNCATE nexus_sessions,nexus_owner_credentials,nexus_audit RESTART IDENTITY');
   assert.equal(await authenticateOwner('owner','bad'),null);
-  const body=new URLSearchParams({login:'OWNER',password:initial});
+  const prepared=await prepareGet(new Request('http://nexus-web.railway.internal/api/auth/prepare?next=login'));
+  assert.equal(prepared.status,303);
+  assert.equal(prepared.headers.get('location'),'https://nexus-control-center.up.railway.app/login');
+  const csrfCookie=prepared.headers.get('set-cookie')?.split(';')[0];
+  assert.match(csrfCookie||'',/^nexus_csrf=/);
+  const nonce=csrfCookie.split('=')[1];
+  const body=new URLSearchParams({login:'OWNER',password:initial,csrf:createCsrfToken('login',nonce)});
   const request=new Request('http://nexus-web.railway.internal/api/auth/login',{
    method:'POST',body,
    headers:{
     origin:'https://nexus-control-center.up.railway.app',
     host:'nexus-web.railway.internal',
     'x-forwarded-host':'nexus-web.railway.internal',
+    cookie:csrfCookie,
+    'sec-fetch-site':'same-origin',
     'x-forwarded-for':'192.0.2.21'
    }
   });
@@ -40,13 +50,15 @@ test('owner bootstrap -> forced setup -> persistent login -> password rotation a
   assert.match(cookie,/HttpOnly/);
   assert.equal((await lookupOwnerSession(cookie.split(';')[0].split('=')[1]))?.must_change_password,true);
   const otherOrigin=new Request('http://nexus-web.railway.internal/api/auth/login',{
-   method:'POST',body:new URLSearchParams({login:'owner',password:initial}),
-   headers:{origin:'https://malicious.example.invalid','x-forwarded-for':'192.0.2.22'}
+   method:'POST',body:new URLSearchParams({login:'owner',password:initial,csrf:createCsrfToken('login',nonce)}),
+   headers:{origin:'https://malicious.example.invalid',cookie:csrfCookie,'sec-fetch-site':'cross-site','x-forwarded-for':'192.0.2.22'}
   });
   const rejected=await loginPost(otherOrigin);
   assert.equal(rejected.status,303);
-  assert.equal(rejected.headers.get('location'),'https://nexus-control-center.up.railway.app/login?error=origin');
+  assert.equal(rejected.headers.get('location'),'https://nexus-control-center.up.railway.app/login?error=security');
   assert.equal(rejected.headers.has('set-cookie'),false);
+  const absentToken=await loginPost(new Request('http://nexus-web.railway.internal/api/auth/login',{method:'POST',body:new URLSearchParams({login:'owner',password:initial}),headers:{cookie:csrfCookie,'x-forwarded-for':'192.0.2.23'}}));
+  assert.equal(absentToken.headers.get('location'),'https://nexus-control-center.up.railway.app/login?error=security');
   const first=await authenticateOwner('OWNER',initial);
   assert.equal(first.must_change_password,true);
   assert.equal((await lookupOwnerSession(first.token)).must_change_password,true);
