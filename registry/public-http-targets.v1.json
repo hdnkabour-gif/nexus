@@ -33,10 +33,22 @@
       "environment": "staging",
       "host": "fleetora-ocr-app-staging.up.railway.app",
       "label": "Fleetora — OCR Staging"
+    },
+    {
+      "app_id": "amanzine",
+      "environment": "amanzine",
+      "host": "amanzine.up.railway.app",
+      "label": "AMANZINE — Web (environment Amanzine)"
+    },
+    {
+      "app_id": "amanzine",
+      "environment": "staging",
+      "host": "triumphant-courage-staging.up.railway.app",
+      "label": "AMANZINE — Staging"
     }
   ],
   "deliberately_unmonitored": [
-    "2M TECH PLATFORM requires employer authorization",
-    "AMANZINE public domain not verified on examined service"
-  ]
+    "2M TECH PLATFORM requires employer authorization"
+  ],
+  "observation_notes": "Railway service named AMANZINE in production uses source hdnkabour-gif/Tech-Platform-. Use hdnkabour-gif/amanzine2 services balanced-growth and amanzine-staging instead; service names alone are not application identities."
 }

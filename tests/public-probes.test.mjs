@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {publicProbeTargets,probeHttp} from '../lib/public-probes.js';
 test('only verified domains are in bounded allowlist and sensitive targets omitted',()=>{
- const targets=publicProbeTargets();assert.equal(targets.length,5);
+ const targets=publicProbeTargets();assert.equal(targets.length,7);
  for(const x of targets)assert.match(x.host,/^[a-z0-9.-]+\.up\.railway\.app$/);
  assert.ok(!targets.some(x=>x.app_id==='tech-platform'));
 });

@@ -26,6 +26,6 @@ export default function PublicHttpMonitor(){
     <span className="backup-time">{o?('HTTP '+(o.status_code??'—')+' · '+new Date(o.measured_at).toLocaleString('ar-MA')):'لا توجد نتيجة بعد'}</span>
    </div>;})}
   {!state.loading&&!state.targets.length&&<div className="empty-state"><p>لا توجد وجهات معتمدة للفحص.</p></div>}
-  <p className="muted">AMANZINE و2M TECH PLATFORM غير مدرجين في هذا الفحص: لم يُتحقق من نطاق الأول، ويحتاج الثاني إلى موافقة الجهة المالكة.</p>
+  <p className="muted">2M TECH PLATFORM غير مدرج في هذا الفحص إلى أن تسمح الجهة المالكة بالربط. نطاقات AMANZINE مرتبطة بخدمتي amanzine2 المؤكدتين، لا بمجرد تشابه اسم الخدمة.</p>
  </section>;
 }

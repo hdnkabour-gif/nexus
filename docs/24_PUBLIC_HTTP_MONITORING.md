@@ -9,8 +9,12 @@ Allowlisted public Railway service domains directly verified through user's auth
 - ALLOSERVIX: alloservix-web-production.up.railway.app
 - NEXORA (demo only): nexora-web-demo-demo.up.railway.app
 - Fleetora OCR staging: fleetora-ocr-app-staging.up.railway.app
+- AMANZINE application environment: amanzine.up.railway.app (Railway service balanced-growth, source hdnkabour-gif/amanzine2)
+- AMANZINE staging: triumphant-courage-staging.up.railway.app (Railway service amanzine-staging, source hdnkabour-gif/amanzine2)
 
-No AMANZINE app endpoint was verified in examined service; do not fabricate one. Employer-owned TECH PLATFORM remains unmonitored pending explicit permission.
+**Important naming anomaly:** the service named AMANZINE in another Railway production environment reports GitHub source hdnkabour-gif/Tech-Platform-; do not assume it belongs to the commerce app. Confirm service source and environment, not its display name.
+
+The first examined AMANZINE-labeled service had an unrelated source repo; use only the two additional verified commerce service domains above. Employer-owned TECH PLATFORM remains unmonitored pending explicit permission.
 
 ## What a probe proves
 HTTPS GET to a **fixed**, preapproved host and path '/', redirect manual, 8s timeout; no response body parsed, no cookies or secrets. Record HTTP response status, duration and timestamp in NEXUS PostgreSQL.
