@@ -20,6 +20,12 @@ Date 2026-11-17. Status: implementation and test gate in PR; separate database p
 - Onboarding uses a 2h first-session expiry; normal sessions 8h.
 - This is a single-owner bootstrap, not MFA/OIDC; do not enable production mutation capabilities. A lost post-enrollment password requires a separate audited recovery procedure, not an automatic fallback to environment credentials.
 
+## Reverse-proxy login correction
+- On Railway, configure `NEXUS_PUBLIC_ORIGIN=https://nexus-control-center.up.railway.app`. Login form POST origins are validated against this trusted configured canonical origin, rather than unreliable forwarded host headers.
+- Login and bootstrap redirects use the canonical public HTTPS origin. Invalid origin / request blocked / throttled attempts show actionable messages, not a silent redirect loop.
+- The admin must wait 15 minutes after repeated failed attempts or restart/redeploy to reset the initial in-memory attempt counter. Do not hammer the login button.
+- Integration tests simulate a valid public Origin with a different internal `x-forwarded-host`, and assert successful bootstrap cookie+redirect and database session.
+
 ## Security cautions
 - Never publish bootstrap password or owner hash in GitHub/issues/logs. Rotate any temporary bootstrap secret promptly.
 - Audit currently stores sanitized event *kind/result only* (no passwords or emails). Production authorization/RBAC+ABAC and comprehensive audit remain future work.

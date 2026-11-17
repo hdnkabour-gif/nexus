@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomBytes,scryptSync} from 'node:crypto';
-import {verifyAdminCredentials,newSession,verifySession,isBootstrapConfigured,validateFormOrigin,configuredOwnerUsername,configuredOwnerDisplayName} from '../lib/auth.js';
+import {verifyAdminCredentials,newSession,verifySession,isBootstrapConfigured,validateFormOrigin,configuredOwnerUsername,configuredOwnerDisplayName,configuredPublicOrigin,authRedirect} from '../lib/auth.js';
 const old={...process.env};
 function configure(){
  const salt=randomBytes(16);
@@ -54,5 +54,32 @@ test('form origin check denies cross-origin and missing origin',()=>{
  assert.equal(validateFormOrigin(safe),true);
  assert.equal(validateFormOrigin(unsafe),false);
  assert.equal(validateFormOrigin(missing),false);
+});
+test('Railway trusted origin works even with internal forwarded host and request URL',()=>{
+ const previous=process.env.NEXUS_PUBLIC_ORIGIN;
+ try{
+  process.env.NEXUS_PUBLIC_ORIGIN='https://nexus-control-center.up.railway.app';
+  const proxy=new Request('http://nexus-web.railway.internal/api/auth/login',{method:'POST',headers:{
+   origin:'https://nexus-control-center.up.railway.app',
+   host:'nexus-web.railway.internal',
+   'x-forwarded-host':'nexus-web.railway.internal'
+  }});
+  assert.equal(configuredPublicOrigin(),'https://nexus-control-center.up.railway.app');
+  assert.equal(validateFormOrigin(proxy),true);
+  assert.equal(authRedirect('/owner/setup',proxy).href,'https://nexus-control-center.up.railway.app/owner/setup');
+  const attacker=new Request('http://nexus-web.railway.internal/api/auth/login',{method:'POST',headers:{
+   origin:'https://evil.example.invalid', 'x-forwarded-host':'evil.example.invalid'
+  }});
+  assert.equal(validateFormOrigin(attacker),false);
+  assert.equal(validateFormOrigin(new Request(proxy.url,{method:'POST'})),false);
+  process.env.NEXUS_PUBLIC_ORIGIN='http://nexus-control-center.up.railway.app';
+  const oldMode=process.env.NODE_ENV;
+  process.env.NODE_ENV='production';
+  try{assert.equal(validateFormOrigin(proxy),false);}finally{
+   if(oldMode===undefined)delete process.env.NODE_ENV;else process.env.NODE_ENV=oldMode;
+  }
+ }finally{
+  if(previous===undefined)delete process.env.NEXUS_PUBLIC_ORIGIN;else process.env.NEXUS_PUBLIC_ORIGIN=previous;
+ }
 });
 process.on('exit',()=>{for(const k of Object.keys(process.env))if(!(k in old))delete process.env[k];});
