@@ -21,8 +21,8 @@
 - CI additionally builds Next.js production app and runs auth tests.
 
 ## Not implemented
-- No independently verified NEXUS web deployment yet at the time of this document; Next.js source exists and is built in CI. No NestJS API server, OIDC/MFA platform or PostgreSQL NEXUS DB.
-- A dedicated NEXUS Railway project has been created; service/domain/deployment must be verified separately.
+- First Next.js deployment verified as Railway SUCCESS with runtime READY and HTTP routing; full GET/browser login and app-page interactions still require independent acceptance. No NestJS API server, OIDC/MFA platform or PostgreSQL NEXUS DB.
+- Dedicated NEXUS Railway project, live web service and generated service domain exist; evidence in docs/21_FIRST_DEPLOYMENT_EVIDENCE.md.
 - No credential vault, GitHub App installation or Railway token configured in NEXUS.
 - No real product agent, heartbeat, signed command execution, action approval or audit persistence.
 - No provider log reading, database introspection, backups listing, restore drilling or AI API request.

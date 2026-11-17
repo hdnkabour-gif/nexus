@@ -34,3 +34,6 @@ CI tests auth HMAC, credential checks, unsafe origin rejection, monitor-core, Ne
 
 ## Important limitations
 This bootstrap is a **single-owner preview**: no OIDC/MFA, no central Postgres DB, no distributed rate limiting, no persistent audit/incident store, no server-side scheduled collectors, no real backup verification or restore tool. **Keep action gateway and product agents disabled** until independent security review and signed capability policies. Replace bootstrap auth with hardened MFA/OIDC before expanding user access or sensitive production operations. Do not expose provider tokens to browser.
+
+## First Railway deployment verified
+Refer to [21_FIRST_DEPLOYMENT_EVIDENCE.md](21_FIRST_DEPLOYMENT_EVIDENCE.md). Dedicated NEXUS service runs Next.js and a protected login endpoint at https://nexus-control-center.up.railway.app/login. This does **not** establish live GitHub/Railway provider connections or product backup safety.
