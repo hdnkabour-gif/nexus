@@ -32,7 +32,10 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 | IDEA-020 | First owner login with signed short-lived sessions, no default password | IMPLEMENTED; test-backed bootstrap, MFA/OIDC still missing | lib/auth.js |
 | IDEA-021 | Read-only manual GitHub and Railway metadata probe from scoped server-only credentials | IMPLEMENTED (helpers and protected route); LIVE PROVIDER NOT CONFIGURED | lib/external.js |
 | IDEA-022 | Live console must clearly distinguish observed historical inventory from live checks | IMPLEMENTED in first UI | app/console/page.jsx |
-| IDEA-023 | Dedicated Railway NEXUS project isolated from business app services | SETUP IN PROGRESS; independent project created | docs/20_FIRST_CONSOLE.md |
+| IDEA-023 | Dedicated Railway NEXUS project isolated from business app services | DEPLOYED; startup and HTTP routing checked, full browser login not independently tested | docs/21_FIRST_DEPLOYMENT_EVIDENCE.md |
+
+| IDEA-024 | Evidence report per deployment with SHA, Railway environment, startup/HTTP checks and limitations | IMPLEMENTED (documentation) | docs/21_FIRST_DEPLOYMENT_EVIDENCE.md |
+| IDEA-025 | First customer-visible UI accessible via protected Railway URL; no public portfolio data | DEPLOYED, owner acceptance/screenshot pending | docs/20_FIRST_CONSOLE.md |
 
 ## Decisions requiring explicit ADR approval
 - OIDC provider and production 2FA method.
@@ -47,4 +50,5 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 - Created external integration catalog, AI coding-agent governance, backup/restore orchestration and living idea log.
 - Added read-only core and mock CI, six-app discovered provider inventory and automated inventory-scope test.
 - Started protected Next.js preview app, signed bootstrap sessions and new build workflow; first independent Railway project created.
+- Completed initial Railway deployment and documented actual HTTP routing and limitations; no source product adapter connected.
 - All features marked DESIGNED or PLANNED unless verified by actual code/tests; no live connection inferred.

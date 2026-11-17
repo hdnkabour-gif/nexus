@@ -1,6 +1,6 @@
 # NEXUS — Unified Application Intelligence & Control Plane
 
-**Status: protected Next.js first console implemented, with mock-tested read-only monitor core. Deployment and live connectivity must be verified separately; no source product agent or production control available yet.** This repository starts a controlled implementation; the documentation describes intended behavior, not completed functionality.
+**Status: initial protected Next.js console DEPLOYED on Railway and tested for process startup and HTTP routing; private connected source monitoring, backup restores, and production controls are NOT enabled.** This repository starts a controlled implementation; the documentation describes intended behavior, not completed functionality.
 
 NEXUS is the central *operational knowledge, reliability, diagnostics and governed control* platform for the applications we build, host, and support. It is not a second business database and it is not an unrestricted remote terminal.
 
@@ -36,9 +36,17 @@ NEXUS is the central *operational knowledge, reliability, diagnostics and govern
 | [docs/18_IMPLEMENTATION_PROGRESS.md](docs/18_IMPLEMENTATION_PROGRESS.md) | Actual implementation status and next milestones |
 | [docs/19_PORTFOLIO_DISCOVERY.md](docs/19_PORTFOLIO_DISCOVERY.md) | Dated discovery of six current application repositories and Railway projects |
 | [docs/20_FIRST_CONSOLE.md](docs/20_FIRST_CONSOLE.md) | First protected Next.js preview, setup and boundaries |
+| [docs/21_FIRST_DEPLOYMENT_EVIDENCE.md](docs/21_FIRST_DEPLOYMENT_EVIDENCE.md) | First production-environment rollout evidence and remaining smoke checks |
 | [registry/portfolio-discovery.v1.json](registry/portfolio-discovery.v1.json) | Machine-readable provider discovery snapshot, **not** live telemetry |
 | [packages/monitor-core/](packages/monitor-core/) | Tested read-only normalization and backup health logic |
 | [contracts/](contracts/) | Versioned JSON Schema/OpenAPI contracts and synthetic examples |
+
+## First protected preview
+- Owner-only login: https://nexus-control-center.up.railway.app/login
+- Dedicated Railway project: NEXUS Control Center (separate from product apps).
+- Initial deployment status: SUCCESS; Next.js runtime READY; Railway-origin POST requests reached the correct service and its HTTP/CSRF guards returned expected 405 and 403 respectively.
+- Credentials are Railway service variables only; **never commit or publish password, hash, session secret or API tokens**.
+- No live product API credentials/agent, no production backups/restores or AI provider are active.
 
 ## Intended application registry
 - PNEU MOUHIM (Laravel/PostgreSQL, initial discovery and first adapter)
