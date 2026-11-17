@@ -43,8 +43,8 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 | IDEA-021 | NEXUS-owned isolated PostgreSQL and owner-internal first-time password enrollment | DEPLOYED; browser enrollment pending user acceptance | docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md |
 | IDEA-022 | Persist session revocation and owner audit without business personal data | DEPLOYED; integration tests passed | lib/owner-db.js |
 
-| IDEA-023 | Actual, credential-free HTTPS availability check of verified public app domains, with evidence age and no private data | DEPLOYED; actual scheduled results pending | docs/24_PUBLIC_HTTP_MONITORING.md |
-| IDEA-024 | 15-minute independent Railway Cron worker for read-only public reachability | DEPLOYED / CRON READY; first execution unverified | docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md |
+| IDEA-023 | Actual, credential-free HTTPS availability check of verified public app domains, with evidence age and no private data | DEPLOYED + VERIFIED collection of 7 observations; per-site outcome not asserted | docs/24_PUBLIC_HTTP_MONITORING.md |
+| IDEA-024 | 15-minute independent Railway Cron worker for read-only public reachability | VERIFIED: first scheduled execution succeeded; saved 7/7 observations in NEXUS DB | docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md |
 
 | IDEA-025 | Ensure NEXUS database itself is backed up offsite and restoration proof exists | PLANNED; no verified offsite backup | docs/16_BACKUP_RESTORE_ORCHESTRATION.md |
 

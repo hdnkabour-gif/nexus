@@ -1,6 +1,6 @@
 # NEXUS — Unified Application Intelligence & Control Plane
 
-**Status: protected Next.js console DEPLOYED, NEXUS-owned PostgreSQL configured and seven fixed-host public HTTP reachability checks implemented with a Railway cron worker; first scheduled run and owner browser login still require confirmation. Private source connectors, backup restores, and production controls are NOT enabled.** This repository starts a controlled implementation; the documentation describes intended behavior, not completed functionality.
+**Status: protected Next.js console DEPLOYED, NEXUS-owned PostgreSQL configured and seven fixed-host public HTTP reachability checks implemented with a Railway cron worker; first scheduled 7/7 HTTP probe run confirmed, but owner browser login still requires confirmation. Private source connectors, backup restores, and production controls are NOT enabled.** This repository starts a controlled implementation; the documentation describes intended behavior, not completed functionality.
 
 NEXUS is the central *operational knowledge, reliability, diagnostics and governed control* platform for the applications we build, host, and support. It is not a second business database and it is not an unrestricted remote terminal.
 
