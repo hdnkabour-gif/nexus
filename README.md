@@ -1,6 +1,6 @@
 # NEXUS — Unified Application Intelligence & Control Plane
 
-**Status: initial protected Next.js console DEPLOYED on Railway and tested for process startup and HTTP routing; private connected source monitoring, backup restores, and production controls are NOT enabled.** This repository starts a controlled implementation; the documentation describes intended behavior, not completed functionality.
+**Status: protected Next.js console DEPLOYED, NEXUS-owned PostgreSQL configured and seven fixed-host public HTTP reachability checks implemented with a Railway cron worker; first scheduled run and owner browser login still require confirmation. Private source connectors, backup restores, and production controls are NOT enabled.** This repository starts a controlled implementation; the documentation describes intended behavior, not completed functionality.
 
 NEXUS is the central *operational knowledge, reliability, diagnostics and governed control* platform for the applications we build, host, and support. It is not a second business database and it is not an unrestricted remote terminal.
 
@@ -40,6 +40,7 @@ NEXUS is the central *operational knowledge, reliability, diagnostics and govern
 | [docs/22_OWNER_VARIABLES.md](docs/22_OWNER_VARIABLES.md) | Owner name, username and safe password rotation via Railway Variables |
 | [docs/23_PERSISTENT_OWNER_AUTH.md](docs/23_PERSISTENT_OWNER_AUTH.md) | Persistent PostgreSQL owner enrollment and in-app password change |
 | [docs/24_PUBLIC_HTTP_MONITORING.md](docs/24_PUBLIC_HTTP_MONITORING.md) | Read-only HTTPS reachability, saved evidence and optional cron |
+| [docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md](docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md) | Deployed database, web/cron services and precise verification limits |
 | [registry/portfolio-discovery.v1.json](registry/portfolio-discovery.v1.json) | Machine-readable provider discovery snapshot, **not** live telemetry |
 | [packages/monitor-core/](packages/monitor-core/) | Tested read-only normalization and backup health logic |
 | [contracts/](contracts/) | Versioned JSON Schema/OpenAPI contracts and synthetic examples |
@@ -61,7 +62,7 @@ NEXUS is the central *operational knowledge, reliability, diagnostics and govern
 - Future applications via the same manifest and onboarding process.
 
 ## Now / next
-- **Now:** first Next.js app with protected owner login, app registry/360, topology and backup pages, safe read-only metadata probe endpoints. No dedicated provider tokens or product adapters configured; static source snapshots remain clearly labeled.
+- **Now:** protected owner preview with persistent NEXUS PostgreSQL sessions, forced first-login password rotation, app registry and seven allowlisted public HTTP probes with 15-minute cron worker. No dedicated GitHub/Railway private tokens or source app adapters; deep app health and backup status remain UNKNOWN.
 - **Next P0:** auth + RBAC/ABAC, app registry, GitHub/Railway read-only collectors, ingestion & alert pipeline, PNEU MOUHIM readonly adapter, audit and basic dashboard.
 - **Later P1:** incidents, verified backup health, runbooks, delegated support, signed approved commands and recovery test orchestration.
 - **Later P2:** evidence-grounded assistant, cross-service dependency graphs, anomaly forecasts and cost intelligence.
