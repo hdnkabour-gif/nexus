@@ -32,9 +32,9 @@ Date 2026-11-17. Status: implementation and test gate in PR; separate database p
 - A successful CI test is not proof that browser login was exercised in Railway production.
 
 ## Railway rollout checklist
-- [ ] CI passes tests/build on code SHA.
-- [ ] Deploy independent PostgreSQL 18 inside NEXUS project (new service may incur Railway charges).
-- [ ] Set `NEXUS_DATABASE_URL` to private network reference (never paste raw URL in GitHub).
-- [ ] Enable migrations as predeploy step; deploy app and check DB readiness.
-- [ ] Confirm login redirects to owner setup; change password on first login.
+- [x] CI passed tests/build on code SHA 86c25efc9d80503a9467b52b60f709cdff2d6d34.
+- [x] Deployed independent PostgreSQL 18 inside NEXUS project (new service may incur Railway charges).
+- [x] Set `NEXUS_DATABASE_URL` to private network reference (never paste raw URL in GitHub).
+- [x] Migrations ran in predeploy and printed schema applied; web service online with readiness healthcheck.
+- [ ] Owner browser login/first-password enrollment not yet verified.
 - [ ] Do not expose incident/action or product data until MFA and scoped policies are implemented.

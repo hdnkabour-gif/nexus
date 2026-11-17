@@ -40,11 +40,13 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 | IDEA-019 | Custom owner display name and username alias in Railway, without replacing existing email account | IMPLEMENTED (pending CI and Railway sync) | docs/22_OWNER_VARIABLES.md |
 | IDEA-020 | Owner password rotation via offline generated scrypt hash; never plaintext Railway variable | IMPLEMENTED (pending CI) | scripts/hash-owner-password.mjs |
 
-| IDEA-021 | NEXUS-owned isolated PostgreSQL and owner-internal first-time password enrollment | IMPLEMENTED (pending CI/deployment) | docs/23_PERSISTENT_OWNER_AUTH.md |
-| IDEA-022 | Persist session revocation and owner audit without business personal data | IMPLEMENTED (pending CI/deployment) | lib/owner-db.js |
+| IDEA-021 | NEXUS-owned isolated PostgreSQL and owner-internal first-time password enrollment | DEPLOYED; browser enrollment pending user acceptance | docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md |
+| IDEA-022 | Persist session revocation and owner audit without business personal data | DEPLOYED; integration tests passed | lib/owner-db.js |
 
-| IDEA-023 | Actual, credential-free HTTPS availability check of verified public app domains, with evidence age and no private data | IMPLEMENTED (pending CI and deployment) | docs/24_PUBLIC_HTTP_MONITORING.md |
-| IDEA-024 | 15-minute independent Railway Cron worker for read-only public reachability | PLANNED (until separate job deployed/tested) | scripts/public-probe.mjs |
+| IDEA-023 | Actual, credential-free HTTPS availability check of verified public app domains, with evidence age and no private data | DEPLOYED + VERIFIED collection of 7 observations; per-site outcome not asserted | docs/24_PUBLIC_HTTP_MONITORING.md |
+| IDEA-024 | 15-minute independent Railway Cron worker for read-only public reachability | VERIFIED: first scheduled execution succeeded; saved 7/7 observations in NEXUS DB | docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md |
+
+| IDEA-025 | Ensure NEXUS database itself is backed up offsite and restoration proof exists | PLANNED; no verified offsite backup | docs/16_BACKUP_RESTORE_ORCHESTRATION.md |
 
 ## Decisions requiring explicit ADR approval
 - OIDC provider and production 2FA method.
@@ -60,4 +62,5 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 - Added read-only core and mock CI, six-app discovered provider inventory and automated inventory-scope test.
 - Started protected Next.js preview app, signed bootstrap sessions and new build workflow; first independent Railway project created.
 - Completed initial Railway deployment and documented actual HTTP routing and limitations; no source product adapter connected.
-- All features marked DESIGNED or PLANNED unless verified by actual code/tests; no live connection inferred.
+- Deployed first isolated NEXUS PostgreSQL, forced owner password enrollment, public HTTPS probes and a scheduled cron service; confirmed their exact limits in docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md.
+- Previous features stay DESIGN/PLAN until actual code/tests/deployment evidence proves their separate status.
