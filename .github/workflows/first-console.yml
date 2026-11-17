@@ -11,8 +11,23 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: nexus
+          POSTGRES_PASSWORD: test-only-password
+          POSTGRES_DB: nexus_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 15
     env:
       NEXT_TELEMETRY_DISABLED: '1'
+      NEXUS_DATABASE_URL: 'postgresql://nexus:test-only-password@localhost:5432/nexus_test'
+      NEXUS_ADMIN_EMAIL: 'test-owner@internal.invalid'
+      NEXUS_ADMIN_USERNAME: 'owner'
+      NEXUS_SESSION_SECRET: 'test-not-production-secret-abcdefghijklmnopqrstuvwxyz'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,6 +35,8 @@ jobs:
           node-version: '22'
       - name: Install app dependencies
         run: npm install --no-audit --no-fund
+      - name: Apply isolated metadata DB migrations
+        run: npm run db:migrate
       - name: Test auth and monitor core
         run: npm test
       - name: Build production preview

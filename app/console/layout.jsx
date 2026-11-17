@@ -7,6 +7,7 @@ export const dynamic='force-dynamic';
 export default async function ConsoleLayout({children}){
  const session=await getSession();
  if(!session)redirect('/login');
+ if(session.must_change_password)redirect('/owner/setup');
  const ownerName=configuredOwnerDisplayName();
  return <div className="shell">
   <Sidebar/>

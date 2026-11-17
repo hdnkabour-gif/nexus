@@ -1,4 +1,6 @@
 import {verifyAdminCredentials,newSession,sessionCookieName,validateFormOrigin,isBootstrapConfigured} from '../../../../lib/auth.js';
+import {databaseConfigured} from '../../../../lib/db.js';
+import {authenticateOwner} from '../../../../lib/owner-db.js';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 const counters=new Map();
@@ -24,10 +26,21 @@ export async function POST(request){
  let form;
  try{form=await request.formData();}catch{return denial();}
  const login=form.get('login'),password=form.get('password');
- if(typeof login!=='string'||typeof password!=='string'||!verifyAdminCredentials(login,password)){failure(key,now);return denial();}
+ if(typeof login!=='string'||typeof password!=='string'){failure(key,now);return denial();}
+ let token,bootstrap=false;
+ if(databaseConfigured()){
+  try{
+   const result=await authenticateOwner(login,password);
+   if(!result){failure(key,now);return denial();}
+   token=result.token;bootstrap=result.must_change_password;
+  }catch{return new Response('Service temporarily unavailable',{status:503});}
+ }else{
+  if(!verifyAdminCredentials(login,password)){failure(key,now);return denial();}
+  token=newSession(process.env.NEXUS_ADMIN_EMAIL);
+ }
  counters.delete(key);
- const response=Response.redirect(new URL('/console',request.url),303);
- response.headers.append('Set-Cookie',sessionCookieName()+'='+newSession(process.env.NEXUS_ADMIN_EMAIL)+'; Path=/; HttpOnly; SameSite=Lax; Max-Age=28800'+(process.env.NODE_ENV==='production'?'; Secure':''));
+ const response=Response.redirect(new URL(bootstrap?'/owner/setup':'/console',request.url),303);
+ response.headers.append('Set-Cookie',sessionCookieName()+'='+token+'; Path=/; HttpOnly; SameSite=Lax; Max-Age='+(bootstrap?7200:28800)+(process.env.NODE_ENV==='production'?'; Secure':''));
  response.headers.set('Cache-Control','no-store');
  return response;
 }
