@@ -52,6 +52,9 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 
 | IDEA-027 | Browser-compatible signed double-submit CSRF across login, password setup, password change, and logout; no reliance on mobile Origin header | IMPLEMENTED (pending CI & Railway validation) | lib/csrf.js |
 
+| IDEA-028 | Command OS premium operational interface with trustworthy freshness, app matrix, dynamic HTTP evidence and responsive navigation | CODED / pending CI and deployment | docs/26_COMMAND_OS_UI_V1.md |
+| IDEA-029 | Local keyboard command palette and accessible app catalog filters, without exposing private content | CODED / pending CI and deployment | components/command-os/command-palette.jsx |
+
 ## Decisions requiring explicit ADR approval
 - OIDC provider and production 2FA method.
 - Whether NEXUS v1 is personal-only or multi-organization, and data locality/retention.
