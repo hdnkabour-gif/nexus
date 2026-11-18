@@ -1,0 +1,45 @@
+/* Source graph and App 360 views, scoped inside Command OS. */
+.os-app-breadcrumb{display:flex;align-items:center;gap:8px;color:#83a2a8;font-size:11px;margin-bottom:22px}.os-app-breadcrumb strong,.os-app-breadcrumb span{color:#d0e6e1}
+.os-app-intro{display:flex;align-items:center;gap:21px;border-bottom:1px solid #324750;padding:5px 0 23px;margin-bottom:0}
+.os-app-identity{height:76px;width:76px;flex:none;border:1px solid #4c7375;background:#1a353c;display:flex;align-items:center;justify-content:center;font-size:35px;color:var(--os-cyan)}
+.os-app-intro>div{flex:1}.os-app-intro h1{font-size:clamp(26px,3vw,39px);margin:6px 0}.os-app-intro p{font-size:12px;color:var(--os-secondary);margin:0}
+.os-app-tabs{display:flex;gap:10px;overflow-x:auto;flex-wrap:nowrap;border-bottom:1px solid #344450;margin-bottom:22px}
+.os-app-tabs a{padding:15px 19px;display:inline-block;white-space:nowrap;color:#95aab1!important;font-size:12px;border-bottom:2px solid transparent}
+.os-app-tabs a:hover,.os-app-tabs a:focus-visible{color:var(--os-cyan)!important;border-bottom-color:var(--os-cyan)}
+.os-app-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:#30414c;border:1px solid #30414c;border-radius:7px;overflow:hidden;margin-bottom:19px}
+.os-app-stat-grid>div{background:#121e26;padding:20px;min-width:0;display:flex;flex-direction:column;gap:3px}
+.os-app-stat-grid span{color:#8da7ac;font-size:11px}.os-app-stat-grid strong{font:27px ui-monospace,monospace;color:#d8f4eb;direction:ltr;text-align:right}.os-app-stat-grid small{color:#74969a;font-size:10px}
+.os-app-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.os-app-detail-stack{display:flex;flex-direction:column;gap:18px;min-width:0}
+.os-detail-panel{border:1px solid var(--os-line);background:var(--os-panel);border-radius:10px;overflow:hidden;scroll-margin-top:110px}
+.os-detail-panel .os-panel-head{border-bottom:1px solid var(--os-line)}
+.os-detail-data>div{display:flex;justify-content:space-between;align-items:center;gap:17px;padding:16px 22px;border-bottom:1px solid #2a3840;min-width:0;flex-wrap:wrap}
+.os-detail-data span{font:10px ui-monospace,monospace;color:#7f9da2;direction:ltr}.os-detail-data strong,.os-detail-data code{font-size:12px;color:#dce9e5;overflow-wrap:anywhere}
+.os-detail-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 21px;color:#90dacc!important;font-size:11px}
+.os-data-caption{color:#819da3!important;line-height:1.8;justify-content:flex-start}
+.os-host-row{display:flex;align-items:flex-start;gap:11px;padding:17px 21px;border-bottom:1px solid var(--os-line);min-width:0}
+.os-host-row>div{flex:1;min-width:0}.os-host-row strong{display:block;font-size:12px;overflow-wrap:anywhere}.os-host-row small{display:block;font-size:10px;color:#84a1a7;margin-top:4px;overflow-wrap:anywhere}
+.os-host-letter{width:31px;height:31px;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid #5b7783;font:800 16px ui-monospace,monospace;background:#213541;color:#b1cfde}
+.os-locked-message{display:flex;align-items:flex-start;gap:13px;padding:20px}.os-locked-message svg{color:#91d8c7;flex:none}.os-locked-message strong{font-size:13px}.os-locked-message p{margin:7px 0 0;font-size:11px;color:#91aeb1}
+.os-app-detail-stack .live-probe{scroll-margin-top:100px}.os-app-detail-stack .live-probe .muted{font-size:12px;padding:0 18px}
+.os-topology-legend{display:flex;align-items:center;flex-wrap:wrap;gap:20px;margin:22px 0;color:#89a6a9;font-size:11px}
+.os-topology-legend>span{display:flex;align-items:center;gap:7px}
+.os-topology-legend i{width:6px;height:6px;display:inline-block;border:1px solid var(--os-cyan);background:#315953;border-radius:50%}
+.os-topology-canvas{background:#0f1921;border:1px solid #2e4550;border-radius:10px;overflow:hidden}
+.os-topology-canvas .os-panel-head{border-bottom:1px solid var(--os-line)}
+.os-topology-apps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:20px}
+.os-topology-chain{border:1px solid #31454d;background:#101d25;min-width:0;padding:14px}
+.os-topology-app{display:flex;align-items:center;gap:11px;min-width:0;background:#1b3339;border:1px solid #46656a;padding:10px}
+.os-topology-app>span:nth-child(2){flex:1;min-width:0}.os-topology-app strong{display:block;font-size:11px;overflow-wrap:anywhere}.os-topology-app small{color:#90adb5;font-size:10px}
+.os-topology-app .os-explorer-glyph{height:40px;width:40px;flex:none;font-size:22px}
+.os-topology-edge{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:58px;gap:7px;color:#618e95}
+.os-topology-edge i{display:block;height:13px;width:1px;background:#496b71}
+.os-topology-edge span{font:9px ui-monospace,monospace;letter-spacing:.08em;direction:ltr}
+.os-topology-repo{background:#172832;border:1px solid #35505b;padding:11px;display:flex;align-items:center;gap:10px;min-height:62px;min-width:0}
+.os-topology-repo>svg{color:#96baca;flex:none}.os-topology-repo>div{min-width:0}.os-topology-repo strong{display:block;font-size:10px;overflow-wrap:anywhere}.os-topology-repo small{display:block;color:#819ba2;font-size:9px}
+.os-topology-projects{display:flex;flex-direction:column;gap:6px}
+.os-topology-projects>span{display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-height:40px;background:#172630;border:1px solid #344d5a;padding:9px;font-size:10px}
+.os-topology-projects>span b{font:800 13px ui-monospace,monospace;color:#a4cbdd}.os-topology-projects>span small{margin-right:auto;color:#8aa7af;font-size:9px}
+.os-topology-projects .os-shared{border-color:#67543c;background:#25241f}.os-topology-projects .os-shared small{color:#e4bd77}
+@media(max-width:1180px){.os-topology-apps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:840px){.os-app-detail-grid{grid-template-columns:1fr}.os-app-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.os-app-intro{flex-wrap:wrap;gap:13px}.os-app-identity{height:56px;width:56px;font-size:26px}.os-app-intro>div{min-width:65%}.os-app-intro>.status-pill{margin-top:6px}.os-app-tabs a{padding:13px 14px}.os-app-stat-grid>div{padding:14px}.os-app-stat-grid strong{font-size:24px}.os-detail-data>div{padding:14px}.os-host-row{padding:13px}.os-topology-apps{grid-template-columns:1fr;padding:13px}.os-topology-chain{padding:12px}.os-topology-legend{gap:11px}}

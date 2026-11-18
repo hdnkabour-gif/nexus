@@ -18,6 +18,8 @@ Updated: 2026-11-18. Design implementation branch: feat/command-os-v1-real-dashb
 - `app/console/layout.jsx`: retains getSession, enforced password setup and signed logout CSRF; renders new shell.
 - `app/console/page.jsx`: operational overview with four KPIs from snapshot and current stored HTTP signals, knowledge lattice, evidence gaps, application matrix and recent measurements.
 - `app/console/apps/page.jsx`: dynamic application catalog, fresh HTTP readouts clearly separated from historical source metadata.
+- `app/console/apps/[id]/page.jsx`: redesigned App 360 surface with source snapshot, HTTP observations, Railway project metadata and locked safe actions, all labeled with evidence class.
+- `app/console/topology/page.jsx`: responsive per-app repository/hosting dependency chains from the known inventory, without claiming that the deployed SHA was verified.
 - `app/console/incidents/page.jsx`: honest not-connected empty state; no fake incidents.
 - `app/console/ai/page.jsx`: honest not-connected AI state; no claims that OpenAI or Claude is operating.
 
