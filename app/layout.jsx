@@ -1,4 +1,6 @@
 import './globals.css';
+import './command-os.css';
+import './command-os-details.css';
 export const metadata={
  title:'NEXUS • Intelligence & Control',
  description:'NEXUS operational intelligence center — protected initial preview.',

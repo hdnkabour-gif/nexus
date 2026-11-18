@@ -41,6 +41,7 @@ NEXUS is the central *operational knowledge, reliability, diagnostics and govern
 | [docs/23_PERSISTENT_OWNER_AUTH.md](docs/23_PERSISTENT_OWNER_AUTH.md) | Persistent PostgreSQL owner enrollment and in-app password change |
 | [docs/24_PUBLIC_HTTP_MONITORING.md](docs/24_PUBLIC_HTTP_MONITORING.md) | Read-only HTTPS reachability, saved evidence and optional cron |
 | [docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md](docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md) | Deployed database, web/cron services and precise verification limits |
+| [docs/26_COMMAND_OS_UI_V1.md](docs/26_COMMAND_OS_UI_V1.md) | Practical Command OS redesign: layouts, tested data states and responsive routes |
 | [registry/portfolio-discovery.v1.json](registry/portfolio-discovery.v1.json) | Machine-readable provider discovery snapshot, **not** live telemetry |
 | [packages/monitor-core/](packages/monitor-core/) | Tested read-only normalization and backup health logic |
 | [contracts/](contracts/) | Versioned JSON Schema/OpenAPI contracts and synthetic examples |
@@ -68,3 +69,6 @@ NEXUS is the central *operational knowledge, reliability, diagnostics and govern
 - **Later P2:** evidence-grounded assistant, cross-service dependency graphs, anomaly forecasts and cost intelligence.
 
 Read [docs/09_ROADMAP_AND_TESTS.md](docs/09_ROADMAP_AND_TESTS.md) before implementation. Production security and backup readiness are release gates.
+
+## NEXUS Command OS (UI v1)
+The new source-based operational dashboard and responsive navigation are implemented in `components/command-os/`, `app/console/` and `app/command-os.css`. Live HTTP evidence is read from NEXUS's database; repository metadata is still historic. The redesign does not connect privileged app providers, enable production mutation or claim verified backups. See [UI blueprint](docs/26_COMMAND_OS_UI_V1.md).

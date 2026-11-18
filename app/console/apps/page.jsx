@@ -1,15 +1,14 @@
-import Link from 'next/link';
 import {portfolio,snapshotAt} from '../../../lib/data.js';
+import {latestHttpChecks,publicProbeTargets} from '../../../lib/public-probes.js';
+import {summarizeHttpPortfolio} from '../../../lib/command-os.js';
+import AppExplorer from '../../../components/command-os/app-explorer.jsx';
 import Icon from '../../../components/icons';
-import Status from '../../../components/status';
-export default function Apps(){
- return <><div className="page-header"><div><div className="eyebrow"><span className="eyebrow-line"/> APP REGISTRY · 002</div><h1>جميع <span className="gradient-text">التطبيقات</span></h1><p className="subtitle">بطاقة تعريف واضحة لكل مشروع ومصدره وبيئات التشغيل المرتبطة به.</p></div><span className="info-chip"><Icon name="clock" size={16}/> آخر جرد {snapshotAt}</span></div>
-  <div className="notice-strip"><Icon name="eye" size={18}/><div><strong>المصدر: بيانات جرد موثقة، وليست مراقبة حية.</strong><p>اضغط على أي تطبيق لمراجعة المستودع والبيئات وتنفيذ فحص الاتصال عند توفر الاعتمادات.</p></div></div>
-  <div className="apps-grid">{portfolio.map(app=><Link href={'/console/apps/'+app.app_id} className="app-card panel" key={app.app_id}>
-   <div className="app-card-top"><span className={'app-card-icon '+app.accent}>{app.icon}</span><Status state="unknown" label="المراقبة غير مفعّلة"/></div>
-   <div className="app-card-name"><span className="card-overline">{app.label}</span><h2>{app.name}</h2><p>{app.description}</p></div>
-   <div className="module-tags">{app.modules.map(x=><span key={x}>{x}</span>)}</div>
-   <div className="card-footer"><span><Icon name="code" size={15}/> {app.repository.split('/')[1]}</span><Icon name="arrow" size={18}/></div>
-  </Link>)}</div>
+export const dynamic='force-dynamic';
+export default async function Apps(){
+ let checks=[];try{checks=await latestHttpChecks();}catch{}
+ const {grouped}=summarizeHttpPortfolio(portfolio,checks,publicProbeTargets());
+ return <><div className="os-page-title"><div><span className="os-kicker"><i/> APPLICATION INDEX / 002</span><h1>كل تطبيق. <em>سياقه الكامل.</em></h1><p>ابدأ من المستودع والنطاق والبيئة، ثم انتقل إلى مراقبة الأدلة دون خلط الجرد التاريخي بالحالة الحية.</p></div><div className="os-page-actions"><span className="os-snapshot">DISCOVERED <strong>{snapshotAt}</strong></span></div></div>
+  <div className="os-evidence-callout"><Icon name="shield" size={19}/><div><strong>تفاصيل المصدر من الجرد، وقياسات HTTP من NEXUS فقط.</strong><p>حالة HTTP لا تثبت سلامة العمليات أو الكود أو النسخ الاحتياطية. بعض التطبيقات غير مراقبة بموجب قيود الوصول.</p></div></div>
+  <AppExplorer applications={grouped}/>
  </>;
 }

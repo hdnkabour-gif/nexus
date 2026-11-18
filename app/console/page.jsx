@@ -1,34 +1,55 @@
 import Link from 'next/link';
-import {portfolio,portfolioStats,snapshotAt} from '../../lib/data.js';
+import {portfolio,snapshotAt} from '../../lib/data.js';
+import {latestHttpChecks,publicProbeTargets} from '../../lib/public-probes.js';
+import {summarizeHttpPortfolio} from '../../lib/command-os.js';
 import Icon from '../../components/icons';
 import Status from '../../components/status';
-const quick=[
- {icon:'layers',title:'استكشاف التطبيقات',desc:'المستودعات والبيئات والعلاقات',href:'/console/apps',tone:'mint'},
- {icon:'nodes',title:'خريطة المنظومة',desc:'الاعتماديات والاتصالات',href:'/console/topology',tone:'blue'},
- {icon:'database',title:'سلامة النسخ',desc:'إثباتات النسخ والاسترجاع',href:'/console/backups',tone:'violet'}
-];
-export default function Overview(){
+import SignalCard from '../../components/command-os/signal-card.jsx';
+export const dynamic='force-dynamic';
+function dateLabel(ms){return ms?new Date(ms).toISOString().slice(0,16).replace('T',' ')+' UTC':'لا توجد قراءة حديثة';}
+export default async function Overview(){
+ let checks=[],queryFailed=false;
+ try{checks=await latestHttpChecks();}catch{queryFailed=true;}
+ const summary=summarizeHttpPortfolio(portfolio,checks,publicProbeTargets());
+ const measured=[...checks].filter(x=>Number.isFinite(new Date(x.measured_at).getTime()))
+  .sort((a,b)=>new Date(b.measured_at).getTime()-new Date(a.measured_at).getTime()).slice(0,5);
  return <>
-  <div className="page-header">
-   <div><div className="eyebrow"><span className="eyebrow-line"/> MISSION CONTROL · 001</div><h1>مرحباً بك في <span className="gradient-text">NEXUS</span></h1><p className="subtitle">نظرة موحّدة على منظومة تطبيقاتك، من المصدر إلى التشغيل والحماية.</p></div>
-   <div className="header-action"><span className="info-chip"><Icon name="clock" size={16}/> آخر جرد: {snapshotAt}</span><Link className="btn outline" href="/console/apps">استكشف التطبيقات <Icon name="arrow" size={16}/></Link></div>
+  <div className="os-page-title">
+   <div><span className="os-kicker"><i/> COMMAND SURFACE / 001</span><h1>نظرة <em>تشغيلية</em> على المنظومة.</h1><p>اكتشاف العلاقات، قراءة الإشارات المتاحة، وتحديد ما يحتاج إلى دليل — دون نتائج مفترضة.</p></div>
+   <div className="os-page-actions"><span className="os-snapshot">SOURCE SNAPSHOT <strong>{snapshotAt}</strong></span><Link href="/console/observability" className="os-action-solid">مراجعة المراقبة <Icon name="arrow" size={17}/></Link></div>
   </div>
-  <section className="hero-panel"><div className="hero-copy"><span className="hero-kicker"><span className="pulse-dot"/> NEXUS INTELLIGENCE ENGINE</span><h2>كل تطبيق.<br/><span>صورة واحدة واضحة.</span></h2><p>تعرّف على البنية والأسماء والعلاقات وبيئات Railway والمستودعات، ثم أضف مصادر المراقبة الحية بأمان. لن نعرض حالة خضراء دون دليل.</p><div className="hero-actions"><Link href="/console/topology" className="btn primary">عرض خريطة العلاقات <Icon name="arrow" size={17}/></Link><Link href="/console/integrations" className="btn ghost">إعداد الاتصالات</Link></div></div>
-  <div className="hero-visual" aria-hidden="true"><div className="orbit orbit-1"/><div className="orbit orbit-2"/><div className="orbit orbit-3"/><div className="core"><span className="core-diamond">✧</span><strong>N</strong><small>CORE</small></div><span className="satellite s1">P</span><span className="satellite s2">A</span><span className="satellite s3">R</span><span className="satellite s4">N</span><span className="satellite s5">S</span><span className="satellite s6">T</span></div></section>
-  <div className="section-title"><div><span className="section-eyebrow">PORTFOLIO PULSE</span><h2>ملخص المنظومة</h2></div><span className="dim-label">بيانات جرد تاريخية · غير حية</span></div>
-  <div className="kpi-grid">
-   <div className="kpi-card"><div className="kpi-top"><span>التطبيقات المسجلة</span><span className="kpi-icon mint"><Icon name="layers"/></span></div><strong>{portfolioStats.applications.toString().padStart(2,'0')}</strong><p>تطبيقات معروفة في الجرد</p><div className="kpi-foot"><span className="kpi-small-line"/><span>6 Application Profiles</span></div></div>
-   <div className="kpi-card"><div className="kpi-top"><span>مشروعات Railway</span><span className="kpi-icon blue"><Icon name="nodes"/></span></div><strong>{portfolioStats.railway_projects.toString().padStart(2,'0')}</strong><p>مشروعات اكتُشفت بالموصل المصرّح به</p><div className="kpi-foot"><span className="kpi-small-line"/><span>Snapshot only</span></div></div>
-   <div className="kpi-card"><div className="kpi-top"><span>اتصالات حية موثّقة</span><span className="kpi-icon amber"><Icon name="plug"/></span></div><strong>00</strong><p>تحتاج إلى مفاتيح قراءة مخصصة</p><div className="kpi-foot"><span className="kpi-small-line amber-line"/><span>Pending configuration</span></div></div>
-   <div className="kpi-card"><div className="kpi-top"><span>استرجاعات تم التحقق منها</span><span className="kpi-icon violet"><Icon name="database"/></span></div><strong>00</strong><p>لا توجد بعدُ تقارير استرجاع مستقلة</p><div className="kpi-foot"><span className="kpi-small-line violet-line"/><span>Unknown ≠ Healthy</span></div></div>
+  <div className="os-signal-band" aria-label="مؤشرات المراقبة">
+   <SignalCard code="01" label="APP REGISTRY" value={String(summary.appProfiles).padStart(2,'0')} detail="تطبيقات معروفة من جرد تاريخي" icon="layers"/>
+   <SignalCard code="02" label="HTTP COVERAGE" value={summary.freshCount+' / '+summary.targets} detail="نقاط لديها قياس حديث خلال 20 دقيقة" icon="pulse" tone={summary.freshCount?'mint':'neutral'}/>
+   <SignalCard code="03" label="HTTP 5XX" value={summary.freshCount?String(summary.httpErrors):'—'} detail={summary.freshCount?'أخطاء HTTP موثقة فقط':'لا تكفي البيانات لتحديد الأخطاء'} icon="alert" tone={summary.httpErrors?'critical':'neutral'}/>
+   <SignalCard code="04" label="RESTORE PROOF" value="—" detail="لا توجد أدلة استرجاع معزول مثبتة" icon="database"/>
   </div>
-  <div className="content-duo">
-   <section className="panel app-table-panel"><div className="panel-head"><div><span className="section-eyebrow">APPLICATION REGISTRY</span><h3>تطبيقات المنظومة</h3></div><Link href="/console/apps" className="text-link">جميع التطبيقات <Icon name="arrow" size={15}/></Link></div><div className="app-table-head"><span>التطبيق</span><span>المجال</span><span>المراقبة</span><span></span></div>
-    {portfolio.slice(0,5).map(app=><Link href={'/console/apps/'+app.app_id} key={app.app_id} className="app-table-row"><div className="app-name-cell"><span className={'app-symbol '+app.accent}>{app.icon}</span><div><strong>{app.name}</strong><small>{app.repository}</small></div></div><span className="domain-label">{app.label}</span><Status state="unknown"/><Icon name="chevron" size={17}/></Link>)}
+  <div className="os-middle-grid">
+   <section className="os-map-surface">
+    <div className="os-panel-head"><div><span className="os-panel-overline">SYSTEM LATTICE / DISCOVERY MAP</span><h2>شبكة التطبيقات</h2></div><Link href="/console/topology" className="os-panel-link">خريطة العلاقات <Icon name="arrow" size={16}/></Link></div>
+    <div className="os-lattice">
+     <div className="os-lattice-path" aria-hidden="true"><span/><span/><span/></div>
+     <div className="os-lattice-core"><span className="os-core-ticks">CONTROL PLANE</span><div className="os-core-mark"><i/><i/><i/><i/></div><strong>NEXUS</strong><small>OBSERVATION / ONLY</small></div>
+     <div className="os-lattice-endpoints">{summary.grouped.map(({app,status,verified,total})=><Link className="os-lattice-node" key={app.app_id} href={'/console/apps/'+app.app_id}><span className={'os-lattice-glyph '+app.accent}>{app.icon}</span><span><strong>{app.name}</strong><small>{total?verified+' / '+total+' HTTP حديث':'بيانات الجرد فقط'}</small></span><span className={'os-node-point '+(status==='critical'?'critical':status==='connected'?'observed':'unverified')}/></Link>)}</div>
+    </div>
+    <div className="os-panel-foot"><span><span className="os-legend-dot os-dot-cyan"/> مستودع معروف</span><span><span className="os-legend-dot os-dot-amber"/> الاتصال الداخلي غير متحقق</span><span>الروابط هنا تمثل الجرد، لا مسارات الشبكة الحية</span></div>
    </section>
-   <aside className="overview-aside"><div className="panel attention-panel"><div className="panel-head"><div><span className="section-eyebrow">READINESS STATUS</span><h3>قبل المراقبة المباشرة</h3></div><Icon name="alert" size={22}/></div><div className="attention-item"><span className="attention-number">01</span><div><strong>بيانات اعتماد مستقلة</strong><p>إضافة مفاتيح GitHub وRailway بقراءة فقط.</p></div></div><div className="attention-item"><span className="attention-number">02</span><div><strong>فحوص التطبيق الداخلية</strong><p>Adapter آمن يبدأ من PNEU MOUHIM.</p></div></div><div className="attention-item"><span className="attention-number">03</span><div><strong>اختبارات استرجاع معزولة</strong><p>قبل اعتبار أي نسخة احتياطية سليمة.</p></div></div><Link className="aside-link" href="/console/integrations">عرض خطة الربط <Icon name="arrow" size={15}/></Link></div></aside>
+   <section className="os-focus-surface">
+    <div className="os-panel-head"><div><span className="os-panel-overline">ACTION QUEUE / EVIDENCE GAPS</span><h2>أولوية التحقق</h2></div><span className="os-count-chip">03 OPEN</span></div>
+    <div className="os-focus-row"><span>01</span><div><strong>ربط مصادر GitHub وRailway</strong><p>توجد ملفات جرد، لكن لا توجد مفاتيح NEXUS مخصصة للقراءة الحية.</p></div><Link href="/console/integrations" aria-label="عرض اتصالات GitHub وRailway"><Icon name="arrow" size={16}/></Link></div>
+    <div className="os-focus-row"><span>02</span><div><strong>النسخ والاسترجاع</strong><p>لا توجد في NEXUS أدلة كافية لإثبات الاسترجاع المعزول للتطبيقات.</p></div><Link href="/console/backups" aria-label="عرض النسخ الاحتياطية"><Icon name="arrow" size={16}/></Link></div>
+    <div className="os-focus-row"><span>03</span><div><strong>تغطية التطبيقات الداخلية</strong><p>الفحص الحالي لروابط HTTPS فقط؛ لا يثبت سلامة المال أو المستندات أو الأعمال.</p></div><Link href="/console/observability" aria-label="عرض المراقبة"><Icon name="arrow" size={16}/></Link></div>
+    <div className="os-focus-summary"><Icon name="shield" size={17}/><span>لا أوامر تعديل أو استرجاع إنتاج مفعّلة.</span></div>
+   </section>
   </div>
-  <div className="section-title"><div><span className="section-eyebrow">QUICK ACCESS</span><h2>انطلق من هنا</h2></div></div>
-  <div className="quick-grid">{quick.map(x=><Link href={x.href} className="quick-card" key={x.href}><span className={'quick-icon '+x.tone}><Icon name={x.icon} size={24}/></span><strong>{x.title}</strong><p>{x.desc}</p><span className="quick-arrow"><Icon name="arrow" size={17}/></span></Link>)}</div>
+  <div className="os-bottom-grid">
+   <section className="os-table-surface"><div className="os-panel-head"><div><span className="os-panel-overline">FLEET / APPLICATION MATRIX</span><h2>حالة التطبيقات</h2></div><Link className="os-panel-link" href="/console/apps">فتح السجل <Icon name="arrow" size={16}/></Link></div>
+    <div className="os-table-wrap"><table className="os-matrix"><thead><tr><th>التطبيق</th><th>دليل HTTP</th><th>نسخ احتياطية</th><th>المصدر</th><th></th></tr></thead><tbody>{summary.grouped.map(({app,status,label,verified,total})=><tr key={app.app_id}><td><div className="os-matrix-name"><span className={'os-app-glyph '+app.accent}>{app.icon}</span><span><strong>{app.name}</strong><small dir="ltr">{app.repository.split('/')[1]}</small></span></div></td><td><Status state={status} label={label}/><small className="os-understatus">{verified} من {total} فحوص حديثة</small></td><td><Status state="unknown" label="غير مثبت"/></td><td><span className="os-origin-type">SNAPSHOT</span></td><td><Link href={'/console/apps/'+app.app_id} aria-label={'تفاصيل '+app.name}><Icon name="arrow" size={16}/></Link></td></tr>)}</tbody></table></div>
+   </section>
+   <aside className="os-stream-surface"><div className="os-panel-head"><div><span className="os-panel-overline">SIGNAL JOURNAL / LATEST MEASURES</span><h2>آخر قياسات HTTP</h2></div><Icon name="activity" size={18}/></div>
+    {queryFailed?<div className="os-stream-empty"><Icon name="alert"/><strong>تعذر جلب نتائج المراقبة.</strong><p>تعرض المنصة الحالة غير مؤكدة، وليس سليمة.</p></div>:measured.length?measured.map((x,i)=><div className="os-event-row" key={x.app_id+'-'+x.environment+'-'+x.host}><span className="os-event-index">{String(i+1).padStart(2,'0')}</span><div><strong>{portfolio.find(a=>a.app_id===x.app_id)?.name||x.app_id}</strong><small dir="ltr">{x.environment} · HTTP {x.status_code??'—'}</small></div><span className={'os-event-result '+(x.stale?'is-stale':x.state==='unreachable'?'is-failed':'')}>{x.stale?'قديم':x.state==='reachable'?'استجابة':x.state==='unreachable'?'خطأ':'غير مؤكد'}</span><time>{new Date(x.measured_at).toISOString().slice(11,16)} UTC</time></div>):<div className="os-stream-empty"><Icon name="clock" size={23}/><strong>لا توجد قياسات محفوظة بعد.</strong><p>الفحص المجدول أو التحديث اليدوي سيضيف نتائج موثقة.</p></div>}
+    <div className="os-journal-footer"><span>أحدث قياس حديث: {dateLabel(summary.lastAt)}</span><Link href="/console/observability">عرض الأدلة <Icon name="arrow" size={14}/></Link></div>
+   </aside>
+  </div>
  </>;
 }
