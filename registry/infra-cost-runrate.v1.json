@@ -412,5 +412,8 @@
    "attribution": "UNATTRIBUTED (deleted service, residual volume usage)",
    "app_id": null
   }
- ]
+ ],
+ "label": "7-day lightweight demo/pilot resource-consumption run-rate for specific environments; NOT a per-customer production cost, NOT an upper bound, NOT an invoice",
+ "snapshot": "S3 2026-11-20T03:23Z: 26 live services + 3 deleted services with residual disk usage; tijara-migrate (S1 live) recorded no usage in the window",
+ "plan_credit_note": "Hobby $5 includes $5 usage; Pro $20 includes $20 usage. Bill ≈ max(plan fee, usage); do not add the plan fee on top of usage it already includes."
 }
