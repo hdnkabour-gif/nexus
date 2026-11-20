@@ -16,7 +16,7 @@
     "REJECTED",
     "UNKNOWN"
   ],
-  "status_rules": "DEPLOYED = Railway latest deployment SUCCESS at stated SHA. CI green is TESTED evidence only. VERIFIED requires independent, specific evidence and is not granted to any app-level item in this baseline.",
+  "status_rules": "DEPLOYED = Railway latest deployment SUCCESS at stated SHA. CI green is TESTED evidence only. VERIFIED requires independent, specific evidence and is not granted to any app-level item in this baseline. TESTED (strict, revised 2026-11-20) requires a named test passing in a CI job log at the analysed SHA (docs/28 TE-*).",
   "accounts_scanned": {
     "hdnkabour-gif": "9 repositories visible via connected GitHub (private + public)",
     "abdellatifhadana-byte": "10 PUBLIC repositories via anonymous git read; private repositories of this account are NOT visible to this session (UNKNOWN)"
@@ -873,5 +873,41 @@
       "note": "orphan volume"
     }
   ],
-  "railway_backups": "0 Railway volume backups and 0 backup schedules on all 17 volumes (queried 2026-11-20)."
+  "railway_backups": {
+    "railway_volume_snapshots": "0 backups, 0 schedules on 17 volume instances (snapshot S2, 2026-11-20T02:49Z, grade A)",
+    "app_object_storage_backups": "code in pneu-mouhim, rent-car, tijara-os, alloservix; pneu-mouhim production writes to a temporary Railway object-storage bucket (PNEU #13, grade B)",
+    "isolated_restore_proof": {
+      "pneu-mouhim": "reported 2026-11-17 stored-copy restore into a new DB, file byte match, sale-count match (PNEU #13, grade B)",
+      "rent-car": "synthetic drill in isolated staging 2026-11-13 (rent-car #14, grade B)",
+      "others": "CI/local only or none"
+    },
+    "off_railway_restore": "none evidenced for any app",
+    "monetary_reconciliation_after_restore": "none evidenced"
+  },
+  "snapshots": {
+    "S1": {
+      "at": "2026-11-20T02:48Z",
+      "projects": 9,
+      "environments": 14,
+      "environments_with_services": 13,
+      "live_service_instances": 27,
+      "repo_built": 17,
+      "database_images": 10
+    },
+    "S2": {
+      "at": "2026-11-20T02:49Z",
+      "volume_instances": 17,
+      "attached": 16,
+      "orphan": 1
+    }
+  },
+  "deployed_sha_pairs": {
+    "matched_main": 13,
+    "not_main": 4,
+    "no_deployment": [
+      "scanflow-pro",
+      "hdnkabour-gif/AMANZINE",
+      "abdellatifhadana-byte/*"
+    ]
+  }
 }

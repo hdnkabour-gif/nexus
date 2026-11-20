@@ -28,6 +28,7 @@ Every claim in docs 27–30 traces to one of these references. **All observed on
 Similarity method (docs/27 AMANZINE table, R-001): `git ls-files -s` path+blob-hash sets compared with `comm`; "identical" = same path and same blob SHA.
 
 ## E2 — Railway (read-only GraphQL queries; no mutation sent; no variable values read)
+Snapshot S1, 02:48Z: 27 live service instances (the 17 repo-built ones are listed below; 10 database images omitted). S2, 02:49Z: volumes and backups. Definitions are in docs/27 "Railway inventory snapshots".
 | Project | Env | Service | Source | Deployed SHA | Branch | Status / time |
 |---|---|---|---|---|---|---|
 | NEXUS Control Center | production | nexus-web | nexus | `bc8e6d13` | main | SUCCESS 2026-11-18T17:29 |
@@ -49,7 +50,7 @@ Similarity method (docs/27 AMANZINE table, R-001): `git ls-files -s` path+blob-h
 | overflowing-vision | production | Tech-Platform- | Tech-Platform- | `04e70ae8` | preview/pilote-technique-ui | SUCCESS 2026-10-31T20:17 |
 
 Ancestry (GitHub compare `main...<sha>`): `a2691d7d` behind 1, `6a811897` behind 6 (PNEU); `3a2b28b4` behind 3 (RENT CAR); `04e70ae8` behind 164 (TECH); all ahead 0.
-Backups: `volumeInstanceBackupList` and `volumeInstanceBackupScheduleList` returned empty lists for all 17 volume instances (incl. orphan `/tmp` volume in spectacular-victory). Environment `Tech 2m viewer` has 0 services.
+Backups (S2): `volumeInstanceBackupList` and `volumeInstanceBackupScheduleList` returned empty lists for all 17 volume instances (incl. orphan `/tmp` volume in spectacular-victory). Environment `Tech 2m viewer` has 0 services.
 
 ## E3 — GitHub Actions (latest `main` runs)
 | Repo | Run ID | Workflow | SHA | Conclusion |
@@ -64,6 +65,13 @@ Backups: `volumeInstanceBackupList` and `volumeInstanceBackupScheduleList` retur
 | amanzine2, abdellatifhadana-byte/* | — | — | — | UNKNOWN (no API access) |
 
 Historical CI cited from NEXUS issue #5 (2026-11-18 comment): rent-car #44208272485 SUCCESS (310 server, 81 web, 50 OCR tests) at `9eff0273`.
+
+## E3b — Per-test CI evidence
+The job logs for PNEU job 134166688755, RENT CAR job 136015159090 and TIJARA jobs 136032432315/136032432655 were read on 2026-11-20. Results and named tests are in docs/28 "Evidence for TESTED claims" (TE-*).
+
+## E3c — Backup and restore evidence reported in source issues (grade B, not re-executed)
+- [PNEU #13](https://github.com/hdnkabour-gif/Pneumatiques-MOUHIM/issues/13) (2026-11-17): encrypted backup to a temporary Railway object-storage bucket; `app:backup-restore --into=<new db>` succeeded without changing the original; uploaded-file probe byte-identical; sale counts matched. Open: R2, overnight schedule, retention, balances.
+- [RENT CAR #14](https://github.com/hdnkabour-gif/rent-car-app/issues/14) (2026-11-13): synthetic encrypted backup → restore drill passed in isolated Railway staging. Production offsite + restore is still open.
 
 ## E4 — Issues and PRs (GitHub REST)
 - NEXUS: #5 (coordination, open), #10–#14 open; PRs #1–#4, #6–#9, #15–#17 merged.
