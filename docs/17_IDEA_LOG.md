@@ -37,16 +37,16 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 | IDEA-024 | Evidence report per deployment with SHA, Railway environment, startup/HTTP checks and limitations | IMPLEMENTED (documentation) | docs/21_FIRST_DEPLOYMENT_EVIDENCE.md |
 | IDEA-025 | First customer-visible UI accessible via protected Railway URL; no public portfolio data | DEPLOYED, owner acceptance/screenshot pending | docs/20_FIRST_CONSOLE.md |
 
-| IDEA-019 ⚠️dup→IDEA-030 | Custom owner display name and username alias in Railway, without replacing existing email account | IMPLEMENTED (pending CI and Railway sync) | docs/22_OWNER_VARIABLES.md |
-| IDEA-020 ⚠️dup→IDEA-031 | Owner password rotation via offline generated scrypt hash; never plaintext Railway variable | IMPLEMENTED (pending CI) | scripts/hash-owner-password.mjs |
+| IDEA-030 (legacy alias: IDEA-019, 2nd use) | Custom owner display name and username alias in Railway, without replacing existing email account | IMPLEMENTED (pending CI and Railway sync) | docs/22_OWNER_VARIABLES.md |
+| IDEA-031 (legacy alias: IDEA-020, 2nd use) | Owner password rotation via offline generated scrypt hash; never plaintext Railway variable | IMPLEMENTED (pending CI) | scripts/hash-owner-password.mjs |
 
-| IDEA-021 ⚠️dup→IDEA-032 | NEXUS-owned isolated PostgreSQL and owner-internal first-time password enrollment | DEPLOYED; browser enrollment pending user acceptance | docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md |
-| IDEA-022 ⚠️dup→IDEA-033 | Persist session revocation and owner audit without business personal data | DEPLOYED; integration tests passed | lib/owner-db.js |
+| IDEA-032 (legacy alias: IDEA-021, 2nd use) | NEXUS-owned isolated PostgreSQL and owner-internal first-time password enrollment | DEPLOYED; browser enrollment pending user acceptance | docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md |
+| IDEA-033 (legacy alias: IDEA-022, 2nd use) | Persist session revocation and owner audit without business personal data | DEPLOYED; integration tests passed | lib/owner-db.js |
 
-| IDEA-023 ⚠️dup→IDEA-034 | Actual, credential-free HTTPS availability check of verified public app domains, with evidence age and no private data | DEPLOYED + VERIFIED collection of 7 observations; per-site outcome not asserted | docs/24_PUBLIC_HTTP_MONITORING.md |
-| IDEA-024 ⚠️dup→IDEA-035 | 15-minute independent Railway Cron worker for read-only public reachability | VERIFIED: first scheduled execution succeeded; saved 7/7 observations in NEXUS DB | docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md |
+| IDEA-034 (legacy alias: IDEA-023, 2nd use) | Actual, credential-free HTTPS availability check of verified public app domains, with evidence age and no private data | DEPLOYED + VERIFIED collection of 7 observations; per-site outcome not asserted | docs/24_PUBLIC_HTTP_MONITORING.md |
+| IDEA-035 (legacy alias: IDEA-024, 2nd use) | 15-minute independent Railway Cron worker for read-only public reachability | VERIFIED: first scheduled execution succeeded; saved 7/7 observations in NEXUS DB | docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md |
 
-| IDEA-025 ⚠️dup→IDEA-036 | Ensure NEXUS database itself is backed up offsite and restoration proof exists | PLANNED; no verified offsite backup | docs/16_BACKUP_RESTORE_ORCHESTRATION.md |
+| IDEA-036 (legacy alias: IDEA-025, 2nd use) | Ensure NEXUS database itself is backed up offsite and restoration proof exists | PLANNED; no verified offsite backup | docs/16_BACKUP_RESTORE_ORCHESTRATION.md |
 
 | IDEA-026 | Explicit trusted browser origin for Railway login behind reverse proxies, safer 303 redirects and visible rate-limit/Origin diagnostics | IMPLEMENTED (pending CI and deployed smoke) | docs/23_PERSISTENT_OWNER_AUTH.md |
 
@@ -67,10 +67,10 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 | IDEA-043 | NEXUS cost-to-serve: Railway resource cost per app (from usage API) + owner-entered support hours per app/pilot; no customer prices/invoices in NEXUS | DESIGNED (first manual estimate in registry/infra-cost-runrate.v1.json) | docs/32 §2, §6 |
 | IDEA-044 | Commercial stage tracked separately from technical lifecycle (IDEA→…→PAID_SUBSCRIPTION) | IMPLEMENTED (documentation: registry/commercial-status.v1.json) | docs/32 §1 |
 
-## ID collision register (found 2026-11-20 — proposed fix, pending owner approval D-REQ-01)
-IDEA-019 … IDEA-025 were each assigned twice on 2026-11-17. Rows are **not deleted or renumbered**; the first occurrence keeps the ID, the second occurrence is marked `⚠️dup→IDEA-0xx` with its proposed unique ID. Old references (PRs, commits, chats) that say "IDEA-019" etc. stay resolvable through this table.
+## ID collision register (found and resolved 2026-11-20 on owner instruction, PR #18 comment)
+IDEA-019 … IDEA-025 were each assigned twice on 2026-11-17. **Resolution:** the first occurrence keeps its ID. The second occurrence now has a unique **primary** ID (IDEA-030 … IDEA-036) and carries the legacy alias in its row. No row was deleted and the text of each row is unchanged. A reference anywhere that says "IDEA-019" etc. means the first occurrence, unless it points to a PR in the "2nd occurrence" column below.
 
-| Legacy ID | 1st occurrence (keeps ID) | 2nd occurrence → proposed ID | Introduced by |
+| Legacy ID | 1st occurrence (keeps ID) | 2nd occurrence → new primary ID | Introduced by (1st / 2nd) |
 |---|---|---|---|
 | IDEA-019 | Protected first NEXUS web console | Owner display name / username alias → **IDEA-030** | PR #3 / PR #6 |
 | IDEA-020 | First owner login, signed sessions | Owner password rotation via scrypt hash → **IDEA-031** | PR #3 / PR #6 |
@@ -85,10 +85,10 @@ Original status text above is kept; the evidence-based status below takes preced
 | ID | Status text in table | Status per vocabulary | Evidence |
 |---|---|---|---|
 | IDEA-012 | PARTIAL | IMPLEMENTED (library, mock-tested) | packages/monitor-core |
-| IDEA-019/020 (2nd → IDEA-030/031), IDEA-026, IDEA-027 | IMPLEMENTED (pending CI …) | DEPLOYED (part of `bc8e6d13`, Railway nexus-web SUCCESS 2026-11-18T17:29); owner browser acceptance UNKNOWN | docs/31 E2, E3 |
-| IDEA-025 (2nd → IDEA-036) | PLANNED | DESIGNED; Railway shows 0 backups on NEXUS Postgres volume | docs/31 E2 |
+| IDEA-030, IDEA-031 (legacy 2nd IDEA-019/020), IDEA-026, IDEA-027 | IMPLEMENTED (pending CI …) | DEPLOYED (part of `bc8e6d13`, Railway nexus-web SUCCESS 2026-11-18T17:29); owner browser acceptance UNKNOWN | docs/31 E2, E3 |
+| IDEA-036 (legacy 2nd IDEA-025) | PLANNED | DESIGNED; Railway shows 0 volume backups on the NEXUS Postgres volume (snapshot S1, docs/31) and no app-level offsite backup is known for NEXUS | docs/31 E2 |
 | IDEA-028, IDEA-029 | CODED / pending CI and deployment | DEPLOYED (`bc8e6d13`, CI 3/3 success); not VERIFIED | docs/31 E2, E3 |
-| IDEA-023 (2nd → IDEA-034), IDEA-024 (2nd → IDEA-035) | DEPLOYED + VERIFIED / VERIFIED | keep VERIFIED only for "first scheduled run saved 7/7 observations" (docs/25); not re-verified in this pass | docs/25 |
+| IDEA-034, IDEA-035 (legacy 2nd IDEA-023/024) | DEPLOYED + VERIFIED / VERIFIED | keep VERIFIED only for "first scheduled run saved 7/7 observations" (docs/25); not re-verified in this pass | docs/25 |
 
 ## Decisions requiring explicit ADR approval
 - OIDC provider and production 2FA method.
@@ -101,7 +101,8 @@ Original status text above is kept; the evidence-based status below takes preced
 ## Changelog
 ### 2026-11-20
 - Commercial & Infrastructure Readiness (docs/32, registry/commercial-status.v1.json, registry/infra-cost-runrate.v1.json); IDEA-041…044.
-- Portfolio Baseline V1 (docs/27–31, registry/portfolio-baseline.v1.json). Recorded IDEA ID collisions without renumbering, status corrections with evidence, IDEA-037…040. Issue #5 cross-app references recorded in docs/31 E4.
+- Revision 2 (owner-relayed review): duplicate primary IDs resolved (IDEA-030…036 + legacy aliases); R-003 backup evidence split; strict TESTED evidence (docs/28 TE-*).
+- Portfolio Baseline V1 (docs/27–31, registry/portfolio-baseline.v1.json). Resolved IDEA ID collisions: second uses now IDEA-030…036 with legacy aliases, rows preserved, status corrections with evidence, IDEA-037…040. Issue #5 cross-app references recorded in docs/31 E4.
 
 ### 2026-11-17
 - Created external integration catalog, AI coding-agent governance, backup/restore orchestration and living idea log.

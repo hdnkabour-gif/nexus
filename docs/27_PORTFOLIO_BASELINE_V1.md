@@ -15,11 +15,25 @@ The 2026-11-17 snapshot ([19_PORTFOLIO_DISCOVERY.md](19_PORTFOLIO_DISCOVERY.md),
 | Anonymous public HTTPS GET (alloservix.ma robots.txt) | domain answers with this app's robots file | functionality |
 
 Status vocabulary: `IDEA / DESIGNED / IMPLEMENTED / TESTED / DEPLOYED / VERIFIED / REJECTED / UNKNOWN`.
-Rules applied: *DEPLOYED* = Railway latest deployment `SUCCESS` at the stated SHA. *TESTED* = automated tests exist and the latest `main` CI run is green — **CI success is not production proof**. *VERIFIED* is **not granted to any application in this baseline**: no independent end-to-end, restore or acceptance evidence was produced in this pass.
+Rules applied: *DEPLOYED* = Railway latest deployment `SUCCESS` at the stated SHA. *TESTED* (strict, revised 2026-11-20) = a named test whose passing result is visible in the CI job log at the analysed SHA (evidence table `TE-*` in docs/28); otherwise the claim is `IMPLEMENTED (tests exist)`. **CI success is not production proof**. *VERIFIED* is **not granted to any application in this baseline**: no independent end-to-end, restore or acceptance evidence was produced in this pass.
 
 ## Accounts and repositories
 - `hdnkabour-gif`: 9 repositories visible through the connected GitHub.
 - `abdellatifhadana-byte`: 10 **public** repositories readable anonymously. **Private repositories in this account, if any, are not visible to this session → UNKNOWN.** GitHub API metadata (issues/CI) for this account is not reachable from this session.
+
+### Railway inventory snapshots (all 2026-11-20, read-only GraphQL queries)
+| Snapshot | Time (UTC, file write time) | Scope | Counts |
+|---|---|---|---|
+| **S1** service inventory | 02:48Z | all projects visible to the connected Railway account | 9 projects; 14 environments (13 with services; `Tech 2m viewer` empty); **27 live service instances** = 17 built from GitHub repos + 10 database images; every latest deployment `SUCCESS`; 16 volume attachments |
+| **S2** volumes/backups | 02:49Z | every volume instance | **17 volume instances** (16 attached + 1 orphan `/tmp` in spectacular-victory); 0 Railway backups; 0 backup schedules |
+| **S3** usage (in PR #19) | 03:23Z | usage 2026-11-13→2026-11-20 grouped by service | live services + **3 deleted services** still showing residual disk usage (2 in lucid-playfulness, 1 in spectacular-victory) |
+Counts in this baseline refer to S1/S2 unless stated otherwise. Earlier wording that said "17 deployments" meant the 17 repo-built services of S1.
+
+### GitHub `main` vs deployed SHA — observed pairs only (S1)
+**Matched (13 of 17 repo-built services):** tijara-os ×2 (`e5e2b26d`), nexus ×2 (`bc8e6d13`), Nexora (`aed95a38`), Alloservix (`781c982f`), rent-car-app production-demo (`781ab813`), Pneumatiques-MOUHIM `mouhim` app + worker (`ea55329f`), amanzine2 ×2 (`4ff08a99`), Tech-Platform- ×2 under the AMANZINE project (`924aa502`).
+**Not on `main` (4):** PNEU staging app `a2691d7d` and worker `6a811897`; Fleetora OCR staging `3a2b28b4`; Tech-Platform- `overflowing-vision` `04e70ae8`. All four are ancestors of `main` (GitHub compare).
+**No deployment found:** SCANFLOW PRO (both repos), `hdnkabour-gif/AMANZINE`, and all `abdellatifhadana-byte` repos.
+Deployed SHA = Railway `latestDeployment.meta.commitHash`, which shows what Railway built. It is not proof of runtime health.
 
 ## Portfolio summary
 | # | App | Canonical repo | GitHub `main` SHA | Deployed SHA (Railway) | Lifecycle | Tests / CI (main) |
@@ -36,7 +50,11 @@ Rules applied: *DEPLOYED* = Railway latest deployment `SUCCESS` at the stated SH
 | — | School platform | none | — | — | IDEA | — |
 | — | FleetDocs AI | none | — | — | IDEA | — |
 
-**Backups across the portfolio:** Railway reports **0 volume backups and 0 backup schedules on all 17 volumes** (2026-11-20). App-level backup code exists in PNEU, RENT CAR, TIJARA OS and ALLOSERVIX, but no offsite backup with a restore proof from the stored copy is evidenced for any deployed environment. See R-003.
+**Backups across the portfolio (four separate evidence classes, see docs/30 R-003):**
+1. **Railway volume snapshots:** 0 backups and 0 schedules on all 17 volume instances (S2, grade A).
+2. **Application/object-storage backups:** code in PNEU, RENT CAR, TIJARA OS and ALLOSERVIX. PNEU production writes encrypted archives to a temporary Railway object-storage bucket ([PNEU #13](https://github.com/hdnkabour-gif/Pneumatiques-MOUHIM/issues/13), grade B).
+3. **Isolated restore proof:** PNEU #13 reports a 2026-11-17 restore of the stored copy into a new DB, with an uploaded-file byte match and a sale-count match. [RENT CAR #14](https://github.com/hdnkabour-gif/rent-car-app/issues/14) reports a synthetic drill in isolated staging (2026-11-13). Both are cited from the source issues, **not re-executed here**.
+4. **Independent off-Railway (R2) restore and monetary balance reconciliation:** not evidenced for any app.
 
 ---
 
@@ -80,7 +98,7 @@ Each passport lists only metadata. No customer, patient, employee, employer-inte
 - **Modules (Filament resources):** Activities, ApprovalRequests, Brands, Bundles, Categories, Customers, Equipment, InventoryCounts, Oil/Tyre catalogue references, OilDrums, Payments, Products, PurchaseOrders, ReplenishmentRequests, Roles, Sales, Services, Sites, StockLevels, StockMovements, Suppliers, Transfers, TyreLots, UsedTyres, Users, Vehicles.
 - **Data model (73 tables created in `database/migrations`):** stock ledger `stock_movements` + cache `stock_levels` (D-08), reservations, lots, used tyres + inspections, transfers, sales/sale_lines/payments/allocations, issued_invoice_documents, work_orders, oil_drums + movements, cash_days, expenses, purchase orders/receipts/supplier_payments, approval_requests, vehicle make/model/generation/engine + fitments, activity_log (immutable trigger, D-34).
 - **Deployments:** `lucid-playfulness/mouhim /Pneumatiques-MOUHIM` + `PNEU-MOUHIM-Worker` `ea55329f` (= main) `pneumatiques-mouhim-mouhim.up.railway.app`, volume `/app/storage/app/public`, `Postgres-ekYj`. Staging project: app `a2691d7d` (branch `fix/go-live-complete-strict-audit`), worker `6a811897` (branch `staging/integration`, closed unmerged PR #11) → **app and worker run different code** (R-008).
-- **Backups:** spatie daily 02:00 to external storage (D-37); Cloudflare R2 production + automated verification still open (#13).
+- **Backups:** spatie daily 02:00 to external storage (pneu-mouhim:D-37). Production currently writes encrypted archives to a temporary Railway object-storage bucket; one isolated restore of that stored copy is reported on 2026-11-17 (file byte match, sale-count match; #13, grade B). Still open (#13): R2 off-Railway restore, the first observed overnight run, and monetary balance reconciliation.
 - **Open:** #20 P0 release gate, #14 P0 go-live demo-data removal (not executed), #17/#18/#19 P1 concurrency/atomicity, #13 R2.
 - **Status:** DEPLOYED (pilot); go-live NOT cleared.
 
@@ -191,7 +209,7 @@ No app shares a database with another app according to service topology; **wheth
 2. GitHub issues/PRs/CI for `amanzine2` and all `abdellatifhadana-byte` repos (API access not granted; push-attach for amanzine2 was refused in this session).
 3. Runtime health, functional correctness and data integrity of every deployed service (only deployment status was read).
 4. Which Postgres service each app uses inside shared projects (env values intentionally not read).
-5. Any offsite backup existence (R2/S3/external disks) and any restore performed from a stored copy.
+5. Any off-Railway (R2/external disk) backup and any restore from it. PNEU's in-Railway stored-copy restore (#13) and RENT CAR's synthetic staging drill (#14) are reported in those issues but were **not re-executed** in this session.
 6. Whether PNEU go-live reset, Rent Car real-company host, AMANZINE launch, ALLOSERVIX public launch were approved by the owner.
 7. Employer authorization status for TECH PLATFORM monitoring and for the public `sahar2026` copy.
 8. Contents of the 197 PDFs in `scan-Flow-pro` (not opened on purpose).
@@ -205,7 +223,7 @@ No app shares a database with another app according to service topology; **wheth
 ### Contradictions found
 | ID | Where | Contradiction | Proposed correction |
 |---|---|---|---|
-| C-01 | docs/17 | IDEA-019…IDEA-025 are each used twice (14 rows, 7 IDs) | keep first occurrences; give second occurrences IDEA-030…036 with legacy alias (applied as annotation in docs/17, renumbering pending approval) |
+| C-01 | docs/17 | IDEA-019…IDEA-025 are each used twice (14 rows, 7 IDs) | **resolved** on owner instruction: second uses now have primary IDs IDEA-030…036 with legacy aliases; rows kept |
 | C-02 | docs/17 | statuses outside the vocabulary: `PARTIAL`, `PLANNED`, `CODED`, `IMPLEMENTED (pending CI)` | map to vocabulary; IDEA-028/029 now DEPLOYED per Railway `bc8e6d13` |
 | C-03 | docs/18 | "Not implemented" section says no PostgreSQL NEXUS DB and lists the Railway project, while docs/25 records them DEPLOYED | annotate docs/18 as superseded by docs/25 (done via note) |
 | C-04 | docs/19 + registry v1 | main SHAs stale for PNEU (`181095a7`→`ea55329f`), RENT CAR (`1e934d36`→`781ab813`), ALLOSERVIX (`188b928d`→`781c982f`); TIJARA OS and SCANFLOW absent; "six" app families | keep v1 as history; current state in baseline v1 |
@@ -216,12 +234,14 @@ No app shares a database with another app according to service topology; **wheth
 | C-09 | amanzine2 PRODUCTION_READINESS.md | readiness report for SAHARSHOP2026 (2026-06-18) inside current AMANZINE | mark historical (app-side) |
 | C-10 | Railway | environment name `mouhim ` has trailing space; NEXUS public-http-targets uses `mouhim` | normalise IDs in NEXUS only |
 | C-11 | rent-car #30 open | MVP merged in PR #31 | owner decides whether to close |
+| C-13 | docs/30 R-003 (first version) | said no restore evidence existed for any app; PNEU #13 reports one in-Railway stored-copy restore | **corrected**: four evidence classes |
+| C-14 | docs/27 / PR body (first version) | blanket "every app's main SHA matches its deployed SHA" | **narrowed** to observed matched pairs (13 of 17) |
 | C-12 | Issue #5 acceptance #1 | requests source issue refs recorded in docs/17 | now recorded in docs/31 and IDEA-037 |
 
 ### Decisions requiring owner approval
 | ID | Decision |
 |---|---|
-| D-REQ-01 | Approve the IDEA ID collision fix (IDEA-030…036) or another scheme. |
+| D-REQ-01 | ~~Approve the IDEA ID collision fix~~ — **decided 2026-11-20** (PR #18 owner comment): IDEA-030…036 primary, legacy aliases kept. |
 | D-REQ-02 | Public copies: what to do with `abdellatifhadana-byte/sahar2026` (employer code public) and `scan-Flow-pro` PDFs (make private / remove – owner action, not done here). |
 | D-REQ-03 | Canonical SCANFLOW repo, and whether SCANFLOW joins NEXUS monitoring. |
 | D-REQ-04 | PNEU vs TIJARA OS relationship (independent products, or PNEU as a TIJARA vertical later). |
@@ -242,3 +262,13 @@ No app shares a database with another app according to service topology; **wheth
 - **Deployment state:** nothing deployed or merged by this task.
 - **Next step:** owner review of D-REQ-01…09; then (separate PRs) registry consumer update and app-side doc fixes.
 - **Blockers:** access to `amanzine2` API and to private `abdellatifhadana-byte` repos.
+
+### Revision 2 — 2026-11-20 (owner-relayed review, PR #18 comment of 05:05Z)
+Corrections made on this same branch. Historical rows are kept and #19 stays stacked on this branch.
+1. **R-003 split** into four evidence classes (Railway volume snapshots / app object-storage backups / isolated restore proof / off-Railway restore + monetary reconciliation). PNEU #13 and RENT CAR #14 are cited as source-issue evidence (grade B), not re-executed.
+2. **IDEA duplicates resolved:** second uses now carry primary IDs IDEA-030…036 with legacy aliases (docs/17). Local decision IDs are qualified as `<app_id>:<id>` (docs/29).
+3. **Deployed-SHA claim narrowed** to observed pairs: 13 of 17 match `main`, 4 do not, SCANFLOW has no deployment.
+4. **Strict TESTED:** critical financial and security claims now cite named tests with passing results in CI job logs at the analysed SHA (docs/28 TE-*). NEXORA claims without log evidence were downgraded to IMPLEMENTED.
+5. **Snapshot scope** (S1/S2/S3 with UTC times and counts of live, deleted and orphan items) and a **verification grade per risk** (docs/30). R-001/R-002 now say public visibility ≠ proven confidential exposure.
+No code, secret, Railway, database, merge or production action.
+

@@ -4,12 +4,33 @@ Portfolio-wide register of application features and their **actual** status. NEX
 
 Status meaning here:
 - **IMPLEMENTED** = code present on `main` at the SHA in [27](27_PORTFOLIO_BASELINE_V1.md).
-- **TESTED** = automated tests exist for it and latest `main` CI is green (CI ≠ production proof).
+- **TESTED** (strict, revised 2026-11-20 on owner instruction) = a **named test file or test** whose **passing result is visible in the CI job log at the analysed SHA**, listed in the evidence table `TE-*` below. A green CI badge, a README or a tracker line alone is **not** enough; such rows say `IMPLEMENTED (tests exist; per-test result not cited)`. TESTED ≠ production proof.
 - **DEPLOYED** = present in the code at the Railway-deployed SHA (deployment SUCCESS). It does **not** mean real users use it.
 - **VERIFIED** = not granted to any item in this pass.
 - **DESIGNED / IDEA** = documented only. **UNKNOWN** = could not be determined.
 
 Feature IDs reuse each app's own IDs when the app has them (RENT CAR `F-0xx`, PNEU phases/`D-xx`, TIJARA `T1–T25`, Tech-Platform issue keys). Portfolio IDs are `PF-<app>-NN`.
+
+## Evidence for TESTED claims (CI job logs read 2026-11-20)
+| TE ID | Repo @ SHA | CI run / job | Suite result in the log | Named tests or files cited (all passing in that log) |
+|---|---|---|---|---|
+| TE-PM-01 | Pneumatiques-MOUHIM @`ea55329f` | run 44119512301 / job 134166688755 (`pest`, PostgreSQL) | **406 passed, 1 skipped** (4,453 assertions). Skipped test: "prints the company letterhead…" (not a financial or security test) | `AccessControlTest`, `SiteTest`, `LoginTest` ("blocks login after 5 attempts per minute"), `TwoFactorTest` ("asks the owner for the code at login") |
+| TE-PM-02 | same | same | same | `StockServiceTest` ("keeps the stock ledger append-only", "refuses to make a site stock negative"), `TransferTest`, `UsedTyreTest`, `StockScenarioTest`, `OilDrumTest` ("serialises two sales on the same drum") |
+| TE-PM-03 | same | same | same | `SaleEngineTest` ("freezes a confirmed invoice…", "blocks credit above the customer limit", "takes partial payment by cash, card and cheque", "refuses sales to users without the permission or outside their s…") |
+| TE-PM-04 | same | same | same | `DocumentsTest` ("returns goods to stock with a credit note…"), `CashRegisterTest` ("computes what must be in the drawer", "closes the day with the gap…"), `CustomerAccountTest`, `IssuedInvoiceIntegrityTest` |
+| TE-PM-05 | same | same | same | `BackupRestoreTest` ("restores the uploaded files together with the database", "never replaces a live file with a copy that does not match…"), `BackupRestoreBusinessDataTest` ("…three-site business day figure for figur…"), `ActivityLogTest` ("refuses UPDATE at database level"), `GoLiveAuditTest` ("runs a read-only go-live audit") |
+| TE-PM-06 | same | same | same | `PurchaseTest`, `EquipmentTest`, `VehicleCompatibilityTest`, `ChineseMarketVehicleCatalogueTest` |
+| TE-RC-01 | rent-car-app @`781ab813` | run 44653856509 / job 136015159090 (`checks`) | server **319 passed (31 files)**, web **89 passed (16 files)**; 0 failed, 0 skipped | `auth.test.ts` (19), `permissions.test.ts` (22), `audit.test.ts` (7), `password.test.ts` (6) |
+| TE-RC-02 | same | same | same | `reservations.test.ts` (12), `customers.test.ts` (13), `vehicles.test.ts` (33) |
+| TE-RC-03 | same | same | same | `contracts.test.ts` (15; incl. overpayment refused, deposit rights) |
+| TE-RC-04 | same | same | same | `slice5.test.ts` (8; cash closing, reports, reminders, RC-04 receipts) |
+| TE-RC-05 | same | same | same | `local-ocr.test.ts` (4), `vehicle-ocr.test.ts` (2), `customer-intake.test.ts` (6) |
+| TE-RC-06 | same | same | same | `backup.test.ts` (6), `offsite-backup.test.ts` (29) — **synthetic, CI-only** |
+| TE-RC-07 | same | same | same | `data-isolation.test.ts` (3), `vehicle-docs.test.ts` (14), `storage-concurrency.test.ts` (1) |
+| TE-RC-08 | same | same | same | `vehicleCatalog.test.ts` (7), `infractions.test.ts` (5) |
+| TE-TJ-01 | tijara-os @`e5e2b26d` | run 44659052532 / jobs 136032432315 (`test (pg18)`) and 136032432655 (`test (pg16)`), both success | pg18 log: **78 passed (12 files)** | `sales.test.ts` (12), `ledger.test.ts` (9), `production.test.ts` (7), `properties.test.ts` (3), `isolation.test.ts` (7), `api.test.ts` (17), `e2e.test.ts` (8), `web-session.test.ts` (5), `bootstrap.test.ts` (4) |
+| TE-TJ-02 | same | same | same | `backup.test.ts` (3), `restore.test.ts` (1) — **CI database, not R2** |
+For RENT CAR and TIJARA the log prints results per file, not per test. Because the run reports 0 failed and 0 skipped, every test in a cited file passed at that SHA. No log was read for AMANZINE (no API access), NEXORA or ALLOSERVIX, so no strict TESTED claim is made for them beyond the workflow runs cited.
 
 ## TECH PLATFORM 2M (`924aa502`; metadata only)
 | ID | Feature | Status | Evidence |
@@ -41,18 +62,18 @@ Feature IDs reuse each app's own IDs when the app has them (RENT CAR `F-0xx`, PN
 Source of truth: `FEATURE_TRACKER.md` in the repo. Summary mapped to the vocabulary:
 | ID | Feature | Status | Evidence |
 |---|---|---|---|
-| F-001/F-002/F-027/F-028/F-031 | Auth, roles, audit, staff admin, delegated permissions | TESTED + DEPLOYED (demo) | FEATURE_TRACKER, CI run 44653856509 |
-| F-004/F-005/F-006/F-020 | Fleet, customers, reservations (no-overlap), branches | TESTED + DEPLOYED (demo) | D-026, D-036 |
-| F-007/F-008/F-024/F-025/F-034 | Contracts, check-out/in, extensions, extra drivers, templates | TESTED + DEPLOYED (demo) | D-039, D-044, D-045 |
+| F-001/F-002/F-027/F-028/F-031 | Auth, roles, audit, staff admin, delegated permissions | TESTED (TE-RC-01) + DEPLOYED (demo) | FEATURE_TRACKER |
+| F-004/F-005/F-006/F-020 | Fleet, customers, reservations (no-overlap), branches | TESTED (TE-RC-02) + DEPLOYED (demo) | rent-car:D-026, rent-car:D-036 |
+| F-007/F-008/F-024/F-025/F-034 | Contracts, check-out/in, extensions, extra drivers, templates | TESTED (TE-RC-03) + DEPLOYED (demo) | rent-car:D-039, D-044, D-045 |
 | F-009 | Payments/deposits ledger | IMPLEMENTED; FEATURE_TRACKER says "In progress"; RC-03 open | issue #26 |
 | F-010/F-022 | Uploads, duplicate detection | IMPLEMENTED; tracker "In progress" | D-031, PR #24/#27 |
-| F-011 | OCR with human approval (framing, MRZ TD1, licence labels) | TESTED + DEPLOYED (demo + OCR staging); tracker still "Planned" (stale) | PRs #20, #25, #28 |
-| F-012/F-013/F-014/F-026/F-036 | Maintenance, expiry alerts, reports, wa.me reminders, vehicle-first home | TESTED + DEPLOYED (demo) | FEATURE_TRACKER |
-| F-032 | Data durability + verified backups + restore drill | TESTED on synthetic data; NOT deployed on a real host | PR #23, `BACKUP_RESTORE.md:56`, issue #14 open |
-| F-033 | No outbound calls / no third-party scripts | TESTED | D-038 |
+| F-011 | OCR with human approval (framing, MRZ TD1, licence labels) | TESTED (TE-RC-05) + DEPLOYED (demo + OCR staging); tracker still "Planned" (stale) | PRs #20, #25, #28 |
+| F-012/F-013/F-014/F-026/F-036 | Maintenance, expiry alerts, reports, wa.me reminders, vehicle-first home | TESTED (TE-RC-04) + DEPLOYED (demo) | FEATURE_TRACKER |
+| F-032 | Data durability + verified backups + restore drill | TESTED (TE-RC-06, synthetic CI only); NOT deployed on a real host | PR #23, `BACKUP_RESTORE.md:56`, issue #14 open |
+| F-033 | No outbound calls / no third-party scripts | TESTED (TE-RC-07) | rent-car:D-038 |
 | F-035 | White-label branding (JMR) | DEPLOYED (demo) | PRs #32–#36 |
-| F-037 | Shared vehicle reference catalogue | TESTED | D-050, migration 0011 |
-| PF-RC-01 | NARSA road infractions manual registry + manager-reviewed matching | TESTED + DEPLOYED (demo) | PR #31, migration 0019, `docs/INFRACTIONS_NARSA_MVP.md` |
+| F-037 | Shared vehicle reference catalogue | TESTED (TE-RC-08) | rent-car:D-050, migration 0011 |
+| PF-RC-01 | NARSA road infractions manual registry + manager-reviewed matching | TESTED (TE-RC-08) + DEPLOYED (demo) | PR #31, migration 0019, `docs/INFRACTIONS_NARSA_MVP.md` |
 | F-021 | Company-hosted production + VPN | DESIGNED | D-012, D-017 |
 | F-015 | Manual WhatsApp attachment batch | DESIGNED | FEATURE_TRACKER |
 | F-023 | Controlled customer merge | DESIGNED (tables exist: `customer_merge_links`) | FEATURE_TRACKER |
@@ -62,15 +83,15 @@ Source of truth: `FEATURE_TRACKER.md` in the repo. Summary mapped to the vocabul
 | ID | Feature | Status | Evidence |
 |---|---|---|---|
 | Phase 1 | Docker, auth, roles, sites, FR/AR, activity log, settings, backups | DEPLOYED (pilot); R2 offsite pending | README "État d'avancement", issue #13 |
-| Phase 2 | Catalogue, DOT lots, used tyres + QR, services/bundles, movements, transfers, replenishment, inventory, approvals | TESTED + DEPLOYED (pilot), owner validation pending | README |
-| D-48 | Vehicle reference + compatibilities | TESTED | README, `docs/CHINESE_VEHICLE_CATALOGUE_MOROCCO_2026.md` |
-| Phase 3a | Sales screen, A4 invoice (mPDF), payments, approvals, "ask depot", workshop by seller, numbering | TESTED + DEPLOYED (pilot), validation pending | README, D-49–D-55 |
-| Phase 3b | Quotes, BL/BT + summary invoice, credit notes, returns, exchanges, trade-ins | TESTED + DEPLOYED (pilot) | README, D-56 |
-| Phase 4 | Customer accounts, opening balances, receipts, cheques, cash closing, expenses | TESTED + DEPLOYED (pilot); concurrency gaps PM-02/03/04 | issues #17, #18, #19 |
+| Phase 2 | Catalogue, DOT lots, used tyres + QR, services/bundles, movements, transfers, replenishment, inventory, approvals | TESTED (TE-PM-02) + DEPLOYED (pilot), owner validation pending | README |
+| pneu-mouhim:D-48 | Vehicle reference + compatibilities | TESTED (TE-PM-06) | README, `docs/CHINESE_VEHICLE_CATALOGUE_MOROCCO_2026.md` |
+| Phase 3a | Sales screen, A4 invoice (mPDF), payments, approvals, "ask depot", workshop by seller, numbering | TESTED (TE-PM-03) + DEPLOYED (pilot), validation pending | README, D-49–D-55 |
+| Phase 3b | Quotes, BL/BT + summary invoice, credit notes, returns, exchanges, trade-ins | TESTED (TE-PM-04) + DEPLOYED (pilot) | README, D-56 |
+| Phase 4 | Customer accounts, opening balances, receipts, cheques, cash closing, expenses | TESTED (TE-PM-04) + DEPLOYED (pilot); concurrency gaps PM-02/03/04 | issues #17, #18, #19 |
 | Phase 5 | Today/objectives/evening summary/PWA | IMPLEMENTED partial (push + remaining Excel imports missing) | README |
-| Phase 6 | Suppliers, purchase orders, partial receipts, supplier debts | TESTED | README |
-| Phase 7 | Equipment & maintenance | TESTED; advanced reports + accounting export = DESIGNED | README |
-| PF-PM-01 | `app:go-live-audit --strict` (count-only, no purge) | TESTED + DEPLOYED | CHANGELOG 2026-11-17, PR #16 |
+| Phase 6 | Suppliers, purchase orders, partial receipts, supplier debts | TESTED (TE-PM-06) | README |
+| Phase 7 | Equipment & maintenance | TESTED (TE-PM-06); advanced reports + accounting export = DESIGNED | README |
+| PF-PM-01 | `app:go-live-audit --strict` (count-only, no purge) | TESTED (TE-PM-05) + DEPLOYED | CHANGELOG 2026-11-17, PR #16 |
 | PF-PM-02 | Demo business data removal for go-live | DESIGNED; **NOT executed** | issue #14 |
 | PF-PM-03 | Issued invoice PDF preservation + voucher totals | IMPLEMENTED on branch, PR #7 OPEN | PR #7 |
 | PF-PM-04 | Reference workbook export / catalogue image uploads | IMPLEMENTED on branches, PRs #2/#3 OPEN | PRs #2, #3 |
@@ -108,19 +129,19 @@ Source of truth: `FEATURE_TRACKER.md` in the repo. Summary mapped to the vocabul
 |---|---|---|---|
 | PF-NX-01 | Synthetic interactive clinic demo (browser memory) | DEPLOYED | `apps/web`, Railway demo |
 | PF-NX-02 | Prisma domain model (27 models) | DESIGNED (schema only, no routes) | `apps/api/prisma/schema.prisma` |
-| PF-NX-03 | PostgreSQL RLS isolation prototype | TESTED locally only | `scripts/db`, README |
-| PF-NX-04 | Deny-by-default policy package | TESTED | `packages/policy` |
+| PF-NX-03 | PostgreSQL RLS isolation prototype | IMPLEMENTED (README says tested locally; no CI per-test result cited) | `scripts/db`, README |
+| PF-NX-04 | Deny-by-default policy package | IMPLEMENTED (tests exist; per-test result not cited) | `packages/policy` |
 | PF-NX-05 | Auth/MFA/tenancy, clinician MVP, portal, CDSS/OCR, FHIR/DICOM | DESIGNED (Phases 1–6) | `docs/roadmap.md` |
 
 ## TIJARA OS (`e5e2b26d`)
 | ID | Feature | Status | Evidence |
 |---|---|---|---|
-| T1–T15, T17–T23 | Ledger, sales, production, reservations, isolation, idempotency, payments, cost policy | TESTED + DEPLOYED (staging) | `docs/TEST_STATUS.md`, CI 44659052532 |
+| T1–T15, T17–T23 | Ledger, sales, production, reservations, isolation, idempotency, payments, cost policy | TESTED (TE-TJ-01) + DEPLOYED (staging) | `docs/TEST_STATUS.md`, CI 44659052532 |
 | T16 | Single-owner step-up verification | IMPLEMENTED partial (flag only) | `docs/TEST_STATUS.md` |
 | T24 | Plan limits | IMPLEMENTED partial | same |
 | T25 | Work orders with parts & warranty | DESIGNED (no tables) | same |
 | PF-TJ-01 | Web UI (AR/FR), browser-safe sessions, platform admin bootstrap by invite | DEPLOYED (staging) | PR #1, `docs/DEPLOYMENT.md` |
-| PF-TJ-02 | Encrypted R2 backup job + restore script | TESTED locally; NOT deployed; not run against R2 | `docs/DEPLOYMENT.md`, `test/backup.test.ts`, `test/restore.test.ts` |
+| PF-TJ-02 | Encrypted R2 backup job + restore script | TESTED (TE-TJ-02, CI database only); NOT deployed; not run against R2 | `docs/DEPLOYMENT.md`, `test/backup.test.ts`, `test/restore.test.ts` |
 | PF-TJ-03 | Locations, inter-branch transfers, cash sessions, units/variants, partial returns | IDEA/DESIGNED (known limits) | `docs/TEST_STATUS.md` |
 
 ## Proposed products
