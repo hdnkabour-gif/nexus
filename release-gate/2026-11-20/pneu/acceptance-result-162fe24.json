@@ -1,0 +1,90 @@
+{
+    "revision": "162fe2441266c8443d205ad2acc3b1d03e001bed",
+    "ok": true,
+    "checks": [
+        {
+            "check": "sale total TTC (2 tyres)",
+            "expected": 24000,
+            "actual": 24000,
+            "pass": true
+        },
+        {
+            "check": "stock after sale",
+            "expected": 2,
+            "actual": 2,
+            "pass": true
+        },
+        {
+            "check": "cash of the day",
+            "expected": 10000,
+            "actual": 10000,
+            "pass": true
+        },
+        {
+            "check": "customer debt",
+            "expected": 2000,
+            "actual": 2000,
+            "pass": true
+        },
+        {
+            "check": "one tyre net deducted (4 − 2 + 1)",
+            "expected": 3,
+            "actual": 3,
+            "pass": true
+        },
+        {
+            "check": "retried receipt returns the same payment",
+            "expected": 2,
+            "actual": 2,
+            "pass": true
+        },
+        {
+            "check": "payments with that key",
+            "expected": 1,
+            "actual": 1,
+            "pass": true
+        },
+        {
+            "check": "debt after receipt",
+            "expected": 0,
+            "actual": 0,
+            "pass": true
+        },
+        {
+            "check": "expected at close (100 + 20)",
+            "expected": 12000,
+            "actual": 12000,
+            "pass": true
+        },
+        {
+            "check": "difference at close",
+            "expected": 0,
+            "actual": 0,
+            "pass": true
+        },
+        {
+            "check": "cash expense after close refused",
+            "expected": true,
+            "actual": true,
+            "pass": true
+        },
+        {
+            "check": "close audited",
+            "expected": 1,
+            "actual": 1,
+            "pass": true
+        },
+        {
+            "check": "queued job handled by the worker container",
+            "expected": true,
+            "actual": true,
+            "pass": true
+        },
+        {
+            "check": "failed jobs",
+            "expected": 0,
+            "actual": 0,
+            "pass": true
+        }
+    ]
+}

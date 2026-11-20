@@ -1,0 +1,80 @@
+# Release gate evidence (2026-11-20, NEXUS #24)
+
+Evidence for two gate items: **(1) what a merge does on Railway** and **(2) an isolated acceptance run of the PNEU release candidate**.
+Nothing here merges, deploys, changes Railway or touches a company database. Synthetic data only.
+
+## 1. What a merge into `main` does on Railway
+
+The data was read on 2026-11-20 with **GraphQL queries only**: `deploymentTriggers`, `serviceInstance` and `deployments`. No mutation was sent and no variable values were read. The full data is in `railway-deploy-triggers.json`.
+
+| Service | Deploy trigger | Deployment history (vs `main` commits) | A merge into `main`… | Start command migrates the DB? |
+|---|---|---|---|---|
+| PNEU app (env `mouhim`) | **`main`, `checkSuites: false`** | `ea55329` pushed 15:53:34Z, deployed 15:53:36Z; `181095a` pushed 15:20:19Z, deployed 15:20:21Z. Both are plain `deploy`, not patches | **deploys immediately, without waiting for CI** | **yes**: `entrypoint.sh web` runs `migrate --force` then `db:seed --force` |
+| PNEU worker (env `mouhim`) | **`main`, `checkSuites: false`** | same commit as the app | **deploys immediately** | no (the worker only runs `queue:work`) |
+| RENT CAR (env `production`) | none; watch pattern `__railway_manual_approval_required__` | `781ab81` pushed 01:28:17Z → `SKIPPED` 01:28:19Z → manual `patch` deploy 01:29:01Z | does **not** deploy by itself (a manual patch deploy is needed) | **yes**: `start` runs `migrate.js` before the server |
+| AMANZINE (`balanced-growth`) | none | `4ff08a9` was on `main` on Nov 16 and deployed by manual `patch` on Nov 18 | does **not** deploy by itself | **yes**: `server/index.js` calls `migrate()` at boot |
+| AMANZINE staging | none | `4ff08a9` | does not deploy by itself | yes |
+| PNEU staging app / worker | none (feature branches) | app `a2691d7`, worker `6a81189`: **not aligned** | n/a | app yes |
+
+**Consequences**
+- **PNEU:** merging #22, then #23, then #24 into `main` produces **three production deploys**. Merging #23 alone (the only PR with a migration) would migrate the live DB with the chain half-done.
+  - Every deploy also re-runs the reference seeders.
+  - Before any merge, the owner must decide to hold auto-deploy (for example, temporarily disconnect the trigger or pin the deployment), or to merge the chain in one fast-forward and accept a single deploy. This is a Railway change, so it needs explicit owner approval. **Not done here.**
+- **RENT CAR, AMANZINE:** merging does not deploy, but any later deploy runs the new migrations at boot (`0020` / `stock_committed_items`).
+- `canRollback: true` on Railway only means the previous *image* can be redeployed. It says nothing about the database or files (see §2.3).
+
+## 2. PNEU release candidate in an isolated environment
+
+### 2.1 Candidate and provenance
+- `main` = `ea55329` = merge-base of the chain = the deployed commit. The chain #22 → #23 → #24 is therefore a fast-forward, and the final tree after the merges **is** `162fe2441266c8443d205ad2acc3b1d03e001bed`. RENT CAR (`781ab81` → `a651681`) and AMANZINE (`4ff08a9` → `90d2a07`) are in the same situation.
+- The image was built from `git archive 162fe24` with the **production `Dockerfile`**. It has the label `org.opencontainers.image.revision=162fe24…` and the file `/app/REVISION` with the same SHA. **Web and worker run the same image.**
+- Local build-environment differences, not in the image's app layers:
+  - the `composer` binary came from a local copy, because Docker Hub rate-limited the `composer:2` pull;
+  - the sandbox proxy CA was trusted during the build and **removed in the last layer**.
+  - The app source, `composer.lock` and the entrypoint are unchanged.
+
+### 2.2 Isolation
+- PostgreSQL 18 runs in a fresh container. Web and worker are attached **only to an internal Docker network with no route outside**, so no mail, payment, carrier or backup call can leave.
+- The configuration is generated fresh and synthetic (random app key, `example.test` owner). Mail goes to the log, the scheduler is off and the backup disk is local.
+- The real entrypoint ran: migrate, reference seed, owner from the `OWNER_*` variables, then the server. Login page: 200.
+
+### 2.3 Results
+**Acceptance on `162fe24`** (`pneu/acceptance.php` → `pneu/acceptance-result-162fe24.json`): **14/14 PASS**
+
+| Check | Result |
+|---|---|
+| Sale of 2 tyres = 240.00 TTC, paid 100.00 cash | stock 4 → 2 |
+| Credit note for 1 tyre (120.00) on account | **cash of the day 100.00, debt 20.00, one tyre net deducted (stock 3)** |
+| Same receipt sent twice (same key) | one payment, debt 0 |
+| Close of the day | expected 120.00, difference 0; a cash expense after the close is refused; the close is audited |
+| Worker container (same image) | consumed a queued job; 0 failed jobs |
+
+**Upgrade rehearsal** (`pneu/rehearse.sh`):
+1. The deployed `ea55329` writes synthetic books: float, cash sale, credit note, a pre-#23 receipt and an expense.
+2. The `162fe24` image starts on the same DB. Only `2026_11_20_100000_add_idempotency_to_payments` runs.
+3. Code rollback: `ea55329` restarts on the migrated schema.
+
+| Step | Cash expected | Debt | Stock |
+|---|---|---|---|
+| A: `ea55329` | 155.00 | 10.00 | 3 |
+| B: after upgrade to `162fe24` | 155.00 | 10.00 | 3 |
+| C: `ea55329` again on the migrated schema | 155.00 | 10.00 | 3 |
+
+- Row fingerprints over the pre-upgrade columns: 72 of 74 tables are identical, including every business table.
+- The 2 that differ (`oil_catalogue_references`, `tyre_catalogue_references`) have the same row counts. The release changes no seeder, so the difference is the boot-time reseed refreshing timestamps, which happens on every deploy (`pneu/upgrade-fingerprint-diff.txt`).
+- **The migration is additive.** A code-only rollback to `ea55329` works on the migrated schema in this rehearsal.
+- This is **not** a database or file restore; that still requires the off-Railway restore proof (PNEU #13).
+
+### 2.4 Not covered here (still open on the gate)
+- Physical stock transfers DEP / M01 / M02 with real operators.
+- Photos and their access control.
+- The legal paper-invoice number.
+- Operator and owner sign-off.
+- PNEU **staging** on Railway is still not aligned (app and worker on different branches).
+- R2 off-Railway restore (#13).
+
+## Reproduce
+1. Build the image from `git archive <sha>` with the production Dockerfile (in a sandbox, add the proxy CA only during the build).
+2. Create an internal Docker network, a `postgres:18` container and a synthetic env file with `DB_HOST=pneu-rc-db`, `DB_DATABASE=mouhim_rc` and `OWNER_EMAIL=owner.rc@example.test`. Both scripts refuse to run against any other database.
+3. Run `web` and `worker` from the same image.
+4. Run `php /acceptance/acceptance.php` in the web container, or `rehearse.sh` for the upgrade path.
