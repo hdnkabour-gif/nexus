@@ -47,6 +47,7 @@ NEXUS is the central *operational knowledge, reliability, diagnostics and govern
 | [docs/29_DECISION_REGISTRY.md](docs/29_DECISION_REGISTRY.md) | Index of decisions and rejected features across apps |
 | [docs/30_RISK_GAP_REGISTER.md](docs/30_RISK_GAP_REGISTER.md) | Portfolio risks and gaps (P0/P1/P2) |
 | [docs/31_EVIDENCE_INDEX.md](docs/31_EVIDENCE_INDEX.md) | SHAs, Railway deployments, CI runs, issues and files behind every claim |
+| [docs/32_COMMERCIAL_INFRA_READINESS.md](docs/32_COMMERCIAL_INFRA_READINESS.md) | Commercial stage per app, Railway cost run-rate vs pricing hypothesis, pilot feedback design, repo→Railway→DB map, safe P0/P1 plan |
 | [registry/portfolio-baseline.v1.json](registry/portfolio-baseline.v1.json) | Machine-readable Portfolio Baseline V1, **not** live telemetry |
 | [registry/portfolio-discovery.v1.json](registry/portfolio-discovery.v1.json) | Machine-readable provider discovery snapshot, **not** live telemetry |
 | [packages/monitor-core/](packages/monitor-core/) | Tested read-only normalization and backup health logic |

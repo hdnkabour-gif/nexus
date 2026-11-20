@@ -1,0 +1,135 @@
+{
+ "schema_version": "1.0.0",
+ "recorded_on": "2026-11-20",
+ "privacy_rule": "No personal names, phone numbers, emails, addresses or business identifiers of prospects in this repository. Pilot IDs are pseudonymous; the mapping to real contacts lives only in the owner's private customer record (proposed: ALLOSERVIX admin, encrypted inquiries store) — see docs/32 §4.",
+ "commercial_stage_vocabulary": [
+  "IDEA",
+  "PROSPECT_INTEREST",
+  "TRIAL_LINK_SENT",
+  "ACTIVE_TRIAL",
+  "TRIAL_RESULT_DOCUMENTED",
+  "AGREEMENT",
+  "PAID_SUBSCRIPTION",
+  "PAUSED",
+  "CHURNED",
+  "REJECTED",
+  "UNKNOWN"
+ ],
+ "stage_rules": [
+  "TRIAL_LINK_SENT is not ACTIVE_TRIAL: needs evidence of use (login/sessions count) or written feedback.",
+  "AGREEMENT needs a signed quote/contract; PAID_SUBSCRIPTION needs a received payment. Neither is stored here beyond a yes/no and date.",
+  "Technical lifecycle (docs/27) and commercial stage are separate fields."
+ ],
+ "pricing_hypothesis": {
+  "setup_fee_mad": 5000,
+  "monthly_mad": [
+   500,
+   600
+  ],
+  "status": "HYPOTHESIS — not a contract; scope in docs/32 §3"
+ },
+ "apps": [
+  {
+   "app_id": "pneu-mouhim",
+   "commercial_stage": "TRIAL_LINK_SENT",
+   "pilot_ids": [
+    "PILOT-PM-01"
+   ],
+   "segment": "multi-site tyre & auto-service business",
+   "source": "OWNER_STATED (conversation 2026-11-20); not independently verified",
+   "trial_environment": "UNKNOWN which URL was sent (pilot `mouhim` env or staging)",
+   "blocking_before_real_data": [
+    "R-003 no proven restore",
+    "#14 demo data still present",
+    "#20 P0 release gate",
+    "#17-#19 P1 concurrency"
+   ]
+  },
+  {
+   "app_id": "rent-car",
+   "commercial_stage": "TRIAL_LINK_SENT",
+   "pilot_ids": [
+    "PILOT-RC-01"
+   ],
+   "segment": "car rental company",
+   "source": "OWNER_STATED (conversation 2026-11-20); not independently verified",
+   "trial_environment": "UNKNOWN (Railway demo = fictitious data only, D-030)",
+   "blocking_before_real_data": [
+    "D-030/D-012: Railway is demo-only; real data planned on company host",
+    "CIN/licence scans: CNDP review",
+    "#14 restore proof",
+    "#22 independent audit"
+   ]
+  },
+  {
+   "app_id": "tijara-os",
+   "commercial_stage": "PROSPECT_INTEREST",
+   "pilot_ids": [
+    "PILOT-TJ-01",
+    "PILOT-TJ-02",
+    "PILOT-TJ-03"
+   ],
+   "segments": {
+    "PILOT-TJ-01": "auto mechanic",
+    "PILOT-TJ-02": "butcher/grill (food)",
+    "PILOT-TJ-03": "alarm & fire equipment"
+   },
+   "source": "OWNER_STATED (conversation 2026-11-20); not independently verified — owners agreed to try",
+   "blocking_before_real_data": [
+    "docs/DEPLOYMENT.md real-data conditions 1–6 unmet",
+    "T25 work orders missing (TJ-01, TJ-03)"
+   ]
+  },
+  {
+   "app_id": "amanzine",
+   "commercial_stage": "IDEA",
+   "pilot_ids": [
+    "PILOT-AM-01"
+   ],
+   "segment": "small clothing seller with existing customers (related party)",
+   "source": "OWNER_STATED (conversation 2026-11-20); not independently verified — proposed pilot",
+   "blocking_before_real_data": [
+    "no per-size/colour stock",
+    "no returns flow found",
+    "payment/delivery connectors unproven in production",
+    "no proven restore"
+   ]
+  },
+  {
+   "app_id": "alloservix",
+   "commercial_stage": "N/A (brand and storefront)",
+   "role": "commercial front: services, solutions, quote requests, customer record",
+   "source": "OWNER_STATED (conversation 2026-11-20); not independently verified"
+  },
+  {
+   "app_id": "nexus",
+   "commercial_stage": "N/A (internal operations tool)",
+   "role": "monitoring, backups evidence, releases, support load",
+   "source": "OWNER_STATED (conversation 2026-11-20); not independently verified"
+  },
+  {
+   "app_id": "nexora",
+   "commercial_stage": "IDEA",
+   "pilot_ids": [],
+   "source": "docs/27; no prospect stated"
+  },
+  {
+   "app_id": "scanflow-pro",
+   "commercial_stage": "UNKNOWN",
+   "pilot_ids": [],
+   "source": "no prospect stated"
+  },
+  {
+   "app_id": "tech-platform",
+   "commercial_stage": "EXCLUDED (employer-owned; not an ALLOSERVIX product)",
+   "pilot_ids": [],
+   "source": "owner direction 2026-11-20"
+  },
+  {
+   "app_id": "school-platform",
+   "commercial_stage": "IDEA",
+   "pilot_ids": [],
+   "source": "no confirmed pilot school"
+  }
+ ]
+}
