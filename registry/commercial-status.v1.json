@@ -16,7 +16,7 @@
   "UNKNOWN"
  ],
  "stage_rules": [
-  "TRIAL_LINK_SENT is not ACTIVE_TRIAL: needs evidence of use (login/sessions count) or written feedback.",
+  "TRIAL_LINK_SENT is not ACTIVE_TRIAL. ACTIVE_TRIAL may be recorded on either (a) the owner's explicit declaration of active browsing/testing — a PROVISIONAL stage with evidence_level OWNER_STATED, not technically verified — or (b) verified activity (login/session evidence or written feedback), recorded as evidence_level VERIFIED_ACTIVITY. Keep the two evidence levels distinct; (a) never implies (b).",
   "AGREEMENT needs a signed quote/contract; PAID_SUBSCRIPTION needs a received payment. Neither is stored here beyond a yes/no and date.",
   "Technical lifecycle (docs/27) and commercial stage are separate fields.",
   "Owner decision 2026-11-20 (PR #19 comment 05:05Z): PNEU and RENT CAR moved to ACTIVE_TRIAL on OWNER_STATED evidence; supersedes the earlier TRIAL_LINK_SENT comment. ACTIVE_TRIAL here does not imply a verified login, a PASS result, signed acceptance, production use or payment."
@@ -49,12 +49,12 @@
    "source": "OWNER_STATED 2026-11-20 (PR #19 comment); not independently verified",
    "trial_environment": "UNKNOWN — exact URL sent not confirmed by owner; do not infer from Railway",
    "blocking_before_real_data": [
-    "R-003 no proven restore",
+    "R-003: a 2026-11-17 in-Railway isolated restore of the stored copy is REPORTED (PNEU #13, grade B); still UNPROVEN: off-Railway R2 restore, the first observed overnight schedule, and monetary balance reconciliation",
     "#14 demo data still present",
     "#20 P0 release gate",
     "#17-#19 P1 concurrency"
    ],
-   "evidence_level": "OWNER_STATED",
+   "evidence_level": "OWNER_STATED (provisional)",
    "data_mode": "SYNTHETIC_ONLY"
   },
   {
@@ -72,7 +72,7 @@
     "#14 restore proof",
     "#22 independent audit"
    ],
-   "evidence_level": "OWNER_STATED",
+   "evidence_level": "OWNER_STATED (provisional)",
    "data_mode": "SYNTHETIC_ONLY"
   },
   {
