@@ -24,7 +24,7 @@ SHAs: PNEU `ea55329f` · RENT CAR `781ab813` · TIJARA `e5e2b26d` · AMANZINE `4
 | Mixed payments + cheques (D-22, D-50) | `ConfirmSaleAction`, `CustomerAccountActions` | AT `SaleEngineTest`, `CustomerAccountTest` | PM-S07 | — | — | NOT_RUN |
 | Invoice frozen, correction only by credit note (D-15) | DB protection + `CreateCreditNoteAction` | AT `SaleEngineTest` ("not even in SQL"), `IssuedInvoiceIntegrityTest` | PM-S08/S09 | legacy invoice PDFs | [#20](https://github.com/hdnkabour-gif/Pneumatiques-MOUHIM/issues/20) PM-05 | NOT_RUN |
 | Numbering (D-14, D-49, D-58) | `SequenceService` | AT `InvoiceNumberFormatTest`, `SaleEngineTest` | PM-S08 | production format + next number | [#13](https://github.com/hdnkabour-gif/Pneumatiques-MOUHIM/issues/13) | NOT_RUN |
-| Returns, exchanges, trade-ins (D-52, D-56) | `CreditNoteHandler` | AT `DocumentsTest` (11) | PM-S09 | double return and cash refund: no AT | — | NOT_RUN |
+| Returns, exchanges, trade-ins (D-52, D-56) | `CreditNoteHandler` | AT `DocumentsTest` (11) | PM-S09 | over-return (cumulative > sold), replay and cash refund: no AT | — | NOT_RUN |
 | Cash day close and lock (D-29) | `Services/Money/CashRegister` | AT `CashRegisterTest` (3) | PM-S10 | close vs receipt race; audit atomicity and retry | [#17](https://github.com/hdnkabour-gif/Pneumatiques-MOUHIM/issues/17), [#19](https://github.com/hdnkabour-gif/Pneumatiques-MOUHIM/issues/19) | NOT_RUN |
 | Overpayment / negative payment refused | CR: guards in `CustomerAccountActions`, `ConfirmSaleAction` | **no named AT** | PM-S10 | — | — | UNKNOWN |
 | Immutable activity log (D-34) | PG trigger | AT `ActivityLogTest` | PM-S12 | — | — | NOT_RUN |
@@ -74,7 +74,7 @@ SHAs: PNEU `ea55329f` · RENT CAR `781ab813` · TIJARA `e5e2b26d` · AMANZINE `4
 | Order idempotency | `orders.js:44-77` | `order-idempotency.test.js` | AM-S03 | — | UNKNOWN | NOT_RUN |
 | No oversell; single decrement | CR `orders.js:217-222` (clamped, no status check) | none found for oversell | AM-S04 | suspected defect | UNKNOWN (no API access) | OPEN |
 | Stock restored on cancel | CR `orders.js:345-353` (no restore) | none found | AM-S05 | suspected defect | UNKNOWN | OPEN |
-| Returns / exchange | none | none | AM-S06 | not built | UNKNOWN | UNIMPLEMENTED |
+| Returns / exchange with stock + money reversal | none found by name (CR) | none | AM-S06 | complete path unverified | UNKNOWN | UNVERIFIED |
 | Delivery retry and reconciliation | delivery registry + retry queue | `promo_livraison-contract`, `shipment-retry`, `tracking-sync`, `retry-queue` tests | AM-S08 | production provider not verified | UNKNOWN | NOT_RUN (mock) |
 | Tracking privacy | `/track/:phone`, `/track-code/:code` | `order-tracking.test.js` | AM-S09 | was the repair branch merged? | UNKNOWN | UNKNOWN |
 | Settlement (COD/CMI) | `payments`, `wallets` | `payment.test.js` | AM-S11 | no verified settlement path | UNKNOWN | BLOCKED |

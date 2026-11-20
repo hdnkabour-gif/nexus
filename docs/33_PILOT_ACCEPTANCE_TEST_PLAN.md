@@ -51,7 +51,7 @@ A synthetic `PASS` is **never** reported as production `VERIFIED`.
 
 Which URL the owners actually received is **UNKNOWN** (docs/32 §9). The Railway mapping above was observed on 2026-11-20 (docs/31 E2) and still needs the owner's confirmation. If a pilot owner was given the `mouhim` or `production` URL, that conflict needs an owner decision (Q-01) before any further testing there.
 
-## 2. Correction to PR #18 (recorded here, PR #18 left unchanged)
+## 2. Correction to PR #18 (now applied in PR #18 revision 2, `2d40a65`)
 docs/30 R-003 says "no evidenced restore from a stored offsite copy for any app". That is **too strong for PNEU**: [PNEU #13](https://github.com/hdnkabour-gif/Pneumatiques-MOUHIM/issues/13) (2026-11-17) reports:
 - an encrypted production backup to a *temporary Railway object-storage bucket*;
 - `app:backup-restore --into=<new db>` passing without changing the original DB;
@@ -183,10 +183,11 @@ Analysed SHA `ea55329f` (main = pilot deployment). Tests are in `tests/Feature/*
   1. Return 1 of 4 tyres from PM-S07 step 1.
   2. Exchange it for a different tyre using the voucher.
   3. Take a trade-in above the cap.
-  4. Return the same line twice.
-- **Expected:** stock +1 with the original DOT; the credit note equals the line value; the original invoice is unchanged (D-15); step 4 is refused (cannot exceed the quantity sold).
+  4a. **Over-return:** on the same 4-tyre line, after step 1 (1 returned), request returns of 2 then 2 more. Cumulative 1 + 2 + 2 = 5 > 4 sold.
+  4b. **Replay:** resend the *same* return request (same form submission / double tap) once.
+- **Expected:** stock +1 with the original DOT; the credit note equals the line value; the original invoice is unchanged (pneu-mouhim:D-15). Step 4a: the 2nd request of 2 is refused, because only 1 unit remains returnable; at most 4 units in total are ever credited. Step 4b: one credit note only. Partial returns that stay within the sold quantity are **correct behaviour**, not a defect.
 - **Invariant:** sold − returned ≥ 0 per line; customer balance = invoices − payments − credit notes.
-- **Gap:** step 4 (double return) and a **cash refund paid out of the drawer** have no named AT. Run them as MP and record the result; they stay `UNKNOWN` until then.
+- **Gap:** steps 4a/4b (over-return, replay) and a **cash refund paid out of the drawer** have no named AT. Run them as MP and record the result; they stay `UNKNOWN` until then.
 
 ### PM-S10 — Cash day: closing, lock, overpayment, negative, replay (P0) · PARTIAL · BLOCKED by #17, #19
 - **Source/AT:** `Feature/Money/CashRegisterTest` (drawer = float + cash in − expenses; close with gap, lock, only the owner reopens, D-29; storekeeper has no cash page); `CustomerAccountTest` (cheque rejected restores debt); issues [#17](https://github.com/hdnkabour-gif/Pneumatiques-MOUHIM/issues/17) PM-02 and [#19](https://github.com/hdnkabour-gif/Pneumatiques-MOUHIM/issues/19) PM-04.
@@ -481,7 +482,7 @@ Analysed SHA `4ff08a99` (main = `Amanzine` + staging). The GitHub issues and CI 
 | AM-S03 | P0 | Cart → order with idempotency key; double submit | `orders.js:44-77`; `order-idempotency.test.js` | one order; a reused key with a different body gives 409 | READY_TO_TEST |
 | AM-S04 | P0 | Merchant approves an order → stock decrement | `orders.js:200-222` CR: decrement on approve, read-then-write, `Math.max(0, stock − qty)`; no status check before approving | order of 3 with stock 2 → **must be refused**. CR suggests it is clamped to 0 (silent oversell); approving twice may decrement twice. **Needs a test** | **OPEN (suspected defect, CR)** |
 | AM-S05 | P0 | Reject or cancel after approval → stock restored | `orders.js:345-353` CR: sets `cancelled`, no stock restore | stock back to the previous value | **OPEN (suspected defect, CR)** |
-| AM-S06 | P0 | **Return / exchange** (size swap) | no returns table (docs/27 data model) | — | **UNIMPLEMENTED** |
+| AM-S06 | P0 | **Return / exchange** (size swap) with stock and money reversal | no table or route named returns found (CR). Absence of a name is not proof; a complete return → stock → payment reversal path is **unverified** | stock and amount reversed exactly once | **UNVERIFIED (treat as not available)** |
 | AM-S07 | P1 | Money rounding: 3 × 129.90 − coupon 10% + delivery 35.00 | `products.price NUMERIC`; `order-costing.test.js`, `pricing-engine.test.js` | 389.70 − 38.97 + 35.00 = **385.73**; same on screen, order and payment | READY_TO_TEST (verify no float drift) |
 | AM-S08 | P0 | Delivery via Promo Livraison **mock**: create, timeout, unknown status, reconcile, no duplicate shipment | `promo_livraison-contract.test.js`, `shipment-retry.test.js`, `tracking-sync.test.js`, `retry-queue.test.js`, `auto-ship-on-approval.test.js` | a timeout leads to reconciliation by query, not a second shipment; unknown stays UNKNOWN | READY_TO_TEST (mock only); production NOT VERIFIED |
 | AM-S09 | P1 | Customer tracking by code; privacy of tracking by phone | `orders.js` `GET /track/:phone`, `/track-code/:code`; `order-tracking.test.js`; branch `repair/amanzine-p0-tracking-privacy-20261113` | tracking by phone must not expose another customer's orders | **UNKNOWN** (was a repair branch merged? CI not visible) |
@@ -514,13 +515,16 @@ Analysed SHA `4ff08a99` (main = `Amanzine` + staging). The GitHub issues and CI 
 | G6 | App-specific go-live decision approved by the owner (and the customer) | written decision with date and SHA | open | open | open | open |
 Until all of G1–G6 hold for an app, every pilot result is **synthetic acceptance only**.
 
-## 9. Open questions for the owner
-- **Q-01:** which exact URL did each pilot owner receive? If it is PNEU `mouhim` or RENT CAR `production`, decide whether to move the pilot to staging.
-- **Q-02:** who runs the manual (MP) scenarios: you, the pilot owner, or both? Evidence is recorded by role only.
-- **Q-03:** PNEU: do you want PM-S10 steps 3 and 6 and PM-S11 run now as "expected to fail" diagnostics on local Docker, or only after #17–#19?
-- **Q-04:** AMANZINE: build variant stock and returns, or compare with a ready-made shop first?
-- **Q-06:** commercial stage of PNEU and RENT CAR: your comment on #20 says keep `TRIAL_LINK_SENT` until there is evidence of use; the relayed Astra review asks for `ACTIVE_TRIAL / OWNER_STATED / SYNTHETIC_ONLY` in PR #19. Which one applies?
-- **Q-05:** TIJARA mechanic and alarm/fire: will the owners fill the discovery worksheets (§B of their checklists) before any T25 work?
+## 9. Owner decisions (PR #22 comment, 2026-11-20 05:04Z)
+| Q | Decision | Effect on this plan |
+|---|---|---|
+| Q-01 URLs | `UNKNOWN`; do not infer the URL sent from Railway | §1 table stays "observed, unconfirmed". **No destructive or manual transaction tests on PNEU `mouhim` or RENT CAR `production`.** Existing browsing stays passive and synthetic-only |
+| Q-02 testers | Two evidence streams: **technical operator** runs tests in isolated fixtures; **business owner** does usability/business acceptance on a safe synthetic environment | Record role, app/deployed SHA, outcome and support time; no personal details |
+| Q-03 expected failures | Allowed **only** in isolated, non-production environments, as diagnostic regression tests first | Report "failing test showing a bug" separately from "test execution error"; fixes go to app-specific PRs. PNEU staging app/worker SHA alignment (R-008) comes first |
+| Q-04 clothing | Compare **WooCommerce** on the same narrow clothing pilot first (size×colour stock, refunds/exchanges, COD/shipping, 12-month ownership cost); AMANZINE is not deleted or replaced | AM-S02/S06/S11 stay unavailable. **AM-S04/S05 suspected stock defects are a separate P0 verification track** with safe automated tests in the AMANZINE repo, whatever the comparison decides |
+| Q-05 TIJARA | Discovery worksheets from both prospects **before** T25 | TJ1-S02/S03, TJ3-S03…S05 stay `UNIMPLEMENTED` |
+| Q-06 stage | PNEU and RENT CAR = `ACTIVE_TRIAL · OWNER_STATED · SYNTHETIC_ONLY`, applied in **PR #19's** registry, not here | Does not imply a verified login, a PASS, acceptance, production use or payment |
+Testing constraints restated: never send a real shipment, payment, WhatsApp, SMS or email; every result stays `NOT_RUN` until evidence is recorded.
 
 ## CHECKPOINT
 - **Branch:** `docs/pilot-acceptance-scenarios-v1-20261120`, from NEXUS `main` `bc8e6d13`. It is **independent** of PR #18/#19, whose branches are untouched.
@@ -534,4 +538,5 @@ Until all of G1–G6 hold for an app, every pilot result is **synthetic acceptan
 - **Issues read:** PNEU #13, #14, #17–#20; RENT CAR #14, #15, #16, #22, #26 (latest comments included).
 - **Executed in this task:** no app test suite, no scenario, no environment access beyond read-only reading of the source files. NEXUS checks are listed in the PR.
 - **Not done:** any run against Railway; ERPNext/Odoo/WooCommerce comparison (Astra); legal review.
-- **Unresolved:** Q-01…Q-05; AM-S04/S05 suspected defects need a test in the AMANZINE repo (separate task, not created here); AMANZINE issue/CI state UNKNOWN.
+- **Revision 2 (2026-11-20):** owner decisions §9 recorded; PM-S09 over-return/replay steps made precise (Codex P2 review on `abe70c0`); AM-S06 wording tightened; §2 points to PR #18 revision 2.
+- **Unresolved:** Q-01 URLs still UNKNOWN; AM-S04/S05 suspected defects need a test in the AMANZINE repo (separate task, not created here); AMANZINE issue/CI state UNKNOWN.

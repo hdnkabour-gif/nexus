@@ -13,7 +13,7 @@ Lisez d'abord les [règles communes](_COMMON_fr.md). Application testée : AMANZ
 
 ## B. Pas encore prêt — à décider avant l'essai réel
 - **Stock par taille et par couleur** (ex. T-shirt M noir = 3, L blanc = 0) : n'existe pas encore. Aujourd'hui, il y a un seul stock par produit.
-- **Retours et échanges de taille** : n'existent pas encore.
+- **Retours et échanges de taille** (avec remise en stock et remboursement) : non vérifiés, à considérer comme non disponibles.
 - Deux commandes pour la dernière pièce, et l'annulation d'une commande déjà approuvée : risque d'erreur de stock à corriger (docs/33 AM-S04/S05).
 - Paiement à la livraison et règlement du transporteur : non vérifiés.
 
