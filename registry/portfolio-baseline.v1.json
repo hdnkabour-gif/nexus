@@ -1,0 +1,877 @@
+{
+  "schema_version": "1.0.0",
+  "baseline": "Portfolio Baseline V1",
+  "verified_on": "2026-11-20",
+  "supersedes_for_current_state": "registry/portfolio-discovery.v1.json (kept unchanged as the 2026-11-17 historical snapshot)",
+  "observation_channel": "Claude Code session: git clones (HEAD of default branch), GitHub REST (repo-scoped, read), Railway GraphQL (read-only queries, no mutations). NOT a NEXUS connection.",
+  "connection_status": "discovery_only",
+  "data_classification": "operational_metadata_only",
+  "status_vocabulary": [
+    "IDEA",
+    "DESIGNED",
+    "IMPLEMENTED",
+    "TESTED",
+    "DEPLOYED",
+    "VERIFIED",
+    "REJECTED",
+    "UNKNOWN"
+  ],
+  "status_rules": "DEPLOYED = Railway latest deployment SUCCESS at stated SHA. CI green is TESTED evidence only. VERIFIED requires independent, specific evidence and is not granted to any app-level item in this baseline.",
+  "accounts_scanned": {
+    "hdnkabour-gif": "9 repositories visible via connected GitHub (private + public)",
+    "abdellatifhadana-byte": "10 PUBLIC repositories via anonymous git read; private repositories of this account are NOT visible to this session (UNKNOWN)"
+  },
+  "apps": [
+    {
+      "app_id": "tech-platform",
+      "name": "TECH PLATFORM 2M",
+      "lifecycle": "IMPLEMENTED",
+      "data_sensitivity": "employer_confidential",
+      "purpose": "Internal technical operations platform (locations, rooms, equipment, cabling, procedures, tickets) for an employer broadcast site.",
+      "repositories": [
+        {
+          "repo": "hdnkabour-gif/Tech-Platform-",
+          "role": "canonical",
+          "visibility": "private",
+          "main_sha": "924aa502d9b60dbee3114dbb16100290c10dfb1b",
+          "main_commit_at": "2026-09-27T11:47:49+01:00"
+        },
+        {
+          "repo": "abdellatifhadana-byte/sahar2026",
+          "role": "public_copy_unapproved",
+          "visibility": "public",
+          "main_sha": "3c6e411252afaa657a7648d3709a9b39dbf9095a",
+          "note": "626/627 tracked files byte-identical to Tech-Platform- main; only assets/plan-technique.PNG missing. Requires owner decision (risk R-001)."
+        },
+        {
+          "repo": "abdellatifhadana-byte/tech",
+          "role": "empty",
+          "visibility": "public",
+          "main_sha": null
+        }
+      ],
+      "stack": [
+        "Node.js (ESM, no framework)",
+        "pg",
+        "IndexedDB client stores + central sync",
+        "node:test"
+      ],
+      "ci": {
+        "workflows": [
+          "verify.yml (Vérification 2M TECH)",
+          "runtime-phase24.yml"
+        ],
+        "last_main_run": {
+          "run_id": 36313684531,
+          "sha": "924aa502",
+          "conclusion": "success",
+          "at": "2026-09-27"
+        }
+      },
+      "open_issues": 25,
+      "deployments": [
+        {
+          "railway_project": "overflowing-vision",
+          "railway_project_id": "e83c6f79-8c86-4843-9a3c-95ed806940d9",
+          "environment": "production",
+          "environment_name_raw": "production",
+          "service": "Tech-Platform-",
+          "service_id": "15adcb63-0a07-4af2-8d76-998a5b24d2b7",
+          "deployed_sha": "04e70ae8d19cbc74c2b3a628211fd2d1d148e678",
+          "deployed_branch": "preview/pilote-technique-ui",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-10-31T20:17:26.142Z",
+          "domains": [
+            "tech-platform-ui.up.railway.app"
+          ],
+          "cron": null,
+          "volume_mounts": []
+        },
+        {
+          "railway_project": "spectacular-victory",
+          "railway_project_id": "98aca76b-eb17-4616-80e6-25cf8a29b68c",
+          "environment": "production",
+          "environment_name_raw": "production",
+          "service": "AMANZINE",
+          "service_id": "02f5ca38-a87a-45e5-a87b-9a8f7d197d1f",
+          "deployed_sha": "924aa502d9b60dbee3114dbb16100290c10dfb1b",
+          "deployed_branch": "main",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-11-15T15:24:26.354Z",
+          "domains": [
+            "amanzine22.up.railway.app"
+          ],
+          "cron": null,
+          "volume_mounts": []
+        },
+        {
+          "railway_project": "spectacular-victory",
+          "railway_project_id": "98aca76b-eb17-4616-80e6-25cf8a29b68c",
+          "environment": "TECH PLATFORM",
+          "environment_name_raw": "TECH PLATFORM",
+          "service": "amanzine2",
+          "service_id": "ecc3a26c-4579-4ac0-8dec-d412a445adc4",
+          "deployed_sha": "924aa502d9b60dbee3114dbb16100290c10dfb1b",
+          "deployed_branch": "main",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-10-31T21:03:13.785Z",
+          "domains": [
+            "tech-platform.up.railway.app"
+          ],
+          "cron": null,
+          "volume_mounts": []
+        }
+      ],
+      "databases": [
+        {
+          "service": "Postgres",
+          "environment": "production",
+          "image": "ghcr.io/railwayapp-templates/postgres-ssl:18",
+          "volume_mounts": [
+            "/var/lib/postgresql/data"
+          ],
+          "railway_volume_backups": 0,
+          "railway_backup_schedules": 0
+        },
+        {
+          "service": "Postgres-E8M4",
+          "environment": "TECH PLATFORM",
+          "image": "ghcr.io/railwayapp-templates/postgres-ssl:18",
+          "volume_mounts": [
+            "/var/lib/postgresql/data"
+          ],
+          "railway_volume_backups": 0,
+          "railway_backup_schedules": 0
+        }
+      ],
+      "notes": "Source deployed 3 times: overflowing-vision (old preview branch, 164 commits behind main), and inside the AMANZINE Railway project under service names AMANZINE and amanzine2. Content deliberately NOT inventoried beyond metadata."
+    },
+    {
+      "app_id": "scanflow-pro",
+      "name": "SCANFLOW PRO",
+      "lifecycle": "IMPLEMENTED",
+      "data_sensitivity": "documents_possible_personal_data",
+      "purpose": "Multi-page PDF processing: OCR/code extraction (4–8 digit codes), ROI editor, grouping/merging pages by code, ZIP export.",
+      "repositories": [
+        {
+          "repo": "abdellatifhadana-byte/Scanflowpro",
+          "role": "canonical_candidate",
+          "visibility": "public",
+          "main_sha": "5ad13e25736ba8c48ac3acbbddb7eb9ec4351199",
+          "main_commit_at": "2026-10-30T14:22:33+00:00"
+        },
+        {
+          "repo": "abdellatifhadana-byte/scan-Flow-pro",
+          "role": "earlier_generation",
+          "visibility": "public",
+          "main_sha": "69b39b242e90ebd1b6f3f735183738ab98378b7a",
+          "main_commit_at": "2025-11-27T08:54:38+01:00",
+          "note": "Emergent-generated base; 197 PDFs committed under backend/uploads and backend/results (content not opened)."
+        }
+      ],
+      "stack": [
+        "Python FastAPI",
+        "Motor/MongoDB",
+        "PyMuPDF",
+        "OpenCV",
+        "Tesseract / YOLOv8 text detection",
+        "React 19 + shadcn/ui (CRA/craco)",
+        "Windows .bat launchers"
+      ],
+      "ci": {
+        "workflows": [
+          "scan-Flow-pro: deno.yml (template, not relevant to stack)"
+        ],
+        "last_main_run": null
+      },
+      "open_issues": null,
+      "deployments": [],
+      "databases": [],
+      "notes": "No auth on API; local Windows tool. No Railway service found. GitHub API metadata (issues/CI) not reachable from this session for this account."
+    },
+    {
+      "app_id": "rent-car",
+      "name": "RENT CAR MANAGER (Fleetora; tenant brand JMR)",
+      "lifecycle": "DEPLOYED",
+      "data_sensitivity": "customer_identity_documents",
+      "purpose": "Internal rental operations: fleet, customers + ID scans, reservations, contracts, check-in/out, payments/deposits ledger, maintenance, reports, local OCR with human review, road infractions.",
+      "repositories": [
+        {
+          "repo": "hdnkabour-gif/rent-car-app",
+          "role": "canonical",
+          "visibility": "private",
+          "main_sha": "781ab81386c36eb17af5a55119e6f86909603f81",
+          "main_commit_at": "2026-11-20T01:28:17+00:00"
+        }
+      ],
+      "stack": [
+        "React 19 + TS + Vite PWA",
+        "Node 22 + Express 5 + TS",
+        "PostgreSQL 16 (CI) / 18 (Railway)",
+        "SQL migrations 0001–0019",
+        "local OCR (Python, Tesseract-class) behind adapter",
+        "Vitest + Playwright e2e"
+      ],
+      "ci": {
+        "workflows": [
+          "ci.yml",
+          "dependency-audit.yml",
+          "ocr-docker.yml",
+          "staging-http-smoke.yml"
+        ],
+        "last_main_run": {
+          "run_id": 44653856509,
+          "sha": "781ab813",
+          "conclusion": "success",
+          "at": "2026-11-20T01:28"
+        }
+      },
+      "open_issues": 7,
+      "deployments": [
+        {
+          "railway_project": "Fleetora OCR Staging",
+          "railway_project_id": "5985f4ff-7d6d-4c7b-954a-d773d166ae50",
+          "environment": "staging",
+          "environment_name_raw": "staging",
+          "service": "fleetora-ocr-app",
+          "service_id": "f987df3a-973b-4f0a-b8ca-40fdc84f4018",
+          "deployed_sha": "3a2b28b4eb5354d213eddd9ef0e124ac68097741",
+          "deployed_branch": "feat/jmr-raster-brand-20261119",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-11-19T14:09:10.994Z",
+          "domains": [
+            "fleetora-ocr-app-staging.up.railway.app"
+          ],
+          "cron": null,
+          "volume_mounts": [
+            "/data"
+          ]
+        },
+        {
+          "railway_project": "lucid-playfulness",
+          "railway_project_id": "8cb69dd8-2bca-41d6-9760-2a5fda1d8de8",
+          "environment": "production",
+          "environment_name_raw": "production",
+          "service": "rent-car-app",
+          "service_id": "b9f4e6a5-cd80-4707-9efd-47f809894f9f",
+          "deployed_sha": "781ab81386c36eb17af5a55119e6f86909603f81",
+          "deployed_branch": "main",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-11-20T01:29:01.574Z",
+          "domains": [
+            "jmr-luxe-car.up.railway.app"
+          ],
+          "cron": null,
+          "volume_mounts": [
+            "/data"
+          ]
+        }
+      ],
+      "databases": [
+        {
+          "service": "Postgres",
+          "environment": "production",
+          "image": "ghcr.io/railwayapp-templates/postgres-ssl:18",
+          "volume_mounts": [
+            "/var/lib/postgresql/data"
+          ],
+          "railway_volume_backups": 0,
+          "railway_backup_schedules": 0
+        },
+        {
+          "service": "Postgres",
+          "environment": "staging",
+          "image": "ghcr.io/railwayapp-templates/postgres-ssl:18",
+          "volume_mounts": [
+            "/var/lib/postgresql/data"
+          ],
+          "railway_volume_backups": 0,
+          "railway_backup_schedules": 0
+        }
+      ],
+      "notes": "Railway production = public DEMO with fictitious data (D-030). Real production target is a company-hosted machine (D-012) – not deployed. Shares Railway project lucid-playfulness with PNEU MOUHIM."
+    },
+    {
+      "app_id": "pneu-mouhim",
+      "name": "PNEU MOUHIM",
+      "lifecycle": "DEPLOYED",
+      "data_sensitivity": "customer_finance_stock",
+      "purpose": "Multi-site tyre/automotive shop management: catalogue, DOT lots, used tyres, stock ledger, sales, invoices/credit notes, credit, cash closing, purchases, workshop, approvals.",
+      "repositories": [
+        {
+          "repo": "hdnkabour-gif/Pneumatiques-MOUHIM",
+          "role": "canonical",
+          "visibility": "private",
+          "main_sha": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+          "main_commit_at": "2026-11-17T15:53:34+00:00"
+        }
+      ],
+      "stack": [
+        "PHP 8.4 FrankenPHP",
+        "Laravel 13",
+        "Filament 5 / Livewire 4",
+        "PostgreSQL 18",
+        "Pest 5",
+        "spatie permission/activitylog/backup",
+        "mPDF"
+      ],
+      "ci": {
+        "workflows": [
+          "tests.yml"
+        ],
+        "last_main_run": {
+          "run_id": 44119512301,
+          "sha": "ea55329f",
+          "conclusion": "success",
+          "at": "2026-11-17T15:53"
+        }
+      },
+      "open_issues": 6,
+      "open_prs": 4,
+      "deployments": [
+        {
+          "railway_project": "PNEU MOUHIM - STAGING",
+          "railway_project_id": "da9818fd-7480-4e37-b0e0-bcd8359564b8",
+          "environment": "staging",
+          "environment_name_raw": "staging",
+          "service": "MOUHIM-Staging-Worker",
+          "service_id": "52d8e337-a898-40b5-8096-210e7c1f8239",
+          "deployed_sha": "6a811897135614dc567dbaac1be54e1bd9941cf5",
+          "deployed_branch": "staging/integration",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-11-17T12:10:37.029Z",
+          "domains": [],
+          "cron": null,
+          "volume_mounts": []
+        },
+        {
+          "railway_project": "PNEU MOUHIM - STAGING",
+          "railway_project_id": "da9818fd-7480-4e37-b0e0-bcd8359564b8",
+          "environment": "staging",
+          "environment_name_raw": "staging",
+          "service": "MOUHIM-Staging-App",
+          "service_id": "56a8e292-2a20-408a-a8e1-aa1bc348f72b",
+          "deployed_sha": "a2691d7dcf478c047df2f9515258dbabdaccc6b2",
+          "deployed_branch": "fix/go-live-complete-strict-audit",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-11-17T15:46:54.467Z",
+          "domains": [
+            "mouhim-staging-app-staging.up.railway.app"
+          ],
+          "cron": null,
+          "volume_mounts": [
+            "/app/storage/app/public"
+          ]
+        },
+        {
+          "railway_project": "lucid-playfulness",
+          "railway_project_id": "8cb69dd8-2bca-41d6-9760-2a5fda1d8de8",
+          "environment": "mouhim",
+          "environment_name_raw": "mouhim ",
+          "service": "Pneumatiques-MOUHIM",
+          "service_id": "8a490836-d5fb-4a2d-939f-3f5271546657",
+          "deployed_sha": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+          "deployed_branch": "main",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-11-17T15:53:36.999Z",
+          "domains": [
+            "pneumatiques-mouhim-mouhim.up.railway.app"
+          ],
+          "cron": null,
+          "volume_mounts": [
+            "/app/storage/app/public"
+          ]
+        },
+        {
+          "railway_project": "lucid-playfulness",
+          "railway_project_id": "8cb69dd8-2bca-41d6-9760-2a5fda1d8de8",
+          "environment": "mouhim",
+          "environment_name_raw": "mouhim ",
+          "service": "PNEU-MOUHIM-Worker",
+          "service_id": "6821786b-c208-4360-811f-3e97f693538f",
+          "deployed_sha": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+          "deployed_branch": "main",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-11-17T15:53:36.999Z",
+          "domains": [],
+          "cron": null,
+          "volume_mounts": []
+        }
+      ],
+      "databases": [
+        {
+          "service": "Postgres-ekYj",
+          "environment": "mouhim",
+          "image": "ghcr.io/railwayapp-templates/postgres-ssl:18",
+          "volume_mounts": [
+            "/var/lib/postgresql/data"
+          ],
+          "railway_volume_backups": 0,
+          "railway_backup_schedules": 0
+        },
+        {
+          "service": "Postgres",
+          "environment": "staging",
+          "image": "postgres:18",
+          "volume_mounts": [
+            "/var/lib/postgresql"
+          ],
+          "railway_volume_backups": 0,
+          "railway_backup_schedules": 0
+        }
+      ],
+      "notes": "Railway environment name is 'mouhim ' (trailing space). Go-live (#14) and P0 release gate (#20) open; demo-data reset NOT executed."
+    },
+    {
+      "app_id": "amanzine",
+      "name": "AMANZINE",
+      "lifecycle": "DEPLOYED",
+      "data_sensitivity": "customer_orders_payments",
+      "purpose": "'Need OS': Darija/multilingual need understanding → providers/products/services; merchant store, orders, delivery connectors, bookings, wallet/loyalty, field visits.",
+      "repositories": [
+        {
+          "repo": "hdnkabour-gif/amanzine2",
+          "role": "canonical",
+          "visibility": "public",
+          "main_sha": "4ff08a99d4949a8d543ea8a41528da0331e8dbfb",
+          "main_commit_at": "2026-11-16T21:17:28+00:00"
+        },
+        {
+          "repo": "hdnkabour-gif/AMANZINE",
+          "role": "empty_placeholder",
+          "visibility": "public",
+          "main_sha": "ecd4f5ce1288bb6d465fc74aa496c7e99437238f",
+          "note": "single README '# AMANZINE'; 0 issues"
+        },
+        {
+          "repo": "abdellatifhadana-byte/AMANZINE",
+          "role": "historical_snapshot",
+          "visibility": "public",
+          "main_sha": "16bf7220f748f05335707f16a74dac543680b834",
+          "note": "168 files, all byte-identical to SAHARSHOP2026 subset (2026-07-08)"
+        },
+        {
+          "repo": "abdellatifhadana-byte/SAHARSHOP2026",
+          "role": "direct_ancestor",
+          "visibility": "public",
+          "main_sha": "0911b248b5e1f381362226375d7c12a6603c2caf"
+        },
+        {
+          "repo": "abdellatifhadana-byte/sahar-shop2026",
+          "role": "ancestor",
+          "visibility": "public",
+          "main_sha": "a183e418d372fd788893b6a08b1166b2a2585317"
+        },
+        {
+          "repo": "abdellatifhadana-byte/sahar-shop",
+          "role": "early_prototype",
+          "visibility": "public",
+          "main_sha": "96dc14ee868b7f5976023117adf723192598ed57"
+        },
+        {
+          "repo": "abdellatifhadana-byte/saharshop2025",
+          "role": "early_prototype",
+          "visibility": "public",
+          "main_sha": "3c3ccc858218597687239f216282a26106e839c9"
+        },
+        {
+          "repo": "abdellatifhadana-byte/SAHARSHOP",
+          "role": "earliest_prototype",
+          "visibility": "public",
+          "main_sha": "95afcc04ad6b99b65f7762fd107a811eba7589e5",
+          "note": "contains a committed zip and node_modules marker"
+        }
+      ],
+      "stack": [
+        "React 19 + TS + Vite PWA",
+        "Node/Express",
+        "PostgreSQL (CI postgres:16)",
+        "Cloudinary",
+        "WhatsApp Cloud API",
+        "OpenAI/Anthropic optional",
+        "Web Push (VAPID)",
+        "delivery: Amana / Promo Livraison",
+        "CMI payment refs"
+      ],
+      "ci": {
+        "workflows": [
+          "ci.yml",
+          "consolidation-refresh-reports.yml"
+        ],
+        "last_main_run": "UNKNOWN (GitHub API access for amanzine2 not granted to this session)"
+      },
+      "open_issues": "UNKNOWN",
+      "deployments": [
+        {
+          "railway_project": "spectacular-victory",
+          "railway_project_id": "98aca76b-eb17-4616-80e6-25cf8a29b68c",
+          "environment": "Amanzine",
+          "environment_name_raw": "Amanzine",
+          "service": "balanced-growth",
+          "service_id": "9bf1a896-e213-4e59-9a49-f685d24bfe2f",
+          "deployed_sha": "4ff08a99d4949a8d543ea8a41528da0331e8dbfb",
+          "deployed_branch": "main",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-11-18T00:37:21.016Z",
+          "domains": [
+            "amanzine.up.railway.app"
+          ],
+          "cron": null,
+          "volume_mounts": []
+        },
+        {
+          "railway_project": "spectacular-victory",
+          "railway_project_id": "98aca76b-eb17-4616-80e6-25cf8a29b68c",
+          "environment": "staging",
+          "environment_name_raw": "staging",
+          "service": "amanzine-staging",
+          "service_id": "d62e980d-88ef-45a9-8bb9-6ee5a3109581",
+          "deployed_sha": "4ff08a99d4949a8d543ea8a41528da0331e8dbfb",
+          "deployed_branch": "main",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-11-16T21:56:02.836Z",
+          "domains": [
+            "triumphant-courage-staging.up.railway.app"
+          ],
+          "cron": null,
+          "volume_mounts": [
+            "/data"
+          ]
+        }
+      ],
+      "databases": [
+        {
+          "service": "Postgres",
+          "environment": "Amanzine",
+          "image": "ghcr.io/railwayapp-templates/postgres-ssl:18",
+          "volume_mounts": [
+            "/var/lib/postgresql/data"
+          ],
+          "railway_volume_backups": 0,
+          "railway_backup_schedules": 0
+        },
+        {
+          "service": "Postgres-rqCO",
+          "environment": "staging",
+          "image": "ghcr.io/railwayapp-templates/postgres-ssl:18",
+          "volume_mounts": [
+            "/var/lib/postgresql/data"
+          ],
+          "railway_volume_backups": 0,
+          "railway_backup_schedules": 0
+        }
+      ],
+      "notes": "Railway project spectacular-victory mixes AMANZINE and TECH PLATFORM environments; services named AMANZINE/amanzine2 actually run Tech-Platform- source."
+    },
+    {
+      "app_id": "alloservix",
+      "name": "ALLOSERVIX",
+      "lifecycle": "DEPLOYED",
+      "data_sensitivity": "leads_contact",
+      "purpose": "IT/technical services website: 32-service catalogue, protected admin (password+TOTP), service requests/ops, knowledge studio, catalogue-grounded assistant.",
+      "repositories": [
+        {
+          "repo": "hdnkabour-gif/Alloservix",
+          "role": "canonical",
+          "visibility": "private",
+          "main_sha": "781c982f2b69d56af364cda8466998e6c20ef182",
+          "main_commit_at": "2026-11-20T01:31:03+00:00"
+        }
+      ],
+      "stack": [
+        "Node 22 http server (no framework)",
+        "node:sqlite on /data volume",
+        "static HTML pages",
+        "node:test",
+        "optional OpenAI"
+      ],
+      "ci": {
+        "workflows": [
+          "test.yml",
+          "production-smoke.yml",
+          "visual-qa.yml"
+        ],
+        "last_main_run": {
+          "run_id": 44654188238,
+          "sha": "781c982f",
+          "conclusion": "success",
+          "at": "2026-11-20T01:31"
+        }
+      },
+      "open_issues": 0,
+      "deployments": [
+        {
+          "railway_project": "ALLOSERVIX Website",
+          "railway_project_id": "649dcba3-91d2-43d8-916c-e6d10278f51f",
+          "environment": "production",
+          "environment_name_raw": "production",
+          "service": "alloservix-web",
+          "service_id": "a51ed8de-5634-48b0-b7de-5b11730e496d",
+          "deployed_sha": "781c982f2b69d56af364cda8466998e6c20ef182",
+          "deployed_branch": "main",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-11-20T01:31:05.921Z",
+          "domains": [
+            "alloservix-web-production.up.railway.app",
+            "www.alloservix.ma",
+            "alloservix.ma"
+          ],
+          "cron": null,
+          "volume_mounts": [
+            "/data"
+          ]
+        }
+      ],
+      "databases": [],
+      "notes": "Custom domains alloservix.ma and www.alloservix.ma attached on Railway while README still says not to point the domain before approval; robots.txt still Disallow: /."
+    },
+    {
+      "app_id": "nexus",
+      "name": "NEXUS",
+      "lifecycle": "DEPLOYED",
+      "data_sensitivity": "operational_metadata_only",
+      "purpose": "Owner control plane: app registry, evidence, public HTTP probes; future read-only collectors, backups/restore orchestration, governed actions.",
+      "repositories": [
+        {
+          "repo": "hdnkabour-gif/nexus",
+          "role": "canonical",
+          "visibility": "private",
+          "main_sha": "bc8e6d1393748b2e47cee34cd6ab69d5bb06dac3",
+          "main_commit_at": "2026-11-18T17:29:25+00:00"
+        }
+      ],
+      "stack": [
+        "Next.js (app router)",
+        "PostgreSQL 18",
+        "node:test",
+        "Railway cron worker"
+      ],
+      "ci": {
+        "workflows": [
+          "contracts.yml",
+          "first-console.yml",
+          "monitor-core.yml"
+        ],
+        "last_main_run": {
+          "run_id": 44359246728,
+          "sha": "bc8e6d13",
+          "conclusion": "success",
+          "at": "2026-11-18T17:29"
+        }
+      },
+      "open_issues": 6,
+      "deployments": [
+        {
+          "railway_project": "NEXUS Control Center",
+          "railway_project_id": "f22f044b-d7a4-40f5-9929-2091f352e43c",
+          "environment": "production",
+          "environment_name_raw": "production",
+          "service": "nexus-public-probes",
+          "service_id": "ab495671-fec1-4c58-b221-dedfefa58b1a",
+          "deployed_sha": "bc8e6d1393748b2e47cee34cd6ab69d5bb06dac3",
+          "deployed_branch": "main",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-11-18T17:29:28.002Z",
+          "domains": [],
+          "cron": "*/15 * * * *",
+          "volume_mounts": []
+        },
+        {
+          "railway_project": "NEXUS Control Center",
+          "railway_project_id": "f22f044b-d7a4-40f5-9929-2091f352e43c",
+          "environment": "production",
+          "environment_name_raw": "production",
+          "service": "nexus-web",
+          "service_id": "4b9c3918-49fd-4d92-b33b-213c172b2fb1",
+          "deployed_sha": "bc8e6d1393748b2e47cee34cd6ab69d5bb06dac3",
+          "deployed_branch": "main",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-11-18T17:29:28.001Z",
+          "domains": [
+            "nexus-control-center.up.railway.app"
+          ],
+          "cron": null,
+          "volume_mounts": []
+        }
+      ],
+      "databases": [
+        {
+          "service": "Postgres",
+          "environment": "production",
+          "image": "ghcr.io/railwayapp-templates/postgres-ssl:18",
+          "volume_mounts": [
+            "/var/lib/postgresql/data"
+          ],
+          "railway_volume_backups": 0,
+          "railway_backup_schedules": 0
+        }
+      ],
+      "notes": "No offsite backup of NEXUS DB (IDEA-025/#13)."
+    },
+    {
+      "app_id": "nexora",
+      "name": "NEXORA",
+      "lifecycle": "DEPLOYED",
+      "data_sensitivity": "health_data_future (none now)",
+      "purpose": "Modular medical platform for doctors/clinics/hospitals; currently Phase 0 + synthetic in-browser demo.",
+      "repositories": [
+        {
+          "repo": "hdnkabour-gif/Nexora",
+          "role": "canonical",
+          "visibility": "private",
+          "main_sha": "aed95a384acd102cbb0e8d52dc70b8a9c47068a2",
+          "main_commit_at": "2026-11-15T14:36:57+00:00"
+        }
+      ],
+      "stack": [
+        "NestJS (health only)",
+        "Prisma schema (27 models)",
+        "PostgreSQL RLS prototype (local)",
+        "React web demo",
+        "policy package"
+      ],
+      "ci": {
+        "workflows": [
+          "foundation.yml"
+        ],
+        "last_main_run": {
+          "run_id": 43725326675,
+          "sha": "aed95a38",
+          "conclusion": "success",
+          "at": "2026-11-15T14:37"
+        }
+      },
+      "open_issues": 0,
+      "deployments": [
+        {
+          "railway_project": "NEXORA Demo",
+          "railway_project_id": "19ee444c-5298-4d19-a109-e927de16450b",
+          "environment": "demo",
+          "environment_name_raw": "demo",
+          "service": "nexora-web-demo",
+          "service_id": "0edf3b20-1872-4328-b5de-1dcedbcba0dd",
+          "deployed_sha": "aed95a384acd102cbb0e8d52dc70b8a9c47068a2",
+          "deployed_branch": "main",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-11-15T14:37:00.171Z",
+          "domains": [
+            "nexora-web-demo-demo.up.railway.app"
+          ],
+          "cron": null,
+          "volume_mounts": []
+        }
+      ],
+      "databases": [],
+      "notes": "Demo deployment has no database: synthetic data in browser memory only."
+    },
+    {
+      "app_id": "tijara-os",
+      "name": "TIJARA OS",
+      "lifecycle": "DEPLOYED",
+      "data_sensitivity": "none_yet (staging, no real data)",
+      "purpose": "Multi-tenant SaaS for small shops (butcher/grill/restaurant, mechanics, fire/alarm): items, recipes, batches/serials, stock ledger, sales, invoices, payments, production, approvals.",
+      "repositories": [
+        {
+          "repo": "hdnkabour-gif/tijara-os",
+          "role": "canonical",
+          "visibility": "private",
+          "main_sha": "e5e2b26d33be67b992e955824cfbf2bf0c100a28",
+          "main_commit_at": "2026-11-20T02:11:51+00:00"
+        }
+      ],
+      "stack": [
+        "Node + TypeScript (no framework)",
+        "PostgreSQL 16/18 with FORCE RLS",
+        "Vitest",
+        "Dockerfile + Dockerfile.backup (pg_dump→AES→R2)"
+      ],
+      "ci": {
+        "workflows": [
+          "ci.yml"
+        ],
+        "last_main_run": {
+          "run_id": 44659052532,
+          "sha": "e5e2b26d",
+          "conclusion": "success",
+          "at": "2026-11-20T02:11"
+        }
+      },
+      "open_issues": 0,
+      "deployments": [
+        {
+          "railway_project": "tijara-os-staging",
+          "railway_project_id": "311dc895-ccfa-4a67-974f-3af7430b3aff",
+          "environment": "staging",
+          "environment_name_raw": "staging",
+          "service": "tijara-migrate",
+          "service_id": "be52bccc-3b5e-4691-8e51-be2ba03ee689",
+          "deployed_sha": "e5e2b26d33be67b992e955824cfbf2bf0c100a28",
+          "deployed_branch": "main",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-11-20T02:21:29.772Z",
+          "domains": [],
+          "cron": null,
+          "volume_mounts": []
+        },
+        {
+          "railway_project": "tijara-os-staging",
+          "railway_project_id": "311dc895-ccfa-4a67-974f-3af7430b3aff",
+          "environment": "staging",
+          "environment_name_raw": "staging",
+          "service": "tijara-os",
+          "service_id": "59d2939c-07d0-4786-b499-9ba831f393b3",
+          "deployed_sha": "e5e2b26d33be67b992e955824cfbf2bf0c100a28",
+          "deployed_branch": "main",
+          "deploy_status": "SUCCESS",
+          "deployed_at": "2026-11-20T02:11:54.097Z",
+          "domains": [
+            "tijara-os-staging.up.railway.app"
+          ],
+          "cron": null,
+          "volume_mounts": []
+        }
+      ],
+      "databases": [
+        {
+          "service": "Postgres",
+          "environment": "staging",
+          "image": "ghcr.io/railwayapp-templates/postgres-ssl:18",
+          "volume_mounts": [
+            "/var/lib/postgresql/data"
+          ],
+          "railway_volume_backups": 0,
+          "railway_backup_schedules": 0
+        }
+      ],
+      "notes": "Backup to Cloudflare R2 designed and tested locally only; no backup service deployed."
+    }
+  ],
+  "proposed": [
+    {
+      "app_id": "school-platform",
+      "name": "School platform (المنصة المدرسية)",
+      "lifecycle": "IDEA",
+      "evidence": "No repository, branch, Railway service or code found in either account (searched 2026-11-20). AMANZINE only lists 'driving_school'/'nursery' as need categories – not an implementation."
+    },
+    {
+      "app_id": "fleetdocs-ai",
+      "name": "FleetDocs AI",
+      "lifecycle": "IDEA",
+      "evidence": "No repository or code reference found. Functionally overlaps rent-car document intelligence (OCR + human review) and SCANFLOW PRO; see reuse RU-03."
+    }
+  ],
+  "railway_unmapped": [
+    {
+      "project": "spectacular-victory",
+      "environment": "Tech 2m viewer",
+      "services": 0
+    },
+    {
+      "project": "spectacular-victory",
+      "volume_mount": "/tmp",
+      "attached_service": null,
+      "note": "orphan volume"
+    }
+  ],
+  "railway_backups": "0 Railway volume backups and 0 backup schedules on all 17 volumes (queried 2026-11-20)."
+}

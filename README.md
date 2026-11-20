@@ -42,6 +42,12 @@ NEXUS is the central *operational knowledge, reliability, diagnostics and govern
 | [docs/24_PUBLIC_HTTP_MONITORING.md](docs/24_PUBLIC_HTTP_MONITORING.md) | Read-only HTTPS reachability, saved evidence and optional cron |
 | [docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md](docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md) | Deployed database, web/cron services and precise verification limits |
 | [docs/26_COMMAND_OS_UI_V1.md](docs/26_COMMAND_OS_UI_V1.md) | Practical Command OS redesign: layouts, tested data states and responsive routes |
+| [docs/27_PORTFOLIO_BASELINE_V1.md](docs/27_PORTFOLIO_BASELINE_V1.md) | Portfolio Baseline V1 (2026-11-20): 9 apps, GitHub vs deployed SHA, AMANZINE classification, dependency map, reuse, contradictions, CHECKPOINT |
+| [docs/28_FEATURE_REGISTRY.md](docs/28_FEATURE_REGISTRY.md) | Portfolio feature registry with actual statuses |
+| [docs/29_DECISION_REGISTRY.md](docs/29_DECISION_REGISTRY.md) | Index of decisions and rejected features across apps |
+| [docs/30_RISK_GAP_REGISTER.md](docs/30_RISK_GAP_REGISTER.md) | Portfolio risks and gaps (P0/P1/P2) |
+| [docs/31_EVIDENCE_INDEX.md](docs/31_EVIDENCE_INDEX.md) | SHAs, Railway deployments, CI runs, issues and files behind every claim |
+| [registry/portfolio-baseline.v1.json](registry/portfolio-baseline.v1.json) | Machine-readable Portfolio Baseline V1, **not** live telemetry |
 | [registry/portfolio-discovery.v1.json](registry/portfolio-discovery.v1.json) | Machine-readable provider discovery snapshot, **not** live telemetry |
 | [packages/monitor-core/](packages/monitor-core/) | Tested read-only normalization and backup health logic |
 | [contracts/](contracts/) | Versioned JSON Schema/OpenAPI contracts and synthetic examples |

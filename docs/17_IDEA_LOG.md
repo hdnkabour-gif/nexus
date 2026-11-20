@@ -37,16 +37,16 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 | IDEA-024 | Evidence report per deployment with SHA, Railway environment, startup/HTTP checks and limitations | IMPLEMENTED (documentation) | docs/21_FIRST_DEPLOYMENT_EVIDENCE.md |
 | IDEA-025 | First customer-visible UI accessible via protected Railway URL; no public portfolio data | DEPLOYED, owner acceptance/screenshot pending | docs/20_FIRST_CONSOLE.md |
 
-| IDEA-019 | Custom owner display name and username alias in Railway, without replacing existing email account | IMPLEMENTED (pending CI and Railway sync) | docs/22_OWNER_VARIABLES.md |
-| IDEA-020 | Owner password rotation via offline generated scrypt hash; never plaintext Railway variable | IMPLEMENTED (pending CI) | scripts/hash-owner-password.mjs |
+| IDEA-019 ⚠️dup→IDEA-030 | Custom owner display name and username alias in Railway, without replacing existing email account | IMPLEMENTED (pending CI and Railway sync) | docs/22_OWNER_VARIABLES.md |
+| IDEA-020 ⚠️dup→IDEA-031 | Owner password rotation via offline generated scrypt hash; never plaintext Railway variable | IMPLEMENTED (pending CI) | scripts/hash-owner-password.mjs |
 
-| IDEA-021 | NEXUS-owned isolated PostgreSQL and owner-internal first-time password enrollment | DEPLOYED; browser enrollment pending user acceptance | docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md |
-| IDEA-022 | Persist session revocation and owner audit without business personal data | DEPLOYED; integration tests passed | lib/owner-db.js |
+| IDEA-021 ⚠️dup→IDEA-032 | NEXUS-owned isolated PostgreSQL and owner-internal first-time password enrollment | DEPLOYED; browser enrollment pending user acceptance | docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md |
+| IDEA-022 ⚠️dup→IDEA-033 | Persist session revocation and owner audit without business personal data | DEPLOYED; integration tests passed | lib/owner-db.js |
 
-| IDEA-023 | Actual, credential-free HTTPS availability check of verified public app domains, with evidence age and no private data | DEPLOYED + VERIFIED collection of 7 observations; per-site outcome not asserted | docs/24_PUBLIC_HTTP_MONITORING.md |
-| IDEA-024 | 15-minute independent Railway Cron worker for read-only public reachability | VERIFIED: first scheduled execution succeeded; saved 7/7 observations in NEXUS DB | docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md |
+| IDEA-023 ⚠️dup→IDEA-034 | Actual, credential-free HTTPS availability check of verified public app domains, with evidence age and no private data | DEPLOYED + VERIFIED collection of 7 observations; per-site outcome not asserted | docs/24_PUBLIC_HTTP_MONITORING.md |
+| IDEA-024 ⚠️dup→IDEA-035 | 15-minute independent Railway Cron worker for read-only public reachability | VERIFIED: first scheduled execution succeeded; saved 7/7 observations in NEXUS DB | docs/25_INITIAL_DB_AND_PROBES_DEPLOYMENT.md |
 
-| IDEA-025 | Ensure NEXUS database itself is backed up offsite and restoration proof exists | PLANNED; no verified offsite backup | docs/16_BACKUP_RESTORE_ORCHESTRATION.md |
+| IDEA-025 ⚠️dup→IDEA-036 | Ensure NEXUS database itself is backed up offsite and restoration proof exists | PLANNED; no verified offsite backup | docs/16_BACKUP_RESTORE_ORCHESTRATION.md |
 
 | IDEA-026 | Explicit trusted browser origin for Railway login behind reverse proxies, safer 303 redirects and visible rate-limit/Origin diagnostics | IMPLEMENTED (pending CI and deployed smoke) | docs/23_PERSISTENT_OWNER_AUTH.md |
 
@@ -54,6 +54,37 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 
 | IDEA-028 | Command OS premium operational interface with trustworthy freshness, app matrix, dynamic HTTP evidence and responsive navigation | CODED / pending CI and deployment | docs/26_COMMAND_OS_UI_V1.md |
 | IDEA-029 | Local keyboard command palette and accessible app catalog filters, without exposing private content | CODED / pending CI and deployment | components/command-os/command-palette.jsx |
+
+## Ideas captured 2026-11-20 (Portfolio Baseline V1)
+| ID | Idea / requirement | Current status | Reference |
+|---|---|---|---|
+| IDEA-037 | Portfolio Baseline V1: dated inventory of 9 apps + 2 proposed, with GitHub SHA vs Railway deployed SHA, feature/decision/risk/evidence registers | IMPLEMENTED (documentation + `registry/portfolio-baseline.v1.json`); not consumed by UI yet | docs/27_PORTFOLIO_BASELINE_V1.md, Issue #5 |
+| IDEA-038 | Add TIJARA OS and SCANFLOW PRO to NEXUS registry and probes | DESIGNED (in baseline registry only; probes/UI unchanged) | docs/27, D-REQ-03 |
+| IDEA-039 | Portfolio convention: each app exposes deployed SHA on `/ready` (pattern from TIJARA OS) | IDEA | docs/27 RU-09 |
+| IDEA-040 | Shared, tested backup + restore-drill runbook reused across apps (code reuse, no shared data) | IDEA | docs/27 RU-02, docs/30 R-003 |
+
+## ID collision register (found 2026-11-20 — proposed fix, pending owner approval D-REQ-01)
+IDEA-019 … IDEA-025 were each assigned twice on 2026-11-17. Rows are **not deleted or renumbered**; the first occurrence keeps the ID, the second occurrence is marked `⚠️dup→IDEA-0xx` with its proposed unique ID. Old references (PRs, commits, chats) that say "IDEA-019" etc. stay resolvable through this table.
+
+| Legacy ID | 1st occurrence (keeps ID) | 2nd occurrence → proposed ID | Introduced by |
+|---|---|---|---|
+| IDEA-019 | Protected first NEXUS web console | Owner display name / username alias → **IDEA-030** | PR #3 / PR #6 |
+| IDEA-020 | First owner login, signed sessions | Owner password rotation via scrypt hash → **IDEA-031** | PR #3 / PR #6 |
+| IDEA-021 | Read-only manual GitHub/Railway probe | NEXUS-owned PostgreSQL + enrollment → **IDEA-032** | PR #3 / PR #7 |
+| IDEA-022 | Live console distinguishes historical vs live | Session revocation + owner audit → **IDEA-033** | PR #3 / PR #7 |
+| IDEA-023 | Dedicated Railway NEXUS project | Credential-free HTTPS availability checks → **IDEA-034** | PR #3 (row edited in #4) / PR #8 |
+| IDEA-024 | Evidence report per deployment | 15-minute Railway cron worker → **IDEA-035** | PR #4 / PR #8 |
+| IDEA-025 | First UI on protected Railway URL | NEXUS DB offsite backup + restore proof → **IDEA-036** | PR #4 / PR #9 |
+
+## Status corrections with evidence (2026-11-20)
+Original status text above is kept; the evidence-based status below takes precedence.
+| ID | Status text in table | Status per vocabulary | Evidence |
+|---|---|---|---|
+| IDEA-012 | PARTIAL | IMPLEMENTED (library, mock-tested) | packages/monitor-core |
+| IDEA-019/020 (2nd → IDEA-030/031), IDEA-026, IDEA-027 | IMPLEMENTED (pending CI …) | DEPLOYED (part of `bc8e6d13`, Railway nexus-web SUCCESS 2026-11-18T17:29); owner browser acceptance UNKNOWN | docs/31 E2, E3 |
+| IDEA-025 (2nd → IDEA-036) | PLANNED | DESIGNED; Railway shows 0 backups on NEXUS Postgres volume | docs/31 E2 |
+| IDEA-028, IDEA-029 | CODED / pending CI and deployment | DEPLOYED (`bc8e6d13`, CI 3/3 success); not VERIFIED | docs/31 E2, E3 |
+| IDEA-023 (2nd → IDEA-034), IDEA-024 (2nd → IDEA-035) | DEPLOYED + VERIFIED / VERIFIED | keep VERIFIED only for "first scheduled run saved 7/7 observations" (docs/25); not re-verified in this pass | docs/25 |
 
 ## Decisions requiring explicit ADR approval
 - OIDC provider and production 2FA method.
@@ -64,6 +95,9 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 - Whether NEXORA and 2M TECH PLATFORM are legally authorized to send telemetry to cloud NEXUS.
 
 ## Changelog
+### 2026-11-20
+- Portfolio Baseline V1 (docs/27–31, registry/portfolio-baseline.v1.json). Recorded IDEA ID collisions without renumbering, status corrections with evidence, IDEA-037…040. Issue #5 cross-app references recorded in docs/31 E4.
+
 ### 2026-11-17
 - Created external integration catalog, AI coding-agent governance, backup/restore orchestration and living idea log.
 - Added read-only core and mock CI, six-app discovered provider inventory and automated inventory-scope test.
