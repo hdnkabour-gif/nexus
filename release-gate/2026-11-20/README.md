@@ -65,13 +65,85 @@ The data was read on 2026-11-20 with **GraphQL queries only**: `deploymentTrigge
 - **The migration is additive.** A code-only rollback to `ea55329` works on the migrated schema in this rehearsal.
 - This is **not** a database or file restore; that still requires the off-Railway restore proof (PNEU #13).
 
-### 2.4 Not covered here (still open on the gate)
-- Physical stock transfers DEP / M01 / M02 with real operators.
-- Photos and their access control.
-- The legal paper-invoice number.
+### 2.4 Stock transfers, then backup → restore drill (`pneu/books.php`, `pneu/drill.sh`, `pneu/drill.log`)
+Run on `162fe24`, web and worker from the same image, isolated as in §2.2, with backup disk `backups_local` and a synthetic archive password.
+
+**Transfers** (and the sale, refund, receipt and expense with a photo):
+- 30 tyres in at DEP.
+- DEP → M01: 10 sent, 10 received.
+- DEP → M02: 5 sent, **4 received**; the missing one is recorded with its reason.
+- At M01: 2 sold and 1 returned.
+- Resulting stock: **DEP 15 · M01 9 · M02 4**. `stock:verify`: *Stock cohérent* (no gap between the ledger and the levels).
+
+**Backup:** the application's real `backup:run`. The archive holds the DB dump, `.gitignore` and the photo, all **encrypted**; the 4th entry is an empty directory record.
+
+**Restore:** `app:backup-restore --into=mouhim_restored --files-to=<private folder>`. The command confirms that the current database and the live files were not changed.
+
+**Result:**
+
+| Check | Source | Restored copy |
+|---|---|---|
+| Tables, compared over every column | 81 | **81 identical, 0 different** |
+| Stock DEP / M01 / M02 | 15 / 9 / 4 | 15 / 9 / 4 |
+| M01 cash expected / debt | 155.00 / 10.00 | 155.00 / 10.00 |
+| Expense photo SHA-256 | `ea774032…` | `ea774032…` (file restored to the private folder) |
+| `stock:verify` | consistent | consistent |
+
+In `pneu/drill-restored-figures.json`, `photo_sha256` is null because that reader pointed at the live public disk, not the restore folder. The restored file was hashed directly (`drill.log`).
+
+**`app:go-live-audit --strict` on the restored copy:** it reports `GO_LIVE_NOT_READY` (correct: synthetic operational rows remain) and shows invoice numbering `FA-{YEAR}-{NUMBER}` with padding 6.
+- The owner sets the next paper number on the **Document Numbering** page (D-49); going backwards is refused.
+- **This is an owner decision, not made here.**
+
+### 2.5 Not covered here (still open on the gate)
+- The same drill against the **real off-Railway R2 target** with the owner's credentials (#13). The procedure above is identical; only the disk changes.
+- Scheduled backup evidence on the live service.
+- Photo access control.
 - Operator and owner sign-off.
 - PNEU **staging** on Railway is still not aligned (app and worker on different branches).
-- R2 off-Railway restore (#13).
+
+## 3. RENT CAR candidate `a651681`: off-site backup → restore drill (`rent-car/`)
+The setup is entirely local, with no Railway and no cloud storage:
+- server built from `a651681`, on a fresh local PostgreSQL database;
+- migrations `0001`–`0020` applied, synthetic company from the repo's guarded `seed-dev`;
+- the candidate server bound to `127.0.0.1`, driven by `rent-car/drive.mjs` to write the books.
+
+**The books:**
+- deposit in 500.00;
+- rental payment including a 20.00 late fee, then the fee waived;
+- **`rental_refund` 20.00, then its reversal**;
+- deposit out 500.00;
+- an expense with an uploaded receipt (PDF).
+
+**Backup:** the app's own `backup` script, encrypted, with the off-site target simulated as a separate directory (`OFFSITE_KIND=dir`). 59 tables, 714 rows, 1 file; the off-site copy was verified.
+
+**Drill:** the app's own `backup-drill`, reading from the off-site copy. Report: `rent-car/drill-report-a651681.json`, **`ok: true`**.
+- Steps:
+  - every object matched its size and SHA-256;
+  - restored into a **new** database created only for the drill;
+  - row counts, migrations and every file checksum equal the manifest;
+  - the restored file was re-hashed and is identical.
+- **10/10 negative checks:**
+  - wrong passphrase refused;
+  - truncated dump detected;
+  - missing file detected;
+  - damaged file detected;
+  - altered manifest detected;
+  - an interrupted upload is never restored;
+  - network resets are retried;
+  - a lasting failure is reported with nothing half-restored;
+  - an unencrypted backup is never copied off-site;
+  - restore into a non-empty DB is refused.
+- The drill database was dropped afterwards.
+
+**Still open (#14):** the same drill against the real off-site target with the owner's credentials; D-052; the accountant's acceptance of the signed CSV.
+
+## 4. Release plans
+- `PLAN-PNEU.md`
+- `PLAN-RENT-CAR.md`
+- `PLAN-AMANZINE.md`
+
+Each one names the deployed SHA, the candidate, how to avoid an unwanted deploy, the verification and rollback steps, the stop conditions, and the owner decisions still required.
 
 ## Reproduce
 1. Build the image from `git archive <sha>` with the production Dockerfile (in a sandbox, add the proxy CA only during the build).
