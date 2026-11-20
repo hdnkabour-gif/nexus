@@ -1,5 +1,6 @@
 <?php
-// TEMPORARY racer: waits for a shared start time, then confirms one draft fully on credit.
+// Stored in NEXUS as evidence; COPY into Pneumatiques-MOUHIM/zz_race/ and run against a disposable DB. See RUNBOOK.md.
+// NEXUS diagnostic racer: waits for a shared start time, then confirms one draft fully on credit.
 [$_, $saleId, $sellerId, $startAt] = $argv;
 require __DIR__.'/../vendor/autoload.php';
 $app = require __DIR__.'/../bootstrap/app.php';

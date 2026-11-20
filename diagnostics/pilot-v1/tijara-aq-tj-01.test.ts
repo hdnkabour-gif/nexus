@@ -1,4 +1,5 @@
-// TEMPORARY diagnostic for NEXUS docs/33 AQ-TJ-01 (not committed). Synthetic data only.
+// NEXUS diagnostic for NEXUS docs/33 AQ-TJ-01. Synthetic data only.
+// Stored in NEXUS as evidence; to run it, COPY it into tijara-os/test/ (it uses that repo's test helpers). See RUNBOOK.md.
 import { describe, expect, it } from 'vitest';
 import { withTenant } from '../src/db.js';
 import { reconcile } from '../src/inventory.js';

@@ -1,4 +1,5 @@
-// TEMPORARY diagnostic for NEXUS docs/33 AQ-RC-01 / RC-S05 (RC-03). Synthetic data only; not committed.
+// NEXUS diagnostic AQ-RC-01 / RC-S05 (RC-03). Synthetic data only.
+// Stored in NEXUS as evidence; to run it, COPY it into rent-car-app/server/test/ (it imports that repo's ./helpers.js). See RUNBOOK.md.
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createUser, CSRF, loginAgent, resetDatabase, setupTestApp, type TestContext } from './helpers.js';
 let ctx: TestContext;
@@ -32,7 +33,15 @@ describe('AQ-RC-01', () => {
     const final = (await manager.get(`/api/contracts/${k.id}`).expect(200)).body;
     console.log('AQ-RC-01 OBSERVED', JSON.stringify({ rentCents: k.totalCents, charge_status: charged?.contract?.late?.status, chargedTotal: charged?.contract?.totalCents, pay_status: paidRes.status, waive_status: waive.status, waive_error: waive.body?.error?.code, total_after_waive: after.contract?.totalCents, balances_after_waive: after.balances, refund_attempt_statuses: tries, payments: final.payments.map((p: any) => ({ kind: p.kind, amountCents: p.amountCents })), deposit: final.balances }));
     // Acceptance (Astra): exactly one refund entry of 2000, net collected = rent, deposit held unchanged.
+    // Exact financial invariants (Codex P2 review): amount, balances and deposit must all hold.
     const refunds = final.payments.filter((p: any) => /refund|_out$/.test(p.kind) && p.kind !== 'deposit_out');
     expect(refunds.length).toBe(1);
+    expect(refunds[0].amountCents).toBe(2000);
+    expect(final.balances.totalCents).toBe(k.totalCents);          // 10000: rent only after the waiver
+    expect(final.balances.paidCents - 2000).toBe(k.totalCents);    // net collected 10000
+    expect(final.balances.restCents).toBe(0);
+    expect(final.balances.depositHeldCents).toBe(50000);           // deposit untouched
+    expect(final.balances.depositReturnedCents).toBe(0);
+    expect(final.balances.depositKeptCents).toBe(0);
   });
 });

@@ -1,5 +1,6 @@
 <?php
-// TEMPORARY diagnostic for NEXUS docs/33 (AQ-PM-01, PM-S09, PM-S10). Synthetic data only; not committed.
+// NEXUS diagnostic for NEXUS docs/33 (AQ-PM-01, PM-S09, PM-S10). Synthetic data only.
+// Stored in NEXUS as evidence; to run it, COPY it into Pneumatiques-MOUHIM/tests/Feature/ (it uses that repo's test helpers). See RUNBOOK.md.
 use App\Actions\Money\CustomerAccountActions;
 use App\Actions\Sales\ConfirmSaleAction;
 use App\Actions\Sales\CreateCreditNoteAction;
@@ -60,12 +61,17 @@ it('PM-S10 4/5: overpayment and negative/zero payment are refused', function () 
     expect($res['over'])->toBe('REFUSED')->and($res['negative'])->toBe('REFUSED')->and($res['zero'])->toBe('REFUSED')->and($res['outstanding'])->toBe(10000);
 });
 
-it('PM-S10 6: the same payment submitted twice (replay) is recorded once', function () {
+it('PM-S10 6 / PNEU #21: receive() exposes no operation key, so a retry of the same operation cannot be recognised', function () {
     ($this->sell)(1, [['method' => 'card', 'amount_cents' => 2000]]); // debt 100.00
     $acc = app(CustomerAccountActions::class);
     $acc->receive($this->c, site('M01'), ['method' => 'card', 'amount_cents' => 3000], $this->seller);
     $second = 'ACCEPTED'; try { $acc->receive($this->c, site('M01'), ['method' => 'card', 'amount_cents' => 3000], $this->seller); } catch (BusinessRuleException $e) { $second = 'REFUSED'; }
     $obs = ['second' => $second, 'payments' => Payment::query()->where('customer_id', $this->c->id)->where('amount_cents', 3000)->count(), 'outstanding' => $this->c->fresh()->outstandingCents()];
     fwrite(STDERR, 'PM-S10-6 OBSERVED '.json_encode($obs).PHP_EOL);
-    expect($obs['payments'])->toBe(1); // acceptance target; no idempotency key exists in receive()
+    // Observation only: receive() has no idempotency/operation key parameter, so a client retry of the SAME
+    // operation and two DIFFERENT legitimate 30.00 payments are indistinguishable. Two equal payments are not
+    // illegal per se. The acceptance tests for PNEU #21 (same key twice = one posting; same key + different
+    // body = conflict; different keys + same amount = two postings; concurrent same key = one) belong in the
+    // app PR that adds the key.
+    expect($obs['payments'])->toBe(2);
 });

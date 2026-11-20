@@ -2,13 +2,13 @@
 
 First **executed** results for the scenarios planned in [docs/33 / PR #22](https://github.com/hdnkabour-gif/nexus/pull/22) (Issue #20). This is an independent branch from `main`; PR #18, #19 and #22 are not modified.
 
-> **Scope of these results.** Synthetic data in isolated local databases on a cloud dev container. They prove or disprove **code behaviour at the stated SHA**. They do **not** prove anything about the deployed pilot environments, real data, or production readiness. No Railway, production DB, real shipment, payment, WhatsApp, SMS or email was touched.
+> **Scope of these results.** Synthetic data in isolated local databases on a cloud dev container. They prove or disprove **code behaviour at the stated SHA**. They are **app-local synthetic observations**, not evidence about deployed services: even where the deployed SHA equals the tested SHA (docs/27 S1), the **deployments remain unverified** by these tests (configuration, data, workers and providers differ). Nothing here is production readiness. No Railway, production DB, real shipment, payment, WhatsApp, SMS or email was touched.
 
 ## 1. Environment and isolation checks (done before any test)
 | Check | Result |
 |---|---|
-| Inherited environment | The dev container exposes secret-like variables: `OPENAI_API_KEY`, `CLOUDINARY_URL`, `JWT_SECRET`, `ADMIN_EMAIL`, and URLs pointing to `sahar2026-production.up.railway.app`. **Every app test ran under `env -i`** with only `PATH`, `HOME`, a local DB URL and a dummy JWT secret. Values were never printed. See §6 for the owner action |
-| Outbound network during tests | No proxy variables were passed to test processes. The AMANZINE server log shows `Cloudinary not configured`, and `Auto-delivery skipped: providers count=0` on every approval, so no external send happened |
+| Inherited environment | The shared dev environment exposes secret-like variables (an AI-provider key, a media-storage URL with credentials, a JWT secret, an admin e-mail) and URLs of an unrelated production-like deployment (host redacted here). **Every app test ran under `env -i`** with only `PATH`, `HOME`, a local DB URL and a dummy JWT secret. Values were never printed. See §6 for the owner action |
+| Outbound network during tests | **AMANZINE (revision 2 re-run):** executed as a dedicated OS user with iptables rejecting all non-loopback output and the loopback port of the session proxy. Probe as that user: direct HTTP → blocked (curl exit 7); proxy port → blocked (exit 7); loopback PostgreSQL → reachable; root control → proxy reachable. So no-send is **network-proven** for that run. **Other diagnostics and the first AMANZINE run:** `env -i` only (no proxy variables, no provider keys) plus server logs (`Cloudinary not configured`, `Auto-delivery skipped: providers count=0`). For those, no-send rests on **configuration and logs, not on a network proof** |
 | Databases | Local **PostgreSQL 16.15** (AMANZINE, RENT CAR and TIJARA; their CI uses PG16, and TIJARA's CI also runs PG18). PNEU used a **PostgreSQL 18.7** container (`postgres:18`) on port 5433, the same major version as its CI. No connection string to any company database was used |
 | Runtimes | Node v22.23.5. PNEU ran in a local image built from `dunglas/frankenphp:1-php8.4-bookworm` (PHP **8.4.28**) with `pdo_pgsql pgsql intl zip gd bcmath` and the PG18 client, mirroring the CI step ([pneu-test.Dockerfile](../diagnostics/pilot-v1/pneu-test.Dockerfile)) |
 | Source copies | Read-only clones at the analysed SHAs. Temporary test files lived only in local working copies and were deleted or never committed. **No commit or push to any application repository** |
@@ -25,7 +25,7 @@ First **executed** results for the scenarios planned in [docs/33 / PR #22](https
 Result legend: **PASS** = observed equals expected · **FAIL** = defect **proven by execution** · **BLOCKED** = cannot run (feature absent) · **NOT_RUN**.
 
 ### AMANZINE `4ff08a99` — AM-S04 / AM-S05 (P0)
-Method: the real server (`node server/index.js`) runs locally against PG16, driven over HTTP by [amanzine-am-s04-s05.mjs](../diagnostics/pilot-v1/amanzine-am-s04-s05.mjs). Raw output: [amanzine-result.json](../diagnostics/pilot-v1/amanzine-result.json).
+Method: the real server (`node server/index.js`) runs locally against PG16, driven over HTTP by [amanzine-am-s04-s05.mjs](../diagnostics/pilot-v1/amanzine-am-s04-s05.mjs). Raw output of the first run: [amanzine-result.json](../diagnostics/pilot-v1/amanzine-result.json). **Revision 2:** the committed runner had a quoting error introduced when its log path was edited before commit, so it was not runnable as stored. It is now fixed and `node --check` passes. **The committed file was re-run** under an explicit egress block, giving **identical results**: [amanzine-result-rerun-committed.json](../diagnostics/pilot-v1/amanzine-result-rerun-committed.json). A refusal now has to be a **4xx**; a 5xx counts as FAIL (Codex P2).
 | ID | Input | Expected | Observed | Result |
 |---|---|---|---|---|
 | AM-S04-A1 oversell | stock 2; order qty 3; approve | approve refused; stock 2 | approve **200**; stock **0** (1 unit sold without stock) | **FAIL (proven)** |
@@ -52,7 +52,7 @@ Tests: [pneu-diag.test.php](../diagnostics/pilot-v1/pneu-diag.test.php) (Pest, i
 | PM-S09 4a cumulative over-return | sold 4; return 1, then 2, then 2 | 3rd refused; 3 returned | 3rd **REFUSED**; returned 3; stock 9 | **PASS** (also covered by the existing AT `DocumentsTest` "Cannot return more than what is left") |
 | PM-S10 overpayment | debt 100.00; receive 200.00 | refused | REFUSED (`money.errors.more_than_due`) | **PASS** |
 | PM-S10 negative / zero | receive −50.00 and 0 | refused | both REFUSED | **PASS** |
-| PM-S10 6 replay | debt 100.00; the same `receive(30.00)` submitted twice | one payment | **2 payments**, debt 40.00 | **FAIL at server level**: `receive()` has no idempotency key, so a duplicate submission cannot be told apart from two genuine payments. UI double-tap protection was not tested. Scope of [PNEU #19](https://github.com/hdnkabour-gif/Pneumatiques-MOUHIM/issues/19) |
+| PM-S10 6 retry identity | debt 100.00; `receive(30.00)` called twice | — | **2 postings**, debt 40.00 | **OBSERVATION (not a defect by itself):** two equal 30.00 payments can be legitimate. What is shown is that `receive()` has **no operation/idempotency key**, so a *retry of the same operation* cannot be recognised. Acceptance (same key twice = 1 posting; same key + different body = conflict; different keys + same amount = 2 postings; concurrent same key = 1) belongs to the fix PR for [PNEU #21](https://github.com/hdnkabour-gif/Pneumatiques-MOUHIM/issues/21), separate from #19. UI double-tap not tested |
 | PM-S11 credit ceiling race | ceiling 1,000.00; two processes confirm 700.00 credit sales at the same instant | exactly one accepted | **both CONFIRMED** (credit 1,400.00 > 1,000.00) in **3 of 3 runs** | **FAIL (proven)**: [PNEU #18](https://github.com/hdnkabour-gif/Pneumatiques-MOUHIM/issues/18) |
 | PM-S11 control (sequential) | same two sales, one after the other | 2nd needs approval | 1st CONFIRMED; 2nd **ApprovalRequiredException** | **PASS**: the rule works, only the concurrent path fails |
 | PM-S10 3 close vs receipt race | — | — | — | **NOT_RUN**: needs a cash-day race harness ([PNEU #17](https://github.com/hdnkabour-gif/Pneumatiques-MOUHIM/issues/17)) |
@@ -65,13 +65,13 @@ Note: the existing CI suite passes because it has no multi-connection test for #
 | AQ-RC-01 deposit integrity | same contract, deposit 500.00 cash | deposit held 500.00, unaffected by the waiver | depositHeld 50000c; returned 0; kept 0 | **PASS** |
 | RC-04 receipt ownership | — | — | the existing AT `slice5.test.ts` "RC-04: independent employees may attach an identical receipt only after each uploads it" passed in the local run (319/319) | **PASS (existing AT, re-executed)** |
 | Cash closing | — | — | the existing AT `slice5.test.ts` "expected cash = cash in − cash out; cheques and cards apart; closing once…" passed locally | **PASS (existing AT, re-executed)** |
-Test: [rentcar-aq-rc-01.test.ts](../diagnostics/pilot-v1/rentcar-aq-rc-01.test.ts). A first attempt hit a setup error (wrong field name `cleanliness` instead of `cleaned`) that returned 409 before the case ran. That was an execution error, not an app result.
+Test: [rentcar-aq-rc-01.test.ts](../diagnostics/pilot-v1/rentcar-aq-rc-01.test.ts). Revision 2 (Codex P2): it now asserts the exact refund amount (2000c), rest 0, net collected and every deposit balance, so a wrong refund cannot pass. The committed copy was re-run: still FAIL (RC-03 unfixed), as expected. A first attempt hit a setup error (wrong field name `cleanliness` instead of `cleaned`) that returned 409 before the case ran. That was an execution error, not an app result.
 
 ## 4. Summary
 | App | Proven defects (FAIL) | Passed | Blocked / not run |
 |---|---|---|---|
 | AMANZINE | **5** (oversell, double decrement, no restore on reject, approve at zero stock, concurrent last unit) | 1 informational | size-level stock (absent) |
-| PNEU | **2** (credit-ceiling race #18, 3/3; replay at server level #19) | AQ-PM-01, over-return, overpayment/negative/zero, sequential control | cash-day race #17 |
+| PNEU | **1 proven** (credit-ceiling race #18, 3/3) + **1 missing capability** (no retry identity in `receive()`, #21) | AQ-PM-01, over-return, overpayment/negative/zero, sequential control | cash-day race #17 |
 | RENT CAR | **1** (RC-03 partial refund) | deposit integrity, RC-04, cash closing | — |
 | TIJARA | 0 | AQ-TJ-01 + isolation; 78/78 suite | cash sessions, partial returns, T25 (unimplemented) |
 
@@ -88,9 +88,18 @@ Test: [rentcar-aq-rc-01.test.ts](../diagnostics/pilot-v1/rentcar-aq-rc-01.test.t
 | RENT CAR RC-03 | partial `rental` refund entry after a waiver | one refund of 2000c; rest 0; deposit unchanged |
 
 ## 6. Owner actions (outside this PR)
-1. **Cloud dev environment secrets:** this Claude Code environment exposes `OPENAI_API_KEY`, `CLOUDINARY_URL`, `JWT_SECRET` and `ADMIN_EMAIL` as plain environment variables, tied to a `sahar2026-production` Railway domain that is not in the inventoried Railway account. Plain environment variables are visible to every session using that environment. If these are real, move them out of the environment and consider rotating them. They were not used by any test here.
+1. **Cloud dev environment secrets:** the shared dev environment exposes secret-like values as plain environment variables, tied to a production-like deployment that is not in the inventoried Railway account (names and host are kept out of this public-facing doc; tracked in [Issue #21](https://github.com/hdnkabour-gif/nexus/issues/21)). Plain environment variables are visible to every session using that environment. Check them, remove them, and rotate any real credential. They were not used by any test here.
 2. Approve opening app-specific fix PRs: AMANZINE (P0), PNEU #18/#19, RENT CAR RC-03. This session cannot push to `amanzine2`.
 3. Containment of public repos: [Issue #21](https://github.com/hdnkabour-gif/nexus/issues/21) is still open and independent.
+
+## Revision 2 (2026-11-20, review comment of 08:03Z + Codex P2)
+1. AMANZINE runner syntax fixed; committed file re-run (identical results, egress network-blocked).
+2. No-send claim qualified per run (network-proven vs configuration/log based).
+3. PNEU retry finding reworded: missing retry identity (#21), not "equal payments are illegal".
+4. Header comments corrected (files are stored in NEXUS and copied into each source repo to run); [RUNBOOK.md](../diagnostics/pilot-v1/RUNBOOK.md) added; parse-only CI workflow `diagnostics-syntax.yml` (node --check, php -l, TS syntax), which never runs the diagnostics.
+5. Unrelated production-like host and variable names removed from this doc.
+6. App-local vs deployed evidence stated explicitly.
+Committed PNEU, RENT CAR and TIJARA copies were re-run: same outcomes.
 
 ## CHECKPOINT
 - **Branch:** `test/pilot-diagnostics-run-v1-20261120` from `main` `bc8e6d13`. Independent of PR #18, #19 and #22.

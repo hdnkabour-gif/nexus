@@ -1,5 +1,6 @@
 <?php
-// TEMPORARY race setup (synthetic). Prints JSON ids.
+// Stored in NEXUS as evidence; COPY into Pneumatiques-MOUHIM/zz_race/ and run against a disposable DB. See RUNBOOK.md.
+// NEXUS diagnostic race setup (synthetic). Prints JSON ids.
 require __DIR__.'/../vendor/autoload.php';
 $app = require __DIR__.'/../bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
