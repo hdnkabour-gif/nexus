@@ -20,8 +20,16 @@ jobs:
         with:
           node-version: '22'
       - name: Node scripts parse
-        run: for f in diagnostics/**/*.mjs; do node --check "$f"; done
+        run: |
+          for f in diagnostics/*/*.mjs; do node --check "$f"; done
       - name: PHP scripts lint
-        run: for f in diagnostics/**/*.php; do php -l "$f"; done
-      - name: TypeScript scripts transpile-check (syntax only)
-        run: npx --yes typescript@5.6.3 --noEmit --allowJs false --skipLibCheck --isolatedModules --module nodenext --moduleResolution nodenext --target es2022 --noResolve diagnostics/pilot-v1/*.ts 2>&1 | grep -E "error TS1[0-9]{3}" && exit 1 || echo "no syntax errors (type/import errors ignored: helpers live in source repos)"
+        run: |
+          for f in diagnostics/*/*.php; do php -l "$f"; done
+      - name: TypeScript scripts syntax check
+        # Only TS1xxx (syntax) errors fail the job; type and import errors are expected,
+        # because these scripts use helpers that live in the source repositories.
+        run: |
+          if npx --yes typescript@5.6.3 --noEmit --skipLibCheck --isolatedModules --module nodenext --moduleResolution nodenext --target es2022 --noResolve diagnostics/pilot-v1/*.ts 2>&1 | grep -E "error TS1[0-9]{3}"; then
+            exit 1
+          fi
+          echo "no TypeScript syntax errors"
