@@ -62,6 +62,10 @@ For large items, additionally open a GitHub Issue and reference it here. Preserv
 | IDEA-038 | Add TIJARA OS and SCANFLOW PRO to NEXUS registry and probes | DESIGNED (in baseline registry only; probes/UI unchanged) | docs/27, D-REQ-03 |
 | IDEA-039 | Portfolio convention: each app exposes deployed SHA on `/ready` (pattern from TIJARA OS) | IDEA | docs/27 RU-09 |
 | IDEA-040 | Shared, tested backup + restore-drill runbook reused across apps (code reuse, no shared data) | IDEA | docs/27 RU-02, docs/30 R-003 |
+| IDEA-041 | Unified Pilot Feedback: in-app form or private link per pseudonymous pilot ID (bug, daily problem, suggestion, photo/voice, usability rating, top features); content stays in the app/ALLOSERVIX, NEXUS receives counts only | IDEA | docs/32 §4 |
+| IDEA-042 | ALLOSERVIX as commercial front + encrypted customer record (stage, trial, agreement) and a "Business Solutions" section; no public price list | IDEA | docs/32 §6 |
+| IDEA-043 | NEXUS cost-to-serve: Railway resource cost per app (from usage API) + owner-entered support hours per app/pilot; no customer prices/invoices in NEXUS | DESIGNED (first manual estimate in registry/infra-cost-runrate.v1.json) | docs/32 §2, §6 |
+| IDEA-044 | Commercial stage tracked separately from technical lifecycle (IDEA→…→PAID_SUBSCRIPTION) | IMPLEMENTED (documentation: registry/commercial-status.v1.json) | docs/32 §1 |
 
 ## ID collision register (found and resolved 2026-11-20 on owner instruction, PR #18 comment)
 IDEA-019 … IDEA-025 were each assigned twice on 2026-11-17. **Resolution:** the first occurrence keeps its ID. The second occurrence now has a unique **primary** ID (IDEA-030 … IDEA-036) and carries the legacy alias in its row. No row was deleted and the text of each row is unchanged. A reference anywhere that says "IDEA-019" etc. means the first occurrence, unless it points to a PR in the "2nd occurrence" column below.
@@ -96,6 +100,7 @@ Original status text above is kept; the evidence-based status below takes preced
 
 ## Changelog
 ### 2026-11-20
+- Commercial & Infrastructure Readiness (docs/32, registry/commercial-status.v1.json, registry/infra-cost-runrate.v1.json); IDEA-041…044.
 - Revision 2 (owner-relayed review): duplicate primary IDs resolved (IDEA-030…036 + legacy aliases); R-003 backup evidence split; strict TESTED evidence (docs/28 TE-*).
 - Portfolio Baseline V1 (docs/27–31, registry/portfolio-baseline.v1.json). Resolved IDEA ID collisions: second uses now IDEA-030…036 with legacy aliases, rows preserved, status corrections with evidence, IDEA-037…040. Issue #5 cross-app references recorded in docs/31 E4.
 
