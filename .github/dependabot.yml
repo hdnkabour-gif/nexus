@@ -1,0 +1,11 @@
+# Dependabot proposes updates as pull requests; it never merges or deploys.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "03:00"
+      timezone: "Africa/Casablanca"
+    open-pull-requests-limit: 2
