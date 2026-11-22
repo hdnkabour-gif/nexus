@@ -1,0 +1,26 @@
+name: Workflow syntax lint (read-only)
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+# Isolated syntax validation; no customer data, DB or deployment access.
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out without retained credentials
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+      - name: Validate workflow syntax only
+        env:
+          GOTOOLCHAIN: auto
+        run: |
+          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 -color -shellcheck=
