@@ -175,6 +175,19 @@ The image was built from `git archive 98b9715` (label and `/app/REVISION` checke
 
 PNEU CI on `98b9715`: `pest` ✅. Full suite locally: 433 passed, 1 skipped.
 
+## 4c. Final PNEU candidate `6ec778e` (= `98b9715` + #30 atomic, idempotent opening balance, #19), 2026-11-23
+Same image procedure and checks (label and `/app/REVISION`; `storage/app` as a persistent volume).
+
+| Run | Result |
+|---|---|
+| `drill.sh` → `pneu/results/drill-result-6ec778e.json` | **15/15** (private receipt restored with the same SHA-256; 74/74 tables identical) |
+| `rehearse.sh` `ea55329` → `6ec778e` → `pneu/results/rehearse-result-ea55329-to-6ec778e.json` | **20/20**, migrations exactly `…add_idempotency_to_payments`, `…move_expense_receipts_to_private_disk`, `…add_idempotency_to_customer_opening_balances`; receipt public → private, same SHA-256; figures unchanged |
+| `clean-install.sh` → `pneu/results/clean-install-result-6ec778e.json` | **18/18** |
+
+PNEU CI on `6ec778e`: `pest` ✅. Full suite locally: 437 passed, 1 skipped.
+
+**Clean business DB and D-58:** the D-58 migration only applies to an installation that already has users, so a **new clean database starts with the generic `FA-{YEAR}-{NUMBER}`**. Set `{PREFIX}{NUMBER}/{YY}`, padding 1, empty invoice prefix and the real next paper number on *Document Numbering* before the first invoice, and confirm with `app:go-live-audit`.
+
 ## 5. Release plans
 - `PLAN-PNEU.md`
 - `PLAN-RENT-CAR.md`
