@@ -73,7 +73,10 @@ start_app() {
   docker image inspect "$img" >/dev/null 2>&1 || die "image not found: $img"
   docker rm -f "$WEB" "$WRK" >/dev/null 2>&1 || true
   # storage/app is a persistent volume on Railway: the same named volume survives a version switch here.
-  docker run -d --name "$WEB" --network "$NET" --env-file "$WORK/app.env" -v "$HERE:/acceptance:ro" -v pneu-gate-restore:/restore -v pneu-gate-storage:/app/storage/app "$img" web >/dev/null
+  # MOUNT: where the persistent volume is mounted (default /app/storage/app). RAILWAY_SIM=1 adds the
+  # variables Railway sets on a service with a volume, so the app's durability guard sees the same thing.
+  local sim=(); [ "${RAILWAY_SIM:-}" = 1 ] && sim=(-e RAILWAY_ENVIRONMENT_NAME=production -e "RAILWAY_VOLUME_MOUNT_PATH=${MOUNT:-/app/storage/app}")
+  docker run -d --name "$WEB" --network "$NET" --env-file "$WORK/app.env" "${sim[@]}" -v "$HERE:/acceptance:ro" -v pneu-gate-restore:/restore -v "pneu-gate-storage:${MOUNT:-/app/storage/app}" "$img" web >/dev/null
   for i in $(seq 1 150); do
     code="$(docker exec "$WEB" sh -c 'curl -s -o /dev/null -w %{http_code} http://127.0.0.1:8080/admin/login' 2>/dev/null || true)"
     [ "$code" = 200 ] && break
@@ -81,7 +84,7 @@ start_app() {
     sleep 2
   done
   [ "$code" = 200 ] || die "web not ready after 300 s ($img), last HTTP code '$code'"
-  docker run -d --name "$WRK" --network "$NET" --env-file "$WORK/app.env" -v pneu-gate-storage:/app/storage/app "$img" worker >/dev/null
+  docker run -d --name "$WRK" --network "$NET" --env-file "$WORK/app.env" "${sim[@]}" "$img" worker >/dev/null   # like Railway: the worker has no volume
   sleep 3
   docker inspect -f '{{.State.Running}}' "$WRK" | grep -q true || die "worker container not running ($img)"
   local want; want="$(docker image inspect -f '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$img")"
