@@ -22,7 +22,7 @@ ARCHIVE="$(docker exec "$WEB" sh -c 'ls storage/app/backups/*/*.zip' | head -1)"
 ENC="$(docker exec "$WEB" php -r '$z=new ZipArchive; if($z->open($argv[1])!==true) exit(3); $f=0;$e=0; for($i=0;$i<$z->numFiles;$i++){ $s=$z->statIndex($i); if(substr($s["name"],-1)==="/") continue; $f++; if(($s["encryption_method"]??0)>0) $e++; } echo "$f/$e";' "$ARCHIVE")" || die "cannot read the archive"
 assert_eq "every file entry of the archive is encrypted (files/encrypted)" "$ENC" "${ENC%%/*}/${ENC%%/*}"
 
-docker exec "$WEB" php artisan app:backup-restore --disk=backups_local --into=mouhim_restored --files-to=/restore/files --force > "$WORK/restore.out" 2>&1 || die "app:backup-restore failed (see $WORK/restore.out)"
+docker exec "$WEB" php artisan app:backup-restore --disk=backups_local --into=mouhim_restored --files-to=/restore/files --documents-to=/restore/documents --force > "$WORK/restore.out" 2>&1 || die "app:backup-restore failed (see $WORK/restore.out)"
 
 columns mouhim_rc "$WORK/cols.txt"
 fingerprint mouhim_rc "$WORK/cols.txt" "$WORK/fp-source.txt"
@@ -32,7 +32,7 @@ DIFF="$({ diff "$WORK/fp-source.txt" "$WORK/fp-restored.txt" || true; } | grep -
 assert_eq "tables compared is non-zero" "$([ "$TABLES" -gt 0 ] && echo yes || echo no)" "yes"
 assert_eq "tables different between source and restored copy" "$DIFF" "0"
 
-docker run -d --name "$RDR" --network "$NET" --env-file "$WORK/app.env" -e DB_DATABASE=mouhim_restored -e PHOTO_ROOT=/restore/files \
+docker run -d --name "$RDR" --network "$NET" --env-file "$WORK/app.env" -e DB_DATABASE=mouhim_restored -e PHOTO_ROOT="${PHOTO_ROOT:-/restore/documents}" \
   -v "$HERE:/acceptance:ro" -v pneu-gate-restore:/restore --entrypoint sleep "$IMG" 900 >/dev/null
 run_php "$RDR" figures.php "$WORK/restored.json"
 docker exec "$RDR" php artisan stock:verify > "$WORK/verify-restored.out" || die "stock:verify failed on the restored copy"
@@ -44,6 +44,7 @@ for k in stock transfers m01_cash debt; do assert_eq "restored $k equals source"
 assert_eq "source stock DEP/M01/M02" "$(J "$WORK/source.json" stock)" '{"DEP": 15, "M01": 9, "M02": 4}'
 SRC_PHOTO="$(J "$WORK/source.json" photo_sha256)"; RST_PHOTO="$(J "$WORK/restored.json" photo_sha256)"
 assert_eq "source photo hash present" "$([ "$SRC_PHOTO" != null ] && echo yes || echo no)" "yes"
+assert_eq "source receipt is on the private documents disk (not /storage)" "$(J "$WORK/source.json" photo_source)" '"live documents disk"'
 assert_eq "restored photo (restore folder) SHA-256 equals source" "$RST_PHOTO" "$SRC_PHOTO"
 
 # The strict go-live audit is EXPECTED to refuse here (synthetic operational rows remain).

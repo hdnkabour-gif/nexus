@@ -41,6 +41,8 @@ $inv = app(ConfirmSaleAction::class)->execute($d, [['method' => 'cash', 'amount_
 app(CreateCreditNoteAction::class)->request($inv, [$inv->lines->first()->id => ['quantity' => 1, 'restock' => true]], RefundMethod::Account, 'TEST retour', $owner);
 app(CustomerAccountActions::class)->receive($c, $m01, ['method' => 'cash', 'amount_cents' => 1000, 'idempotency_key' => 'rc-drill-'.Str::random(10)], $seller);
 $img = imagecreatetruecolor(32, 32); imagefill($img, 0, 0, imagecolorallocate($img, 200, 30, 30)); ob_start(); imagejpeg($img); $jpg = ob_get_clean();
-Storage::disk('public')->put('expenses/test-rc-ticket.jpg', $jpg);
+// Since the private-receipts fix the cash desk stores receipts on the private "documents" disk.
+$receiptDisk = config('filesystems.disks.documents') ? 'documents' : 'public';
+Storage::disk($receiptDisk)->put('expenses/test-rc-ticket.jpg', $jpg);
 app(CashRegister::class)->addExpense($m01, ['category' => 'other', 'amount_cents' => 500, 'description' => 'TEST dépense', 'photo' => 'expenses/test-rc-ticket.jpg'], $seller);
 echo "books written\n";

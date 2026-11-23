@@ -33,5 +33,7 @@ $d = app(SaveSaleDraftAction::class)->execute(['site_id' => $m01->id, 'customer_
 $inv = app(ConfirmSaleAction::class)->execute($d, [['method' => 'cash', 'amount_cents' => 10000]], $seller)->fresh('lines');
 app(CreateCreditNoteAction::class)->request($inv, [$inv->lines->first()->id => ['quantity' => 1, 'restock' => true]], RefundMethod::Account, 'TEST retour', $owner);
 app(CustomerAccountActions::class)->receive($c, $m01, ['method' => 'cash', 'amount_cents' => 1000], $seller);   // pre-#23 receipt, no key
-app(CashRegister::class)->addExpense($m01, ['category' => 'other', 'amount_cents' => 500, 'description' => 'TEST dépense'], $seller);
+// A receipt exactly as the deployed version stores it: on the PUBLIC disk (the exposure the release removes).
+Illuminate\Support\Facades\Storage::disk('public')->put('expenses/test-old-receipt.jpg', 'TEST-RECEIPT-'.str_repeat('x', 64));
+app(CashRegister::class)->addExpense($m01, ['category' => 'other', 'amount_cents' => 500, 'description' => 'TEST dépense', 'photo' => 'expenses/test-old-receipt.jpg'], $seller);
 echo "populated\n";

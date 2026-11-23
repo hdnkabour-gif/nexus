@@ -19,11 +19,13 @@ if ($photo && ($root = getenv('PHOTO_ROOT'))) {
         if ($f->getFilename() === basename($photo)) { $hits[] = $f->getPathname(); }
     }
     $photoHash = count($hits) === 1 ? hash_file('sha256', $hits[0]) : null;
-} elseif ($photo && Storage::disk('public')->exists($photo)) {
-    $photoHash = hash('sha256', Storage::disk('public')->get($photo));
+} elseif ($photo) {
+    foreach (array_filter(['documents', 'public'], fn ($d) => config("filesystems.disks.$d")) as $d) {
+        if (Storage::disk($d)->exists($photo)) { $photoHash = hash('sha256', Storage::disk($d)->get($photo)); $photoDisk = $d; break; }
+    }
 }
 echo json_encode(['database' => config('database.connections.pgsql.database'), 'stock' => $stock,
     'transfers' => Transfer::query()->orderBy('id')->get(['status'])->pluck('status')->map(fn ($s) => is_object($s) ? $s->value : $s)->all(),
     'm01_cash' => app(CashRegister::class)->summary(Site::query()->where('code', 'M01')->firstOrFail()),
     'debt' => Customer::query()->where('name', 'TEST Garage Synthétique')->firstOrFail()->outstandingCents(),
-    'photo_source' => getenv('PHOTO_ROOT') ? 'restore folder' : 'live public disk', 'photo_sha256' => $photoHash], JSON_UNESCAPED_UNICODE), "\n";
+    'photo_source' => getenv('PHOTO_ROOT') ? 'restore folder' : ('live '.($photoDisk ?? 'none').' disk'), 'photo_sha256' => $photoHash], JSON_UNESCAPED_UNICODE), "\n";

@@ -57,7 +57,7 @@ OWNER_PASSWORD=Rc-$(openssl rand -hex 12)-Aa9!
 EOF
 }
 
-cleanup() { docker rm -f "$WEB" "$WRK" "$DBC" "$RDR" >/dev/null 2>&1 || true; docker network rm "$NET" >/dev/null 2>&1 || true; docker volume rm pneu-gate-restore >/dev/null 2>&1 || true; }
+cleanup() { docker rm -f "$WEB" "$WRK" "$DBC" "$RDR" >/dev/null 2>&1 || true; docker network rm "$NET" >/dev/null 2>&1 || true; docker volume rm pneu-gate-restore pneu-gate-storage >/dev/null 2>&1 || true; }
 
 fresh_db() {
   cleanup
@@ -72,7 +72,8 @@ start_app() {
   local img="$1" i code=""
   docker image inspect "$img" >/dev/null 2>&1 || die "image not found: $img"
   docker rm -f "$WEB" "$WRK" >/dev/null 2>&1 || true
-  docker run -d --name "$WEB" --network "$NET" --env-file "$WORK/app.env" -v "$HERE:/acceptance:ro" -v pneu-gate-restore:/restore "$img" web >/dev/null
+  # storage/app is a persistent volume on Railway: the same named volume survives a version switch here.
+  docker run -d --name "$WEB" --network "$NET" --env-file "$WORK/app.env" -v "$HERE:/acceptance:ro" -v pneu-gate-restore:/restore -v pneu-gate-storage:/app/storage/app "$img" web >/dev/null
   for i in $(seq 1 150); do
     code="$(docker exec "$WEB" sh -c 'curl -s -o /dev/null -w %{http_code} http://127.0.0.1:8080/admin/login' 2>/dev/null || true)"
     [ "$code" = 200 ] && break
@@ -80,7 +81,7 @@ start_app() {
     sleep 2
   done
   [ "$code" = 200 ] || die "web not ready after 300 s ($img), last HTTP code '$code'"
-  docker run -d --name "$WRK" --network "$NET" --env-file "$WORK/app.env" "$img" worker >/dev/null
+  docker run -d --name "$WRK" --network "$NET" --env-file "$WORK/app.env" -v pneu-gate-storage:/app/storage/app "$img" worker >/dev/null
   sleep 3
   docker inspect -f '{{.State.Running}}' "$WRK" | grep -q true || die "worker container not running ($img)"
   local want; want="$(docker image inspect -f '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$img")"

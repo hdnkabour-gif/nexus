@@ -164,6 +164,17 @@ Both scripts are fail-closed and run on a brand-new database with the candidate'
 
 **What this does not cover:** the existing Railway databases. Whether they already hold demo or synthetic rows must be checked **read-only** (for example `app:go-live-audit` on a restored copy) before handing a service to a customer. A clean customer environment should be a **new** database, not a cleanup of the demo one; nothing is deleted without approval and a backup.
 
+## 4b. Final PNEU candidate `98b9715` (= #22 + #23 + #24 + #25 + #28 private receipts), 2026-11-23
+The image was built from `git archive 98b9715` (label and `/app/REVISION` checked by every run). `storage/app` is a **named volume**, modelling the Railway volume, so files survive a version switch.
+
+| Run | Result | Receipt-specific assertions |
+|---|---|---|
+| `drill.sh` → `pneu/results/drill-result-98b9715.json` | **15/15** | the source receipt is on the **private `documents` disk**, not `/storage`; restored with `--documents-to` into a private folder, same SHA-256 |
+| `rehearse.sh` `ea55329` → `98b9715` → `pneu/results/rehearse-result-ea55329-to-98b9715.json` | **20/20** | migrations exactly `…add_idempotency_to_payments` and `…move_expense_receipts_to_private_disk`; a receipt written by the deployed version is **only on the public disk** before, **only on the private disk with the same SHA-256** after; after a code rollback it is **kept** on the private disk (not lost, but the old link cannot serve it) |
+| `clean-install.sh` → `pneu/results/clean-install-result-98b9715.json` | **18/18** | no business rows; only the owner; demo seeds refused; a redeploy adds nothing |
+
+PNEU CI on `98b9715`: `pest` ✅. Full suite locally: 433 passed, 1 skipped.
+
 ## 5. Release plans
 - `PLAN-PNEU.md`
 - `PLAN-RENT-CAR.md`

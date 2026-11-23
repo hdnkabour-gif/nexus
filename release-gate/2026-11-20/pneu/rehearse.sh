@@ -9,7 +9,7 @@
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 IMG_OLD="${IMG_OLD:?set IMG_OLD (deployed version image)}"; IMG_NEW="${IMG_NEW:?set IMG_NEW (candidate image)}"
 OUT="${1:-$WORK/rehearse-result.json}"
-EXPECTED_MIGRATION="${EXPECTED_MIGRATION:-2026_11_20_100000_add_idempotency_to_payments}"
+EXPECTED_MIGRATION="${EXPECTED_MIGRATION:-2026_11_20_100000_add_idempotency_to_payments,2026_11_23_090000_move_expense_receipts_to_private_disk}"
 RESEEDED="oil_catalogue_references tyre_catalogue_references"   # reference data re-seeded at every boot
 trap cleanup EXIT
 make_env
@@ -47,8 +47,16 @@ for k in summary debt stock; do
   assert_eq "after upgrade: $k unchanged" "$(python3 -c 'import json,sys; print(json.dumps(json.load(open(sys.argv[1]))[sys.argv[2]],sort_keys=True))' "$WORK/B.json" $k)" "$(python3 -c 'import json,sys; print(json.dumps(json.load(open(sys.argv[1]))[sys.argv[2]],sort_keys=True))' "$WORK/A.json" $k)"
 done
 
+# Receipt privacy (P1): before, the deployed version keeps it on the PUBLIC disk; after the upgrade it is
+# ONLY on the private documents disk, byte-identical (SHA-256), and the database row did not change.
+JR() { python3 -c 'import json,sys; print(json.dumps(json.load(open(sys.argv[1]))["receipt"]["on"],sort_keys=True))' "$1"; }
+RHASH="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["receipt"]["on"].get("public",""))' "$WORK/A.json")"
+assert_eq "before upgrade: receipt only on the public disk" "$(JR "$WORK/A.json")" "{\"public\": \"$RHASH\"}"
+assert_eq "after upgrade: receipt only on the private disk, same SHA-256" "$(JR "$WORK/B.json")" "{\"documents\": \"$RHASH\"}"
+
 start_app "$IMG_OLD"                                   # code-only rollback on the migrated schema
 run_php "$WEB" snapshot.php "$WORK/C.json"
+assert_eq "after code rollback: receipt kept on the private disk, not lost (the old link cannot serve it)" "$(JR "$WORK/C.json")" "{\"documents\": \"$RHASH\"}"
 for k in summary debt stock; do
   assert_eq "after code rollback: $k unchanged" "$(python3 -c 'import json,sys; print(json.dumps(json.load(open(sys.argv[1]))[sys.argv[2]],sort_keys=True))' "$WORK/C.json" $k)" "$(python3 -c 'import json,sys; print(json.dumps(json.load(open(sys.argv[1]))[sys.argv[2]],sort_keys=True))' "$WORK/A.json" $k)"
 done
