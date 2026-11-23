@@ -49,7 +49,7 @@ The data was read on 2026-11-20 with **GraphQL queries only**: `deploymentTrigge
 | Close of the day | expected 120.00, difference 0; a cash expense after the close is refused; the close is audited |
 | Worker container (same image) | consumed a queued job; 0 failed jobs |
 
-**Upgrade rehearsal** (`pneu/rehearse.sh`):
+**Upgrade rehearsal** (`pneu/rehearse.sh`, fail-closed; result `pneu/results/rehearse-result-ea55329-to-162fe24.json`, **17/17 assertions**):
 1. The deployed `ea55329` writes synthetic books: float, cash sale, credit note, a pre-#23 receipt and an expense.
 2. The `162fe24` image starts on the same DB. Only `2026_11_20_100000_add_idempotency_to_payments` runs.
 3. Code rollback: `ea55329` restarts on the migrated schema.
@@ -60,12 +60,12 @@ The data was read on 2026-11-20 with **GraphQL queries only**: `deploymentTrigge
 | B: after upgrade to `162fe24` | 155.00 | 10.00 | 3 |
 | C: `ea55329` again on the migrated schema | 155.00 | 10.00 | 3 |
 
-- Row fingerprints over the pre-upgrade columns: 72 of 74 tables are identical, including every business table.
-- The 2 that differ (`oil_catalogue_references`, `tyre_catalogue_references`) have the same row counts. The release changes no seeder, so the difference is the boot-time reseed refreshing timestamps, which happens on every deploy (`pneu/upgrade-fingerprint-diff.txt`).
-- **The migration is additive.** A code-only rollback to `ea55329` works on the migrated schema in this rehearsal.
+- Asserted: the only migration applied is `2026_11_20_100000_add_idempotency_to_payments`.
+- Asserted: **no table changed** outside an explicit allowlist of the two boot-reseeded reference catalogues (`oil_catalogue_references`, `tyre_catalogue_references`), and those two are **identical once `created_at`/`updated_at` are left out**.
+- **The migration is additive. The rollback rehearsal proves schema compatibility only, not financial safety.** `ea55329` lacks the cash-close, credit-ceiling and receipt-idempotency fixes. If it is ever rolled back to, financial writes must stop until a forward fix or an owner-authorised procedure.
 - This is **not** a database or file restore; that still requires the off-Railway restore proof (PNEU #13).
 
-### 2.4 Stock transfers, then backup → restore drill (`pneu/books.php`, `pneu/drill.sh`, `pneu/drill.log`)
+### 2.4 Stock transfers, then backup → restore drill (`pneu/books.php`, `pneu/drill.sh`; result `pneu/results/drill-result-162fe24.json`, **14/14 assertions**)
 Run on `162fe24`, web and worker from the same image, isolated as in §2.2, with backup disk `backups_local` and a synthetic archive password.
 
 **Transfers** (and the sale, refund, receipt and expense with a photo):
@@ -83,17 +83,18 @@ Run on `162fe24`, web and worker from the same image, isolated as in §2.2, with
 
 | Check | Source | Restored copy |
 |---|---|---|
-| Tables, compared over every column | 81 | **81 identical, 0 different** |
+| Tables, compared over every column (application tables, queue/cache/session excluded) | 74 | **74 identical, 0 different** |
 | Stock DEP / M01 / M02 | 15 / 9 / 4 | 15 / 9 / 4 |
 | M01 cash expected / debt | 155.00 / 10.00 | 155.00 / 10.00 |
-| Expense photo SHA-256 | `ea774032…` | `ea774032…` (file restored to the private folder) |
+| Expense photo SHA-256 | `ea774032…` (live disk) | `ea774032…` (read **from the `--files-to` restore folder**) |
 | `stock:verify` | consistent | consistent |
 
-In `pneu/drill-restored-figures.json`, `photo_sha256` is null because that reader pointed at the live public disk, not the restore folder. The restored file was hashed directly (`drill.log`).
+Both hashes, the restore location, the archive's files-encrypted count (3/3) and the audit's real exit code are in the result file. An earlier version of this PR committed a restored-figures file with `photo_sha256: null` (it read the live disk) and cited a log the repo's `*.log` ignore rule kept out of the PR; both are replaced by the result file.
 
-**`app:go-live-audit --strict` on the restored copy:** it reports `GO_LIVE_NOT_READY` (correct: synthetic operational rows remain) and shows invoice numbering `FA-{YEAR}-{NUMBER}` with padding 6.
-- The owner sets the next paper number on the **Document Numbering** page (D-49); going backwards is refused.
-- **This is an owner decision, not made here.**
+**`app:go-live-audit --strict` on the restored copy:** exit code 1 with `GO_LIVE_NOT_READY`, **asserted as the expected outcome** (synthetic operational rows remain).
+- It shows the **current technical configuration** `FA-{YEAR}-{NUMBER}`, padding 6. This is **not approved** and may not match the company's paper series; #13 mentions a paper-style example such as `219/26`.
+- The owner or accountant must give the **exact format and the last issued paper number**. The next number is then set on the *Document Numbering* page (D-49; going backwards is refused). Existing invoices are never rewritten.
+- `GO_LIVE_NOT_READY` stays until that is reconciled.
 
 ### 2.5 Not covered here (still open on the gate)
 - The same drill against the **real off-Railway R2 target** with the owner's credentials (#13). The procedure above is identical; only the disk changes.
@@ -115,7 +116,9 @@ The setup is entirely local, with no Railway and no cloud storage:
 - deposit out 500.00;
 - an expense with an uploaded receipt (PDF).
 
-**Backup:** the app's own `backup` script, encrypted, with the off-site target simulated as a separate directory (`OFFSITE_KIND=dir`). 59 tables, 714 rows, 1 file; the off-site copy was verified.
+**Backup:** the app's own `backup` script, encrypted, with the off-site target **simulated** as a separate local directory (`OFFSITE_KIND=dir`). 59 tables, 714 rows, 1 file; the off-site copy was verified.
+
+The seeded vehicle has a daily rate of 0, so this run is **not a revenue acceptance scenario**. It proves backup integrity only; the revenue and refund reconciliation is covered by the RENT CAR test suite (#37).
 
 **Drill:** the app's own `backup-drill`, reading from the off-site copy. Report: `rent-car/drill-report-a651681.json`, **`ok: true`**.
 - Steps:
@@ -136,9 +139,32 @@ The setup is entirely local, with no Railway and no cloud storage:
   - restore into a non-empty DB is refused.
 - The drill database was dropped afterwards.
 
-**Still open (#14):** the same drill against the real off-site target with the owner's credentials; D-052; the accountant's acceptance of the signed CSV.
+**What this does NOT prove (#14 stays open):**
+- a real cloud or off-Railway target with real credentials;
+- the backup schedule and retention on the live service;
+- branch-level access control on documents;
+- D-052, and the accountant's acceptance of the signed CSV.
 
-## 4. Release plans
+## 4. Clean install: a new customer starts with NO business data (`pneu/clean-install.sh`, `rent-car/clean-install.sh`)
+Both scripts are fail-closed and run on a brand-new database with the candidate's real production start.
+
+**PNEU `162fe24`**: `pneu/results/clean-install-result-162fe24.json`, **18/18**
+- After the entrypoint (migrate, reference seed, owner from env), all 17 business tables have 0 rows: customers, vehicles, products, stock, lots, sales, invoices, payments, allocations, cash days, expenses, transfers, approvals and opening balances.
+- The **only user is the owner** (with the owner role), and the sites are DEP, M01 and M02.
+- Reference data is present: 5 roles, 38 permissions, 33 categories, 120 tyre catalogue entries.
+- `app:go-live-audit --strict` **passes** (exit 0).
+- `DemoSeeder` and `app:staging-demo-data --force` are **refused** by their production and staging-project guards (the refusal reasons are asserted), and nothing is written.
+- A **redeploy** (restart: migrate + seed again) adds no row; the reference counts are unchanged.
+
+**RENT CAR `a651681`**: `rent-car/results/clean-install-result-a651681.json`, **10/10**
+- Production start (`migrate.js` then the server; `NODE_ENV=production`, `COOKIE_SECURE=true`) on a new database, then `create-manager` from env.
+- **No business table holds rows.** The only non-empty tables are the allowlisted reference and setup tables: roles, permissions, migrations, the vehicle catalogue, one contract template, company settings, the manager, and one audit entry for creating that manager.
+- `seed:dev` and `seed:demo` are refused.
+- A redeploy applies no migration and adds no row. The database is dropped after the run.
+
+**What this does not cover:** the existing Railway databases. Whether they already hold demo or synthetic rows must be checked **read-only** (for example `app:go-live-audit` on a restored copy) before handing a service to a customer. A clean customer environment should be a **new** database, not a cleanup of the demo one; nothing is deleted without approval and a backup.
+
+## 5. Release plans
 - `PLAN-PNEU.md`
 - `PLAN-RENT-CAR.md`
 - `PLAN-AMANZINE.md`
@@ -146,7 +172,24 @@ The setup is entirely local, with no Railway and no cloud storage:
 Each one names the deployed SHA, the candidate, how to avoid an unwanted deploy, the verification and rollback steps, the stop conditions, and the owner decisions still required.
 
 ## Reproduce
+The scripts are **fail-closed** (`pneu/lib.sh`):
+- `set -Eeuo pipefail` and an error trap naming the failing command;
+- bounded readiness checks;
+- a work directory created per run (`WORK`, default `mktemp -d`) with **generated** synthetic env files;
+- the success verdict comes from explicit assertions written to a JSON result file, never from a log.
+
+Checked negative cases, with `docker` failing:
+- the previous `rehearse.sh` (`5d3166c`) **exited 0** and printed `tables compared: 0`;
+- the new `rehearse.sh` and `drill.sh` exit 1, naming the failed command.
+
+With a missing image, `drill.sh` exits 1.
+
+```
+IMG=local/pneu-rc:162fe24 pneu/drill.sh pneu/results/drill-result-162fe24.json
+IMG_OLD=local/pneu-rc:ea55329 IMG_NEW=local/pneu-rc:162fe24 pneu/rehearse.sh pneu/results/rehearse-result-ea55329-to-162fe24.json
+```
+
+The images:
 1. Build the image from `git archive <sha>` with the production Dockerfile (in a sandbox, add the proxy CA only during the build).
-2. Create an internal Docker network, a `postgres:18` container and a synthetic env file with `DB_HOST=pneu-rc-db`, `DB_DATABASE=mouhim_rc` and `OWNER_EMAIL=owner.rc@example.test`. Both scripts refuse to run against any other database.
-3. Run `web` and `worker` from the same image.
-4. Run `php /acceptance/acceptance.php` in the web container, or `rehearse.sh` for the upgrade path.
+2. `drill.sh` and `rehearse.sh` do the rest themselves: an internal network, a fresh `postgres:18` container, generated env files, and web + worker from the same image. The PHP scripts refuse any database other than host `pneu-rc-db` / database `mouhim_rc`.
+3. `acceptance.php` (§2.3) is run by hand in the web container of such an environment; its result is `pneu/acceptance-result-162fe24.json`.

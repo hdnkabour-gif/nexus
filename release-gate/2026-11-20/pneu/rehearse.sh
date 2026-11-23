@@ -1,35 +1,57 @@
-#!/bin/bash
-set -u
-D=/tmp/claude-0/pneu-acceptance; cd $D
-PSQL="docker exec pneu-rc-db psql -U mouhim_rc -d mouhim_rc -tA"
-start() { # $1 image tag
-  docker rm -f pneu-rc-web pneu-rc-worker >/dev/null 2>&1
-  docker run -d --name pneu-rc-web --network pneu-rc-net --env-file rc.env -v $D:/acceptance:ro local/pneu-rc:$1 web >/dev/null
-  for i in $(seq 1 120); do [ "$(docker exec pneu-rc-web sh -c 'curl -s -o /dev/null -w %{http_code} http://127.0.0.1:8080/admin/login' 2>/dev/null)" = 200 ] && break; sleep 2; done
-  docker run -d --name pneu-rc-worker --network pneu-rc-net --env-file rc.env local/pneu-rc:$1 worker >/dev/null
-  echo "web[$1] login=$(docker exec pneu-rc-web sh -c 'curl -s -o /dev/null -w %{http_code} http://127.0.0.1:8080/admin/login') revision=$(docker exec pneu-rc-web cat /app/REVISION | cut -c1-7) worker_revision=$(docker exec pneu-rc-worker cat /app/REVISION | cut -c1-7)"
+#!/usr/bin/env bash
+# PNEU upgrade + code-rollback rehearsal (fail-closed). Usage:
+#   IMG_OLD=local/pneu-rc:ea55329 IMG_NEW=local/pneu-rc:162fe24 ./rehearse.sh [result.json]
+# 1) the deployed version writes synthetic books; 2) the candidate starts on the same database
+# (its entrypoint migrates); 3) the deployed version starts again on the migrated schema.
+# Asserts: identical business figures at each step; only the expected migration ran; every
+# table identical across the upgrade except the boot-reseeded reference catalogues, which may
+# differ ONLY in their timestamp columns.
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
+IMG_OLD="${IMG_OLD:?set IMG_OLD (deployed version image)}"; IMG_NEW="${IMG_NEW:?set IMG_NEW (candidate image)}"
+OUT="${1:-$WORK/rehearse-result.json}"
+EXPECTED_MIGRATION="${EXPECTED_MIGRATION:-2026_11_20_100000_add_idempotency_to_payments}"
+RESEEDED="oil_catalogue_references tyre_catalogue_references"   # reference data re-seeded at every boot
+trap cleanup EXIT
+make_env
+fresh_db
+
+start_app "$IMG_OLD"
+run_php "$WEB" populate.php "$WORK/populate.out"
+run_php "$WEB" snapshot.php "$WORK/A.json"
+columns mouhim_rc "$WORK/cols.txt"                    # frozen BEFORE the upgrade
+fingerprint mouhim_rc "$WORK/cols.txt" "$WORK/FA.txt"
+docker exec "$DBC" psql -U mouhim_rc -d mouhim_rc -tAc 'select migration from migrations order by migration' > "$WORK/mig-before.txt" || die "cannot list migrations"
+nots_hash() { # table -> md5 over every column except timestamps
+  local c; c="$(docker exec "$DBC" psql -U mouhim_rc -d mouhim_rc -tAc "select string_agg(quote_ident(column_name),',' order by ordinal_position) from information_schema.columns where table_schema='public' and table_name='$1' and column_name not in ('created_at','updated_at')")"
+  docker exec "$DBC" psql -U mouhim_rc -d mouhim_rc -tAc "select count(*)||':'||md5(coalesce(string_agg(x::text,'|' order by x::text),'')) from (select $c from public.\"$1\") x" || die "hash failed on $1"
 }
-fingerprint() { # uses column lists frozen before the upgrade
-  while IFS='|' read -r t cols; do
-    echo "$t $($PSQL -c "select count(*)||':'||md5(coalesce(string_agg(x::text,'|' order by x::text),'')) from (select $cols from public.\"$t\") x")"
-  done < cols.txt
-}
-# 0. fresh isolated database
-docker rm -f pneu-rc-web pneu-rc-worker pneu-rc-db >/dev/null 2>&1
-docker run -d --name pneu-rc-db --network pneu-rc-net --env-file db.env postgres:18 >/dev/null
-for i in $(seq 1 40); do docker exec pneu-rc-db pg_isready -U mouhim_rc -d mouhim_rc >/dev/null 2>&1 && break; sleep 1; done; sleep 2
-# 1. currently deployed version + synthetic books
-start ea55329
-docker exec pneu-rc-web php /acceptance/populate.php
-docker exec pneu-rc-web php /acceptance/snapshot.php > A.json; echo "A (ea55329): $(cat A.json)"
-$PSQL -c "select table_name||'|'||string_agg(quote_ident(column_name),',' order by ordinal_position) from information_schema.columns where table_schema='public' and table_name not in ('migrations','cache','cache_locks','sessions','jobs','job_batches','failed_jobs') group by table_name order by 1" > cols.txt
-fingerprint > FA.txt
-# 2. upgrade: the candidate image migrates the same database
-start 162fe24
-docker exec pneu-rc-web php /acceptance/snapshot.php > B.json; echo "B (162fe24): $(cat B.json)"
-fingerprint > FB.txt
-echo "rows changed by the upgrade: $(diff FA.txt FB.txt | grep -c '^>')  (tables compared: $(wc -l < FA.txt))"
-echo "new migrations: $($PSQL -c "select string_agg(migration, ', ') from migrations where batch = (select max(batch) from migrations)")"
-# 3. code rollback: the deployed version again, on the migrated schema
-start ea55329
-docker exec pneu-rc-web php /acceptance/snapshot.php > C.json; echo "C (ea55329 on migrated schema): $(cat C.json)"
+for t in $RESEEDED; do echo "$t $(nots_hash "$t")"; done > "$WORK/nots-before.txt"
+
+start_app "$IMG_NEW"
+run_php "$WEB" snapshot.php "$WORK/B.json"
+fingerprint mouhim_rc "$WORK/cols.txt" "$WORK/FB.txt"
+docker exec "$DBC" psql -U mouhim_rc -d mouhim_rc -tAc 'select migration from migrations order by migration' > "$WORK/mig-after.txt" || die "cannot list migrations"
+NEW_MIG="$(comm -13 "$WORK/mig-before.txt" "$WORK/mig-after.txt" | tr '\n' ',' | sed 's/,$//')"
+for t in $RESEEDED; do echo "$t $(nots_hash "$t")"; done > "$WORK/nots-after.txt"
+assert_eq "migrations applied by the upgrade" "$NEW_MIG" "$EXPECTED_MIGRATION"
+
+TABLES="$(wc -l < "$WORK/cols.txt")"
+assert_eq "tables compared is non-zero" "$([ "$TABLES" -gt 0 ] && echo yes || echo no)" "yes"
+CHANGED="$({ diff "$WORK/FA.txt" "$WORK/FB.txt" || true; } | sed -n 's/^> \([^ ]*\) .*/\1/p' | sort | tr '\n' ' ' | sed 's/ $//')"
+UNEXPECTED=""; for t in $CHANGED; do case " $RESEEDED " in *" $t "*) ;; *) UNEXPECTED="$UNEXPECTED $t";; esac; done
+assert_eq "tables changed outside the reseeded reference catalogues" "${UNEXPECTED# }" ""
+for t in $RESEEDED; do   # allowed tables: identical once timestamps are left out
+  assert_eq "$t identical apart from timestamps" "$(grep "^$t " "$WORK/nots-after.txt")" "$(grep "^$t " "$WORK/nots-before.txt")"
+done
+for k in summary debt stock; do
+  assert_eq "after upgrade: $k unchanged" "$(python3 -c 'import json,sys; print(json.dumps(json.load(open(sys.argv[1]))[sys.argv[2]],sort_keys=True))' "$WORK/B.json" $k)" "$(python3 -c 'import json,sys; print(json.dumps(json.load(open(sys.argv[1]))[sys.argv[2]],sort_keys=True))' "$WORK/A.json" $k)"
+done
+
+start_app "$IMG_OLD"                                   # code-only rollback on the migrated schema
+run_php "$WEB" snapshot.php "$WORK/C.json"
+for k in summary debt stock; do
+  assert_eq "after code rollback: $k unchanged" "$(python3 -c 'import json,sys; print(json.dumps(json.load(open(sys.argv[1]))[sys.argv[2]],sort_keys=True))' "$WORK/C.json" $k)" "$(python3 -c 'import json,sys; print(json.dumps(json.load(open(sys.argv[1]))[sys.argv[2]],sort_keys=True))' "$WORK/A.json" $k)"
+done
+
+write_result "$OUT" "pneu-upgrade-and-code-rollback" "$(python3 -c 'import json,sys; print(json.dumps({"old":sys.argv[1],"new":sys.argv[2],"tables_compared":int(sys.argv[3]),"tables_changed":sys.argv[4].split(),"snapshots":{k:json.load(open(f)) for k,f in zip("ABC",sys.argv[5:8])},"note":"A code-only rollback proves schema compatibility, NOT financial safety: the old version lacks the cash-close, credit-ceiling and receipt-idempotency fixes."}))' "$IMG_OLD" "$IMG_NEW" "$TABLES" "$CHANGED" "$WORK/A.json" "$WORK/B.json" "$WORK/C.json")"
+[ "$FAILED" = 0 ] || die "rehearsal assertions failed (see $OUT)"

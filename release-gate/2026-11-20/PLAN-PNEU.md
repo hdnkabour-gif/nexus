@@ -14,12 +14,14 @@
 3. **How to avoid three intermediate deploys.** The app and worker have a deploy trigger on `main` with `checkSuites: false`, so every push deploys at once (see `railway-deploy-triggers.json`). Choose one:
    - **A (recommended): one fast-forward push.** Inside the window, push `main` from `ea55329` to `162fe24` in a **single** push: `git push origin 162fe2441266c8443d205ad2acc3b1d03e001bed:main`, with no force, since this is a fast-forward.
      - `main` is exactly the chain's merge-base, so this push is one deploy of the approved tree.
-     - GitHub marks #22, #23 and #24 as merged because their commits are now in `main`.
      - Do **not** use the PR merge buttons for this option: each button is its own push, and so its own deploy.
+     - **Governance checked (read-only, 2026-11-20):** `main` is **not protected** (`protected: false`). Rulesets are not available on this private plan. No GitHub rule would block the push, but it bypasses the PR merge buttons. Whether that audit trail is acceptable is the **owner's decision**.
+     - GitHub usually records PRs as merged when their commits land in the base branch, but **this is not assumed**: check it after the push. If they stay open, close them with a comment linking the pushed SHA.
+     - Valid only if `main` still equals `ea55329` at that moment.
      - Needs the owner's GitHub action, or explicit approval for me to do it.
    - **B:** temporarily **disconnect the `main` trigger** on app and worker (a Railway change that needs explicit approval), merge the three PRs normally, then deploy once by pinning both services to the final `main` SHA, then restore the trigger.
    - Do **not** merge #22, then #23, then #24 one at a time with the trigger active. Merging #23 alone migrates the live DB with the chain half-done.
-4. **Invoice numbering:** confirm the next paper invoice number (`FA-{YEAR}-{NUMBER}`, padding 6) on the *Document Numbering* page before any real sale.
+4. **Invoice numbering:** the current setting `FA-{YEAR}-{NUMBER}` (padding 6) is a technical default, **not approved**, and may not match the paper series (#13 mentions a style like `219/26`). The owner or accountant gives the exact format and the **last issued paper number**; the next number is set on *Document Numbering*. Old invoices are never rewritten. No real sale before this.
 5. **Real data stays forbidden** until §5 is complete.
 
 ## 1. Before the window (no production change)
@@ -45,7 +47,8 @@
 - [ ] The worker consumes the queue, with no new failed jobs.
 
 ## 4. Rollback
-- **Code-only rollback is safe for this release.** The migration is additive, and the rehearsal ran `ea55329` on the migrated schema with identical figures (`README.md` §2.3). Redeploy `ea55329` to app **and** worker. The new columns stay unused; no DB rollback is needed.
+- **A code-only rollback is schema-compatible**: the migration is additive, and the rehearsal ran `ea55329` on the migrated schema with identical figures (`pneu/results/rehearse-result-…json`). Redeploy `ea55329` to app **and** worker; no DB rollback is needed.
+- **It is not financially safe to keep operating on `ea55329`.** That version lacks the concurrent cash-close, credit-ceiling and receipt-idempotency fixes. After a rollback, **stop financial writes** (sales, receipts, refunds, closes) until a forward fix is deployed or the owner authorises a procedure.
 - **DB restore** only on proven data damage: restore the pre-window backup **into a new database** first (`--into`), reconcile, and only then decide, as the owner, whether to switch. Never `--replace-current` without the owner.
 - **Stop conditions:**
   - any unexplained difference in cash, debt or stock;

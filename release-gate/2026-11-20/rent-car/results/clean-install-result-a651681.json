@@ -1,0 +1,68 @@
+{
+ "rehearsal": "rent-car-clean-install",
+ "ok": true,
+ "revision": "a6516817dcdacd303b766878f3f2c199f4f02a35",
+ "tables_inspected": 59,
+ "assertions": [
+  {
+   "check": "tables inspected is non-zero",
+   "actual": "yes",
+   "expected": "yes",
+   "pass": true
+  },
+  {
+   "check": "no business table holds rows (only reference/setup tables)",
+   "actual": "",
+   "expected": "",
+   "pass": true
+  },
+  {
+   "check": "only the first manager exists",
+   "actual": "manager.clean@example.test:manager",
+   "expected": "manager.clean@example.test:manager",
+   "pass": true
+  },
+  {
+   "check": "vehicle reference catalogue present",
+   "actual": "t",
+   "expected": "t",
+   "pass": true
+  },
+  {
+   "check": "migrations applied",
+   "actual": "20",
+   "expected": "20",
+   "pass": true
+  },
+  {
+   "check": "seed:dev refused in production",
+   "actual": "refused",
+   "expected": "refused",
+   "pass": true
+  },
+  {
+   "check": "seed:demo refused without its explicit demo flags",
+   "actual": "refused",
+   "expected": "refused",
+   "pass": true
+  },
+  {
+   "check": "still no business rows after the refused seeds",
+   "actual": "",
+   "expected": "",
+   "pass": true
+  },
+  {
+   "check": "a redeploy applies no migration",
+   "actual": "0",
+   "expected": "0",
+   "pass": true
+  },
+  {
+   "check": "a redeploy adds no row anywhere",
+   "actual": "audit_logs=1 company_settings=1 contract_templates=1 permissions=38 role_permissions=53 roles=2 schema_migrations=20 users=1 vehicle_catalog_brands=39 vehicle_catalog_engines=5 vehicle_catalog_generations=3 vehicle_catalog_maintenance=10 vehicle_catalog_market_priority=20 vehicle_catalog_models=262 vehicle_catalog_oil_brands=22 vehicle_catalog_oil_fitments=5 vehicle_catalog_oil_products=24 vehicle_catalog_sources=8 vehicle_catalog_status_reference=6 vehicle_catalog_tire_brands=36 vehicle_catalog_tire_fitments=2 vehicle_catalog_tire_models=34 vehicle_catalog_tire_sizes=44 vehicle_status_transitions=11",
+   "expected": "audit_logs=1 company_settings=1 contract_templates=1 permissions=38 role_permissions=53 roles=2 schema_migrations=20 users=1 vehicle_catalog_brands=39 vehicle_catalog_engines=5 vehicle_catalog_generations=3 vehicle_catalog_maintenance=10 vehicle_catalog_market_priority=20 vehicle_catalog_models=262 vehicle_catalog_oil_brands=22 vehicle_catalog_oil_fitments=5 vehicle_catalog_oil_products=24 vehicle_catalog_sources=8 vehicle_catalog_status_reference=6 vehicle_catalog_tire_brands=36 vehicle_catalog_tire_fitments=2 vehicle_catalog_tire_models=34 vehicle_catalog_tire_sizes=44 vehicle_status_transitions=11",
+   "pass": true
+  }
+ ]
+}

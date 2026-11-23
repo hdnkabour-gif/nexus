@@ -1,31 +1,55 @@
-#!/bin/bash
-set -u
-D=/tmp/claude-0/pneu-acceptance; cd $D; IMG=local/pneu-rc:162fe24
-PSQL="docker exec pneu-rc-db psql -U mouhim_rc -tA"
-docker rm -f pneu-rc-web pneu-rc-worker pneu-rc-db pneu-rc-read >/dev/null 2>&1; docker network create --internal pneu-rc-net >/dev/null 2>&1
-docker run -d --name pneu-rc-db --network pneu-rc-net --env-file db.env postgres:18 >/dev/null
-for i in $(seq 1 40); do docker exec pneu-rc-db pg_isready -U mouhim_rc -d mouhim_rc >/dev/null 2>&1 && break; sleep 1; done; sleep 2
-docker run -d --name pneu-rc-web --network pneu-rc-net --env-file drill.env -v $D:/acceptance:ro $IMG web >/dev/null
-for i in $(seq 1 120); do [ "$(docker exec pneu-rc-web sh -c 'curl -s -o /dev/null -w %{http_code} http://127.0.0.1:8080/admin/login' 2>/dev/null)" = 200 ] && break; sleep 2; done
-docker run -d --name pneu-rc-worker --network pneu-rc-net --env-file drill.env $IMG worker >/dev/null
-echo "revision web=$(docker exec pneu-rc-web cat /app/REVISION | cut -c1-7) worker=$(docker exec pneu-rc-worker cat /app/REVISION | cut -c1-7)"
-docker exec pneu-rc-web php /acceptance/books.php
-docker exec pneu-rc-web php /acceptance/figures.php > S.json; echo "SOURCE   $(cat S.json)"
-echo "stock:verify (source): $(docker exec pneu-rc-web php artisan stock:verify 2>&1 | tail -1)"
-echo "--- backup:run ---"; docker exec pneu-rc-web php artisan backup:run 2>&1 | grep -iE "success|fail|error|zip|copied" | head -5
-docker exec pneu-rc-web sh -c 'ls -la storage/app/backups/*/ 2>/dev/null | tail -2; f=$(ls storage/app/backups/*/*.zip | head -1); echo "archive: $(basename $f) $(stat -c %s $f) bytes"; php -r "\$z=new ZipArchive; \$z->open(\"$f\"); \$e=0; for(\$i=0;\$i<\$z->numFiles;\$i++){ \$s=\$z->statIndex(\$i); if((\$s[\"encryption_method\"]??0)>0) \$e++; } echo \"entries=\".\$z->numFiles.\" encrypted=\".\$e.PHP_EOL;"'
-echo "--- restore into a NEW database ---"; docker exec pneu-rc-web php artisan app:backup-restore --disk=backups_local --into=mouhim_restored --files-to=/tmp/restored-files --force 2>&1 | grep -v "^\s*$" | tail -6
-echo "--- compare every table ---"
-$PSQL -d mouhim_rc -c "select table_name||'|'||string_agg(quote_ident(column_name),',' order by ordinal_position) from information_schema.columns where table_schema='public' group by table_name order by 1" > drill-cols.txt
-same=0; diff=0; > drill-diff.txt
-while IFS='|' read -r t cols; do
-  a=$($PSQL -d mouhim_rc -c "select count(*)||':'||md5(coalesce(string_agg(x::text,'|' order by x::text),'')) from (select $cols from public.\"$t\") x")
-  b=$($PSQL -d mouhim_restored -c "select count(*)||':'||md5(coalesce(string_agg(x::text,'|' order by x::text),'')) from (select $cols from public.\"$t\") x" 2>&1)
-  if [ "$a" = "$b" ]; then same=$((same+1)); else diff=$((diff+1)); echo "$t source=$a restored=$b" >> drill-diff.txt; fi
-done < drill-cols.txt
-echo "tables identical: $same, different: $diff"; cat drill-diff.txt
-echo "restored photo sha256: $(docker exec pneu-rc-web sh -c 'find /tmp/restored-files -name test-rc-ticket.jpg -exec sha256sum {} \;' | cut -c1-64)"
-docker run -d --name pneu-rc-read --network pneu-rc-net --env-file drill.env -e DB_DATABASE=mouhim_restored -v $D:/acceptance:ro --entrypoint sleep $IMG 600 >/dev/null
-docker exec pneu-rc-read php /acceptance/figures.php > R.json; echo "RESTORED $(cat R.json)"
-echo "stock:verify (restored): $(docker exec pneu-rc-read php artisan stock:verify 2>&1 | tail -1)"
-echo "--- go-live audit --strict on the restored copy ---"; docker exec pneu-rc-read php artisan app:go-live-audit --strict 2>&1 | grep -v "^\s*$" | tail -14; echo "audit exit=$?"
+#!/usr/bin/env bash
+# PNEU backup → restore drill on the release candidate (fail-closed). Usage:
+#   IMG=local/pneu-rc:162fe24 ./drill.sh [result.json]
+# Writes synthetic books (incl. transfers and an expense photo), runs the app's real backup:run
+# (encrypted, local backup disk), restores with app:backup-restore --into a NEW database and
+# --files-to a private folder, then asserts table-by-table and figure-by-figure equality.
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
+IMG="${IMG:?set IMG to the candidate image, e.g. local/pneu-rc:162fe24}"
+OUT="${1:-$WORK/drill-result.json}"
+trap cleanup EXIT
+make_env
+fresh_db
+start_app "$IMG"
+
+run_php "$WEB" books.php "$WORK/books.out"
+run_php "$WEB" figures.php "$WORK/source.json"
+docker exec "$WEB" php artisan stock:verify > "$WORK/verify-source.out" || die "stock:verify failed on the source"
+
+docker exec "$WEB" php artisan backup:run > "$WORK/backup.out" 2>&1 || die "backup:run failed (see $WORK/backup.out)"
+ARCHIVE="$(docker exec "$WEB" sh -c 'ls storage/app/backups/*/*.zip' | head -1)"
+[ -n "$ARCHIVE" ] || die "no backup archive produced"
+ENC="$(docker exec "$WEB" php -r '$z=new ZipArchive; if($z->open($argv[1])!==true) exit(3); $f=0;$e=0; for($i=0;$i<$z->numFiles;$i++){ $s=$z->statIndex($i); if(substr($s["name"],-1)==="/") continue; $f++; if(($s["encryption_method"]??0)>0) $e++; } echo "$f/$e";' "$ARCHIVE")" || die "cannot read the archive"
+assert_eq "every file entry of the archive is encrypted (files/encrypted)" "$ENC" "${ENC%%/*}/${ENC%%/*}"
+
+docker exec "$WEB" php artisan app:backup-restore --disk=backups_local --into=mouhim_restored --files-to=/restore/files --force > "$WORK/restore.out" 2>&1 || die "app:backup-restore failed (see $WORK/restore.out)"
+
+columns mouhim_rc "$WORK/cols.txt"
+fingerprint mouhim_rc "$WORK/cols.txt" "$WORK/fp-source.txt"
+fingerprint mouhim_restored "$WORK/cols.txt" "$WORK/fp-restored.txt"
+TABLES="$(wc -l < "$WORK/cols.txt")"
+DIFF="$({ diff "$WORK/fp-source.txt" "$WORK/fp-restored.txt" || true; } | grep -c '^>' || true)"
+assert_eq "tables compared is non-zero" "$([ "$TABLES" -gt 0 ] && echo yes || echo no)" "yes"
+assert_eq "tables different between source and restored copy" "$DIFF" "0"
+
+docker run -d --name "$RDR" --network "$NET" --env-file "$WORK/app.env" -e DB_DATABASE=mouhim_restored -e PHOTO_ROOT=/restore/files \
+  -v "$HERE:/acceptance:ro" -v pneu-gate-restore:/restore --entrypoint sleep "$IMG" 900 >/dev/null
+run_php "$RDR" figures.php "$WORK/restored.json"
+docker exec "$RDR" php artisan stock:verify > "$WORK/verify-restored.out" || die "stock:verify failed on the restored copy"
+
+J() { python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); v=d
+for k in sys.argv[2].split("."): v=v[k]
+print(json.dumps(v, sort_keys=True))' "$1" "$2"; }
+for k in stock transfers m01_cash debt; do assert_eq "restored $k equals source" "$(J "$WORK/restored.json" $k)" "$(J "$WORK/source.json" $k)"; done
+assert_eq "source stock DEP/M01/M02" "$(J "$WORK/source.json" stock)" '{"DEP": 15, "M01": 9, "M02": 4}'
+SRC_PHOTO="$(J "$WORK/source.json" photo_sha256)"; RST_PHOTO="$(J "$WORK/restored.json" photo_sha256)"
+assert_eq "source photo hash present" "$([ "$SRC_PHOTO" != null ] && echo yes || echo no)" "yes"
+assert_eq "restored photo (restore folder) SHA-256 equals source" "$RST_PHOTO" "$SRC_PHOTO"
+
+# The strict go-live audit is EXPECTED to refuse here (synthetic operational rows remain).
+AUDIT=0; docker exec "$RDR" php artisan app:go-live-audit --strict > "$WORK/audit.out" 2>&1 || AUDIT=$?
+assert_eq "go-live audit --strict on the restored copy refuses (non-zero exit)" "$([ "$AUDIT" -ne 0 ] && echo refused || echo passed)" "refused"
+assert_eq "audit names the reason" "$(grep -c GO_LIVE_NOT_READY "$WORK/audit.out" || true)" "1"
+
+write_result "$OUT" "pneu-backup-restore-drill" "$(python3 -c 'import json,sys; print(json.dumps({"image_revision":sys.argv[1],"archive":sys.argv[2].split("/")[-1],"files_encrypted":sys.argv[3],"tables_compared":int(sys.argv[4]),"source_figures":json.load(open(sys.argv[5])),"restored_figures":json.load(open(sys.argv[6])),"restore_files_to":"/restore/files","go_live_audit_exit":int(sys.argv[7])}))' "$(docker exec "$WEB" cat /app/REVISION)" "$ARCHIVE" "$ENC" "$TABLES" "$WORK/source.json" "$WORK/restored.json" "$AUDIT")"
+[ "$FAILED" = 0 ] || die "drill assertions failed (see $OUT)"
