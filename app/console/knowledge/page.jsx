@@ -1,7 +1,7 @@
 import {redirect} from 'next/navigation';
 import {getSession} from '../../../lib/auth.js';
 import {APPLICATIONS,filterKnowledge} from '../../../lib/knowledge.js';
-import {loadKnowledge,loadSyncSummary} from '../../../lib/knowledge-store.js';
+import {loadKnowledge,loadSyncSummary,loadRecentTaskHistory} from '../../../lib/knowledge-store.js';
 import {readKnowledgeTasks} from '../../../lib/knowledge-tasks.js';
 import {relationApps,relatedApps} from '../../../lib/knowledge-relations.js';
 export const dynamic='force-dynamic';
@@ -20,6 +20,7 @@ export default async function KnowledgeCenter({searchParams}){
  const snapshot=await loadKnowledge();
  const knowledge=snapshot.records;
  const summary=await loadSyncSummary();
+ const history=await loadRecentTaskHistory();
  const rows=filterKnowledge(knowledge,filters);
  const requested=Number(value(raw.page));
  const pages=Math.max(1,Math.ceil(rows.length/24));
@@ -39,6 +40,7 @@ export default async function KnowledgeCenter({searchParams}){
    <p>تغيّرات المهام المحفوظة: {summary.observations??'UNKNOWN'}</p>
    <p>آخر دورة محفوظة: {summary.last_state??'UNKNOWN'} · <span dir="ltr">{summary.completed_at??'—'}</span></p>
    <small>الاستيراد الدائم لا يعني اتصالاً خاصاً بالنماذج. تشغيل أمر المزامنة الدوري يحتاج إعداد خدمة مصرح بها.</small>
+   <details style={{marginTop:'12px'}}><summary>آخر التغيرات المحفوظة (20 كحد أقصى)</summary>{history===null?<p>UNKNOWN — التاريخ غير متاح</p>:history.length===0?<p>لا توجد دورة محفوظة بعد.</p>:<ul>{history.map((h,i)=><li key={h.app_id+':'+h.number+':'+h.observed_at+':'+i}>{APPLICATIONS[h.app_id]} · #{h.number} · {h.state} · <span dir="ltr">{h.observed_at}</span></li>)}</ul>}</details>
   </section>
   <p><a className="os-panel-link" href="#knowledge-tasks">مهام النماذج ({shownTasks.length}) ↓</a> · <a className="os-panel-link" href="#knowledge-results">سجلات المعرفة ({rows.length}) ↓</a></p>
   <section id="knowledge-results" className="os-map-surface" aria-label="Knowledge filters">
