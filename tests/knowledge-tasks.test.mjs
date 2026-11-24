@@ -1,0 +1,32 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {TASKS,readTask,createTaskReader} from '../lib/knowledge-tasks.js';
+import {RELATIONS} from '../lib/knowledge-relations.js';
+import {APPLICATIONS,knowledge} from '../lib/knowledge.js';
+const now=()=>Date.parse('2026-11-24T18:00:00Z');
+const response=t=>({ok:true,json:async()=>({number:t.number,html_url:'https://github.com/'+t.repo+'/'+(t.type==='pulls'?'pull':'issues')+'/'+t.number,state:'closed',updated_at:'2026-11-24T17:00:00Z',merged:true,head:{sha:'a'.repeat(40)},body:'NEVER_EXPORT',user:{login:'NEVER_EXPORT'}})});
+test('allowlisted task reader exposes metadata only and rejects unknown sources',async()=>{
+ const t=TASKS.find(t=>t.type==='pulls');
+ const r=await readTask(t,{now,fetchImpl:async(url,opts)=>{
+  assert.equal(url,'https://api.github.com/repos/'+t.repo+'/pulls/'+t.number);
+  assert.equal(opts.method,'GET');assert.equal(opts.redirect,'error');assert.equal(opts.headers.Authorization,undefined);
+  return response(t);
+ }});
+ assert.equal(r.state,'MERGED');assert.equal(r.head_sha,'a'.repeat(40));
+ assert.doesNotMatch(JSON.stringify(r),/NEVER_EXPORT/);
+ await assert.rejects(readTask({...t},{now,fetchImpl:async()=>{throw new Error('unexpected');}}),/allowlisted/);
+});
+test('unavailable or invalid provider becomes UNKNOWN',async()=>{
+ const t=TASKS[0];
+ for(const f of [async()=>({ok:false,status:429}),async()=>{throw new Error('network');},async()=>({ok:true,json:async()=>({number:t.number,state:'open'})})]){
+  const r=await readTask(t,{now,fetchImpl:f});assert.equal(r.state,'UNKNOWN');assert.equal(r.updated_at,null);
+ }
+});
+test('single-flight cache avoids repeated requests and refreshes after expiry',async()=>{
+ let calls=0,time=now();const reader=createTaskReader({now:()=>time,ttlMs:100,fetchImpl:async(url)=>{calls++;const t=TASKS.find(t=>url.endsWith('/'+t.repo+'/'+t.type+'/'+t.number));return response(t);}});
+ const [a,b]=await Promise.all([reader(),reader()]);assert.equal(a,b);assert.equal(calls,TASKS.length);
+ await reader();assert.equal(calls,TASKS.length);time+=101;await reader();assert.equal(calls,2*TASKS.length);
+});
+test('relationships resolve canonical IDs and known project IDs',()=>{
+ for(const r of RELATIONS){assert.ok(knowledge.some(x=>x.id===r.id&&x.kind==='relationship'));assert.ok(r.apps.every(a=>Object.hasOwn(APPLICATIONS,a)));assert.equal(new Set(r.apps).size,r.apps.length);}
+});
