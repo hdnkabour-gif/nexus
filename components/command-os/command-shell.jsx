@@ -13,6 +13,7 @@ const primary=[
  {href:'/console/incidents',icon:'alert',title:'الحوادث',short:'الحوادث'}
 ];
 const secondary=[
+ {href:'/console/knowledge',icon:'brain',title:'مركز المعرفة'},
  {href:'/console/diagnostics',icon:'brain',title:'التشخيص'},
  {href:'/console/ai',icon:'bot',title:'مساعد NEXUS'},
  {href:'/console/integrations',icon:'plug',title:'الاتصالات'},
