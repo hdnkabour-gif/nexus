@@ -55,3 +55,31 @@ CREATE TABLE IF NOT EXISTS nexus_job_receipts (
   completed_at timestamptz,
   info jsonb NOT NULL DEFAULT '{}'::jsonb
 );
+
+
+-- V3: immutable source-revision history for explicitly redacted metadata.
+CREATE TABLE IF NOT EXISTS nexus_knowledge_revisions (
+ app_id text NOT NULL,
+ record_id text NOT NULL,
+ source_path text NOT NULL,
+ source_revision char(40) NOT NULL CHECK(source_revision ~ '^[a-f0-9]{40}$'),
+ observed_on date NOT NULL,
+ payload jsonb NOT NULL CHECK(jsonb_typeof(payload)='object'),
+ imported_at timestamptz NOT NULL DEFAULT now(),
+ PRIMARY KEY(app_id,record_id,source_path,source_revision)
+);
+CREATE INDEX IF NOT EXISTS nexus_knowledge_revision_lookup
+ ON nexus_knowledge_revisions(app_id,record_id,observed_on DESC);
+CREATE TABLE IF NOT EXISTS nexus_task_observation_history (
+ id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+ repository text NOT NULL,
+ resource_kind text NOT NULL CHECK(resource_kind IN ('issues','pulls')),
+ resource_number integer NOT NULL CHECK(resource_number>0),
+ state text NOT NULL CHECK(state IN ('OPEN','CLOSED','MERGED','UNKNOWN')),
+ head_sha char(40) CHECK(head_sha IS NULL OR head_sha ~ '^[a-f0-9]{40}$'),
+ source_updated_at timestamptz,
+ observed_at timestamptz NOT NULL,
+ UNIQUE(repository,resource_kind,resource_number,observed_at)
+);
+CREATE INDEX IF NOT EXISTS nexus_task_history_lookup
+ ON nexus_task_observation_history(repository,resource_kind,resource_number,observed_at DESC);
