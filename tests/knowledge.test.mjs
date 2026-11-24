@@ -9,7 +9,9 @@ test('existing ids unique and historical sources immutable',()=>{
  assert.ok(knowledge.every(r=>r.evidence==='HISTORICAL'&&r.source_url.includes(r.source_revision)));
 });
 test('filters combine project, type, state and case-insensitive search',()=>{
- assert.equal(filterKnowledge(knowledge,{app:'rent-car',q:'ocr'}).map(x=>x.id).join(','),'F-011');
+ assert.deepEqual(filterKnowledge(knowledge,{app:'rent-car',q:'ocr'}).map(x=>x.id).sort(),['F-011','TE-RC-05']);
+ assert.deepEqual(filterKnowledge(knowledge,{app:'rent-car',q:'OCR',kind:'feature'}).map(x=>x.id),['F-011']);
+ assert.deepEqual(filterKnowledge(knowledge,{app:'rent-car',q:'ocr',kind:'evidence'}).map(x=>x.id),['TE-RC-05']);
  assert.ok(filterKnowledge(knowledge,{kind:'idea',status:'IDEA'}).every(x=>x.kind==='idea'&&x.status==='IDEA'));
  assert.equal(filterKnowledge(knowledge,{app:'unknown'}).length,0);
  assert.deepEqual(filterKnowledge(knowledge,{q:['bad']}),knowledge);
