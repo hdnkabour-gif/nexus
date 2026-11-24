@@ -1,0 +1,64 @@
+{
+ "base": "http://127.0.0.1:3999",
+ "results": [
+  {
+   "id": "AM-S04-A1 oversell",
+   "input": "stock=2; order qty=3; approve",
+   "expected": "approve refused (4xx); stock stays 2",
+   "observed": "create=201; approve=200; stock_after=0",
+   "result": "FAIL",
+   "note": ""
+  },
+  {
+   "id": "AM-S04-A2 double approve",
+   "input": "stock=5; order qty=2; approve twice",
+   "expected": "1st ok, stock 3; 2nd refused or no-op; stock stays 3",
+   "observed": "approve1=200 stock=3; approve2=200 stock=1",
+   "result": "FAIL",
+   "note": ""
+  },
+  {
+   "id": "AM-S05 reject after approve",
+   "input": "stock=5; order qty=2; approve then reject",
+   "expected": "stock 3 after approve, back to 5 after reject",
+   "observed": "after_approve=3; reject=200; after_reject=3",
+   "result": "FAIL",
+   "note": ""
+  },
+  {
+   "id": "AM-S04-A4 order on zero stock",
+   "input": "stock=0; create order qty=1",
+   "expected": "refused, or accepted only as pending and refused at approve",
+   "observed": "create=201",
+   "result": "PASS",
+   "note": "informational: creation itself may legitimately stay pending"
+  },
+  {
+   "id": "AM-S04-A4b approve on zero stock",
+   "input": "stock=0; approve qty=1",
+   "expected": "approve refused; stock 0",
+   "observed": "approve=200; stock_after=0",
+   "result": "FAIL",
+   "note": ""
+  },
+  {
+   "id": "AM-S04-A5 concurrent last unit",
+   "input": "stock=1; 2 orders qty=1; approve both concurrently",
+   "expected": "exactly one approved; stock 0; never negative",
+   "observed": "approve_statuses=200,200; approved=2; stock_after=0",
+   "result": "FAIL",
+   "note": ""
+  },
+  {
+   "id": "AQ-AM-01 last unit of a size",
+   "input": "stock per size",
+   "expected": "one order wins per size",
+   "observed": "per-size stock does not exist (single products.stock)",
+   "result": "BLOCKED",
+   "note": "BLOCKED — not executable"
+  }
+ ],
+ "server_log_external_mentions": [
+  "cloudinary"
+ ]
+}

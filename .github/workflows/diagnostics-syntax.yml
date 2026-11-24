@@ -1,0 +1,35 @@
+name: Diagnostics syntax check
+
+on:
+  pull_request:
+    paths: ['diagnostics/**']
+  push:
+    branches: [main]
+    paths: ['diagnostics/**']
+
+permissions:
+  contents: read
+
+jobs:
+  parse-only:
+    # Parses the stored diagnostic scripts. It never runs them and never connects to any service.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Node scripts parse
+        run: |
+          for f in diagnostics/*/*.mjs; do node --check "$f"; done
+      - name: PHP scripts lint
+        run: |
+          for f in diagnostics/*/*.php; do php -l "$f"; done
+      - name: TypeScript scripts syntax check
+        # Only TS1xxx (syntax) errors fail the job; type and import errors are expected,
+        # because these scripts use helpers that live in the source repositories.
+        run: |
+          if npx --yes typescript@5.6.3 --noEmit --skipLibCheck --isolatedModules --module nodenext --moduleResolution nodenext --target es2022 --noResolve diagnostics/pilot-v1/*.ts 2>&1 | grep -E "error TS1[0-9]{3}"; then
+            exit 1
+          fi
+          echo "no TypeScript syntax errors"
