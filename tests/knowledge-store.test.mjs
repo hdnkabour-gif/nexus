@@ -22,6 +22,7 @@ test('migration imports the complete approved index and is idempotent; older rev
   assert.deepEqual(await importKnowledge(client,[older]),{inserted:1,reused:0});
   assert.deepEqual(await importKnowledge(client,[older]),{inserted:0,reused:1});
   await assert.rejects(importKnowledge(client,[{...older,title:'Changed source identity'}]),/knowledge_revision_conflict/);
+  await assert.rejects(importKnowledge(client,[{...older,secret:'disallowed'}]),/invalid_knowledge_record/);
   const saved=await client.query('SELECT payload FROM nexus_knowledge_revisions WHERE app_id=$1 AND record_id=$2 AND source_revision=$3',[first.app_id,first.id,older.source_revision]);
   assert.equal(saved.rows[0].payload.title,first.title);
  });
@@ -36,9 +37,10 @@ test('task persistence retains distinct observed changes and ignores replays and
   assert.equal(await saveTaskHistory(client,[first]),1);
   assert.equal(await saveTaskHistory(client,[first]),0);
   assert.equal(await saveTaskHistory(client,[{...first,observed_at:'2030-01-02T00:00:00Z'}]),0);
-  const changed={...first,state:'CLOSED',observed_at:'2030-01-03T00:00:00Z'};
+  const changed={...first,state:'CLOSED',updated_at:'2026-11-24T09:00:00Z',observed_at:'2030-01-03T00:00:00Z'};
   assert.equal(await saveTaskHistory(client,[changed]),1);
   assert.equal(await saveTaskHistory(client,[{...first,observed_at:'2030-01-02T00:00:00Z'}]),0);
+  assert.equal(await saveTaskHistory(client,[{...first,observed_at:'2030-01-04T00:00:00Z'}]),0);
   await assert.rejects(saveTaskHistory(client,[{...changed,repo:'unapproved/repo'}]),/allowlisted/);
  }finally{await client.query('ROLLBACK').catch(()=>{});client.release();}
 });
