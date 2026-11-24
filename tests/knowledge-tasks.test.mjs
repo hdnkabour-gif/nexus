@@ -50,3 +50,10 @@ test('protected page connects task metadata and relationships after authenticati
  assert.match(source,/relationship:/);
  assert.match(source,/technology:/);
 });
+
+test('historical risk scope is searchable without rewriting canonical IDs',()=>{
+ const rows=filterKnowledge(knowledge,{app:'pneu-mouhim',kind:'risk'});
+ assert.deepEqual(rows.map(r=>r.id).sort(),['R-003','R-008']);
+ assert.ok(rows.every(r=>r.app_id==='nexus'&&r.status==='HISTORICAL'));
+ assert.equal(filterKnowledge(knowledge,{app:'school-platform',kind:'risk'}).length,0);
+});
