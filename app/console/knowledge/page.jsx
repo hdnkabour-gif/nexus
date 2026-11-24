@@ -1,6 +1,7 @@
 import {redirect} from 'next/navigation';
 import {getSession} from '../../../lib/auth.js';
-import {APPLICATIONS,knowledge,filterKnowledge} from '../../../lib/knowledge.js';
+import {APPLICATIONS,filterKnowledge} from '../../../lib/knowledge.js';
+import {loadKnowledge,loadSyncSummary,loadRecentTaskHistory} from '../../../lib/knowledge-store.js';
 import {readKnowledgeTasks} from '../../../lib/knowledge-tasks.js';
 import {relationApps,relatedApps} from '../../../lib/knowledge-relations.js';
 export const dynamic='force-dynamic';
@@ -16,6 +17,10 @@ export default async function KnowledgeCenter({searchParams}){
  if(session.must_change_password)redirect('/owner/setup');
  const raw=await searchParams||{};
  const filters={q:value(raw.q),app:value(raw.app),kind:value(raw.kind),status:value(raw.status)};
+ const snapshot=await loadKnowledge();
+ const knowledge=snapshot.records;
+ const summary=await loadSyncSummary();
+ const history=await loadRecentTaskHistory();
  const rows=filterKnowledge(knowledge,filters);
  const requested=Number(value(raw.page));
  const pages=Math.max(1,Math.ceil(rows.length/24));
@@ -25,8 +30,18 @@ export default async function KnowledgeCenter({searchParams}){
  const tasks=await readKnowledgeTasks();
  const shownTasks=tasks.filter(t=>!filters.app||t.app_id===filters.app);
  return <>
-  <div className="os-page-title"><div><span className="os-kicker"><i/> KNOWLEDGE CENTER / V2</span><h1>ذاكرة <em>المشاريع.</em></h1><p>فهرس المعرفة التقنية المنقّحة، بالمعرفات الأصلية ومصادرها. Centre de connaissances — lecture seule.</p></div><div className="os-page-actions"><span className="os-snapshot">INDEX <strong>HISTORICAL</strong></span></div></div>
-  <div className="os-evidence-callout"><div><strong>الفهرس تاريخي؛ حالة المهام من GitHub عند الزيارة.</strong><p>لا بيانات عملاء أو محادثات خام. الفهرس تاريخي؛ حالة مهام GitHub أدناه تُقرأ عند زيارة الصفحة من مصادر عامة محددة. لا مزامنة خاصة أو استيراد دائم بعد.</p></div></div>
+  <div className="os-page-title"><div><span className="os-kicker"><i/> KNOWLEDGE CENTER / V3</span><h1>ذاكرة <em>المشاريع.</em></h1><p>فهرس المعرفة التقنية المنقّحة، بالمعرفات الأصلية ومصادرها. Centre de connaissances — lecture seule.</p></div><div className="os-page-actions"><span className="os-snapshot">INDEX <strong>{snapshot.state}</strong></span></div></div>
+  <div className="os-evidence-callout"><div><strong>معرفة مؤرخة ومصادر محفوظة؛ حالة المهام من GitHub عند الزيارة.</strong><p>لا بيانات عملاء أو محادثات خام. لا يثبت السجل التاريخي صحة الإصدار الحالي. عند تعذر التخزين تُعرض لقطة احتياطية مع بيان الحالة.</p></div></div>
+  <section className="os-map-surface" aria-label="Knowledge storage" style={{marginBottom:'16px',padding:'16px'}}>
+   <h2>حالة التخزين والمزامنة</h2>
+   <p>{snapshot.state==='PERSISTED'?'PostgreSQL · سجلات دائمة':'STATIC FALLBACK · قاعدة المعرفة الدائمة غير متاحة'}</p>
+   <p>المراجعات المحفوظة: {snapshot.revisions??'UNKNOWN'} · تعارضات غير محسومة: {snapshot.conflicts??'UNKNOWN'}</p>
+   {snapshot.conflicts>0&&<p>السجلات المتعارضة مستبعدة من العرض الحالي حتى المراجعة؛ لا تُحذف من التاريخ.</p>}
+   <p>تغيّرات المهام المحفوظة: {summary.observations??'UNKNOWN'}</p>
+   <p>آخر دورة محفوظة: {summary.last_state??'UNKNOWN'} · <span dir="ltr">{summary.completed_at??'—'}</span></p>
+   <small>الاستيراد الدائم لا يعني اتصالاً خاصاً بالنماذج. تشغيل أمر المزامنة الدوري يحتاج إعداد خدمة مصرح بها.</small>
+   <details style={{marginTop:'12px'}}><summary>آخر التغيرات المحفوظة (20 كحد أقصى)</summary>{history===null?<p>UNKNOWN — التاريخ غير متاح</p>:history.length===0?<p>لا توجد دورة محفوظة بعد.</p>:<ul>{history.map((h,i)=><li key={h.app_id+':'+h.number+':'+h.observed_at+':'+i}>{APPLICATIONS[h.app_id]} · #{h.number} · {h.state} · <span dir="ltr">{h.observed_at}</span></li>)}</ul>}</details>
+  </section>
   <p><a className="os-panel-link" href="#knowledge-tasks">مهام النماذج ({shownTasks.length}) ↓</a> · <a className="os-panel-link" href="#knowledge-results">سجلات المعرفة ({rows.length}) ↓</a></p>
   <section id="knowledge-results" className="os-map-surface" aria-label="Knowledge filters">
    <form method="GET" action="/console/knowledge" style={{display:'flex',flexWrap:'wrap',gap:'12px',alignItems:'end',marginBottom:'20px'}}>

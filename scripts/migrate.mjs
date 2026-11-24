@@ -1,6 +1,7 @@
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {getPool} from '../lib/db.js';
+import {importKnowledge} from '../lib/knowledge-store.js';
 const file=fileURLToPath(new URL('../db/schema.sql',import.meta.url));
 const schema=await readFile(file,'utf8');
 const client=await getPool().connect();
@@ -8,6 +9,7 @@ try{
  await client.query('BEGIN');
  await client.query('SELECT pg_advisory_xact_lock(497321, 20261117)');
  await client.query(schema);
+ await importKnowledge(client);
  await client.query('COMMIT');
  process.stdout.write('NEXUS metadata schema applied (idempotent).\n');
 }catch(err){
