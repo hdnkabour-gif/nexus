@@ -3,6 +3,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
 import Icon from '../icons';
 const sections=[
+ {href:'/console/knowledge',name:'مركز المعرفة',detail:'Knowledge Center · Historical source index',icon:'brain',keywords:'knowledge mémoire ideas evidence release'},
  {href:'/console',name:'مركز القيادة',detail:'Overview · Command surface',icon:'grid',keywords:'home dashboard'},
  {href:'/console/apps',name:'التطبيقات',detail:'Application registry · App 360',icon:'layers',keywords:'app repository repo'},
  {href:'/console/topology',name:'خريطة العلاقات',detail:'Topology · Service relationships',icon:'nodes',keywords:'map graph'},
