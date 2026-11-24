@@ -16,7 +16,7 @@
     {
       "app_id": "pneu-mouhim",
       "id": "PF-PM-02",
-      "kind": "decision",
+      "kind": "feature",
       "title": "Clean-data go-live planning",
       "status": "DESIGNED",
       "evidence": "HISTORICAL",
@@ -60,7 +60,7 @@
     {
       "app_id": "rent-car",
       "id": "F-021",
-      "kind": "decision",
+      "kind": "feature",
       "title": "Company-hosted production and VPN design",
       "status": "DESIGNED",
       "evidence": "HISTORICAL",
@@ -342,6 +342,127 @@
       "observed_on": "2026-11-24",
       "source_revision": "bc8e6d1393748b2e47cee34cd6ab69d5bb06dac3",
       "source_path": "docs/17_IDEA_LOG.md"
+    },
+    {
+      "app_id": "pneu-mouhim",
+      "id": "D-05",
+      "title": "Money represented in integer centimes",
+      "kind": "decision",
+      "status": "HISTORICAL",
+      "evidence": "HISTORICAL",
+      "observed_on": "2026-11-20",
+      "source_revision": "2d40a650f6c8f79e1955390b7f37577cbfb9153a",
+      "source_path": "docs/29_DECISION_REGISTRY.md"
+    },
+    {
+      "app_id": "pneu-mouhim",
+      "id": "D-08",
+      "title": "Stock movement ledger and integrity",
+      "kind": "decision",
+      "status": "HISTORICAL",
+      "evidence": "HISTORICAL",
+      "observed_on": "2026-11-20",
+      "source_revision": "2d40a650f6c8f79e1955390b7f37577cbfb9153a",
+      "source_path": "docs/29_DECISION_REGISTRY.md"
+    },
+    {
+      "app_id": "pneu-mouhim",
+      "id": "D-15",
+      "title": "Invoice corrections by credit note",
+      "kind": "decision",
+      "status": "HISTORICAL",
+      "evidence": "HISTORICAL",
+      "observed_on": "2026-11-20",
+      "source_revision": "2d40a650f6c8f79e1955390b7f37577cbfb9153a",
+      "source_path": "docs/29_DECISION_REGISTRY.md"
+    },
+    {
+      "app_id": "rent-car",
+      "id": "D-009",
+      "title": "React, TypeScript, Express and PostgreSQL",
+      "kind": "decision",
+      "status": "HISTORICAL",
+      "evidence": "HISTORICAL",
+      "observed_on": "2026-11-20",
+      "source_revision": "2d40a650f6c8f79e1955390b7f37577cbfb9153a",
+      "source_path": "docs/29_DECISION_REGISTRY.md"
+    },
+    {
+      "app_id": "rent-car",
+      "id": "D-036",
+      "title": "Non-overlapping reservations",
+      "kind": "decision",
+      "status": "HISTORICAL",
+      "evidence": "HISTORICAL",
+      "observed_on": "2026-11-20",
+      "source_revision": "2d40a650f6c8f79e1955390b7f37577cbfb9153a",
+      "source_path": "docs/29_DECISION_REGISTRY.md"
+    },
+    {
+      "app_id": "rent-car",
+      "id": "D-050",
+      "title": "Shared vehicle reference catalogue identifiers",
+      "kind": "decision",
+      "status": "HISTORICAL",
+      "evidence": "HISTORICAL",
+      "observed_on": "2026-11-20",
+      "source_revision": "2d40a650f6c8f79e1955390b7f37577cbfb9153a",
+      "source_path": "docs/29_DECISION_REGISTRY.md"
+    },
+    {
+      "app_id": "nexora",
+      "id": "ADR-0001",
+      "title": "Modular monolith first",
+      "kind": "decision",
+      "status": "HISTORICAL",
+      "evidence": "HISTORICAL",
+      "observed_on": "2026-11-20",
+      "source_revision": "2d40a650f6c8f79e1955390b7f37577cbfb9153a",
+      "source_path": "docs/29_DECISION_REGISTRY.md"
+    },
+    {
+      "app_id": "nexora",
+      "id": "ADR-0003",
+      "title": "Patient-mediated care network proposal",
+      "kind": "decision",
+      "status": "DESIGNED",
+      "evidence": "HISTORICAL",
+      "observed_on": "2026-11-20",
+      "source_revision": "2d40a650f6c8f79e1955390b7f37577cbfb9153a",
+      "source_path": "docs/29_DECISION_REGISTRY.md"
+    },
+    {
+      "app_id": "pneu-mouhim",
+      "id": "TE-PM-01",
+      "title": "Historical CI evidence for access control",
+      "kind": "evidence",
+      "status": "HISTORICAL",
+      "evidence": "HISTORICAL",
+      "observed_on": "2026-11-20",
+      "source_revision": "2d40a650f6c8f79e1955390b7f37577cbfb9153a",
+      "source_path": "docs/28_FEATURE_REGISTRY.md"
+    },
+    {
+      "app_id": "rent-car",
+      "id": "TE-RC-05",
+      "title": "Historical OCR and intake CI evidence",
+      "kind": "evidence",
+      "status": "HISTORICAL",
+      "evidence": "HISTORICAL",
+      "observed_on": "2026-11-20",
+      "source_revision": "2d40a650f6c8f79e1955390b7f37577cbfb9153a",
+      "source_path": "docs/28_FEATURE_REGISTRY.md"
+    },
+    {
+      "app_id": "tijara-os",
+      "id": "TE-TJ-02",
+      "title": "Historical CI backup and restore evidence",
+      "kind": "evidence",
+      "status": "HISTORICAL",
+      "evidence": "HISTORICAL",
+      "observed_on": "2026-11-20",
+      "source_revision": "2d40a650f6c8f79e1955390b7f37577cbfb9153a",
+      "source_path": "docs/28_FEATURE_REGISTRY.md"
     }
   ]
 }
