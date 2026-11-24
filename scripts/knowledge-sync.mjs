@@ -1,9 +1,9 @@
-import {syncKnowledgeTasks} from '../lib/knowledge-store.js';
+import {syncKnowledgeTasks,startSyncReceipt} from '../lib/knowledge-store.js';
 import {getPool,dbQuery} from '../lib/db.js';
 let receipt;
 try{
- const q=await dbQuery("INSERT INTO nexus_job_receipts(job_kind,state) VALUES('knowledge_public_sync','running') RETURNING id");
- receipt=q.rows[0].id;
+ // Closes receipts left `running` by a killed earlier run (as unknown) before opening this one.
+ receipt=(await startSyncReceipt()).id;
  const result=await syncKnowledgeTasks();
  const state=result.unknown?'unknown':'succeeded';
  await dbQuery("UPDATE nexus_job_receipts SET state=$2,completed_at=now(),info=$3::jsonb WHERE id=$1",[receipt,state,JSON.stringify(result)]);

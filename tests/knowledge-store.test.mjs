@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {getPool} from '../lib/db.js';
 import {knowledge} from '../lib/knowledge.js';
 import {TASKS} from '../lib/knowledge-tasks.js';
-import {importKnowledge,saveTaskHistory} from '../lib/knowledge-store.js';
+import {importKnowledge,saveTaskHistory,startSyncReceipt,loadSyncSummary,RECEIPT_LEASE_MINUTES} from '../lib/knowledge-store.js';
 import {readFile} from 'node:fs/promises';
 const isolated=process.env.CI==='true'&&(()=>{try{return new URL(process.env.NEXUS_DATABASE_URL).pathname==='/nexus_test'}catch{return false}})();
 async function transactionTest(run){
@@ -52,3 +52,19 @@ test('persistent storage path checks session first; the worker is not invoked by
 });
 
 after(async()=>{if(isolated)await getPool().end();});
+
+test('a receipt left running by a killed sync is shown as stale, then closed as unknown by the next run; a recent one is left alone',{skip:!isolated},async()=>{
+ await transactionTest(async client=>{
+  await client.query("DELETE FROM nexus_job_receipts WHERE job_kind='knowledge_public_sync'");
+  // The process died after the history commit, before closing its receipt.
+  await client.query(`INSERT INTO nexus_job_receipts(job_kind,state,started_at) VALUES('knowledge_public_sync','running',now()-make_interval(mins=>$1::int))`,[RECEIPT_LEASE_MINUTES+5]);
+  assert.equal((await loadSyncSummary(client)).last_state,'stale','never displayed as running indefinitely');
+  const next=await startSyncReceipt(client);
+  assert.equal(next.reclassified,1);
+  const rows=(await client.query("SELECT id,state,info FROM nexus_job_receipts WHERE job_kind='knowledge_public_sync' ORDER BY id")).rows;
+  assert.equal(rows[0].state,'unknown');assert.equal(rows[0].info.reason,'orphaned_running');
+  assert.equal(rows[1].state,'running');
+  assert.equal((await loadSyncSummary(client)).last_state,'running','a fresh run inside its lease is still running');
+  assert.equal((await startSyncReceipt(client)).reclassified,0,'a recent running receipt is not taken over');
+ });
+});
