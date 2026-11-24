@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {TASKS,readTask,createTaskReader} from '../lib/knowledge-tasks.js';
 import {RELATIONS} from '../lib/knowledge-relations.js';
-import {APPLICATIONS,knowledge} from '../lib/knowledge.js';
+import {readFileSync} from 'node:fs';
+import {APPLICATIONS,knowledge,filterKnowledge} from '../lib/knowledge.js';
 const now=()=>Date.parse('2026-11-24T18:00:00Z');
 const response=t=>({ok:true,json:async()=>({number:t.number,html_url:'https://github.com/'+t.repo+'/'+(t.type==='pulls'?'pull':'issues')+'/'+t.number,state:'closed',updated_at:'2026-11-24T17:00:00Z',merged:true,head:{sha:'a'.repeat(40)},body:'NEVER_EXPORT',user:{login:'NEVER_EXPORT'}})});
 test('allowlisted task reader exposes metadata only and rejects unknown sources',async()=>{
@@ -29,4 +30,23 @@ test('single-flight cache avoids repeated requests and refreshes after expiry',a
 });
 test('relationships resolve canonical IDs and known project IDs',()=>{
  for(const r of RELATIONS){assert.ok(knowledge.some(x=>x.id===r.id&&x.kind==='relationship'));assert.ok(r.apps.every(a=>Object.hasOwn(APPLICATIONS,a)));assert.equal(new Set(r.apps).size,r.apps.length);}
+});
+
+test('project filters include relevant cross-project reuse patterns',()=>{
+ const rows=filterKnowledge(knowledge,{app:'rent-car',kind:'relationship'});
+ assert.ok(rows.some(x=>x.id==='RU-04'));
+ assert.ok(rows.every(x=>RELATIONS.find(r=>r.id===x.id).apps.includes('rent-car')));
+ assert.equal(filterKnowledge(knowledge,{app:'nexora',kind:'relationship'}).map(r=>r.id).join(','),'RU-06');
+ assert.ok(filterKnowledge(knowledge,{q:'Rent Car',kind:'relationship'}).some(r=>r.id==='RU-04'));
+});
+test('protected page connects task metadata and relationships after authentication',()=>{
+ const source=readFileSync(new URL('../app/console/knowledge/page.jsx',import.meta.url),'utf8');
+ assert.ok(source.indexOf("if(!session)redirect('/login')")<source.indexOf('await readKnowledgeTasks()'));
+ assert.ok(source.indexOf("if(session.must_change_password)redirect('/owner/setup')")<source.indexOf('await readKnowledgeTasks()'));
+ assert.match(source,/shownTasks\.map/);
+ assert.match(source,/relationApps\(r.id\)/);
+ assert.match(source,/t\.source_url/);
+ assert.match(source,/t\.observed_at/);
+ assert.match(source,/relationship:/);
+ assert.match(source,/technology:/);
 });
