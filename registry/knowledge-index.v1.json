@@ -380,7 +380,7 @@
       "app_id": "rent-car",
       "id": "D-009",
       "title": "React, TypeScript, Express and PostgreSQL",
-      "kind": "decision",
+      "kind": "technology",
       "status": "HISTORICAL",
       "evidence": "HISTORICAL",
       "observed_on": "2026-11-20",
@@ -885,7 +885,7 @@
     {
       "app_id": "pneu-mouhim",
       "id": "D-02",
-      "kind": "decision",
+      "kind": "technology",
       "title": "Laravel, Filament, Livewire, PostgreSQL and Pest",
       "status": "HISTORICAL",
       "evidence": "HISTORICAL",
@@ -982,7 +982,7 @@
       "source_path": "docs/30_RISK_GAP_REGISTER.md"
     },
     {
-      "app_id": "pneu-mouhim",
+      "app_id": "nexus",
       "id": "R-008",
       "kind": "risk",
       "title": "Historical deployment alignment review",
@@ -1167,6 +1167,61 @@
       "observed_on": "2026-11-20",
       "source_revision": "e7bafa28ba77c1b8b446fb3e29b7e9aeda748984",
       "source_path": "docs/06_FEATURE_CATALOG.md"
+    },
+    {
+      "app_id": "nexus",
+      "id": "IDEA-011",
+      "kind": "idea",
+      "title": "Pure backup assessment module",
+      "status": "HISTORICAL",
+      "evidence": "HISTORICAL",
+      "observed_on": "2026-11-17",
+      "source_revision": "bc8e6d1393748b2e47cee34cd6ab69d5bb06dac3",
+      "source_path": "docs/17_IDEA_LOG.md"
+    },
+    {
+      "app_id": "nexus",
+      "id": "IDEA-012",
+      "kind": "idea",
+      "title": "Read-only provider metadata collectors",
+      "status": "HISTORICAL",
+      "evidence": "HISTORICAL",
+      "observed_on": "2026-11-17",
+      "source_revision": "bc8e6d1393748b2e47cee34cd6ab69d5bb06dac3",
+      "source_path": "docs/17_IDEA_LOG.md"
+    },
+    {
+      "app_id": "nexus",
+      "id": "IDEA-015",
+      "kind": "idea",
+      "title": "Offsite backup independence",
+      "status": "DESIGNED",
+      "evidence": "HISTORICAL",
+      "observed_on": "2026-11-17",
+      "source_revision": "bc8e6d1393748b2e47cee34cd6ab69d5bb06dac3",
+      "source_path": "docs/17_IDEA_LOG.md"
+    },
+    {
+      "app_id": "nexus",
+      "id": "IDEA-016",
+      "kind": "idea",
+      "title": "Replay-safe action reconciliation",
+      "status": "DESIGNED",
+      "evidence": "HISTORICAL",
+      "observed_on": "2026-11-17",
+      "source_revision": "bc8e6d1393748b2e47cee34cd6ab69d5bb06dac3",
+      "source_path": "docs/17_IDEA_LOG.md"
+    },
+    {
+      "app_id": "nexus",
+      "id": "IDEA-017",
+      "kind": "idea",
+      "title": "AI provider data classification",
+      "status": "DESIGNED",
+      "evidence": "HISTORICAL",
+      "observed_on": "2026-11-17",
+      "source_revision": "bc8e6d1393748b2e47cee34cd6ab69d5bb06dac3",
+      "source_path": "docs/17_IDEA_LOG.md"
     }
   ]
 }
