@@ -1,5 +1,7 @@
 # 19 — Discovered application/repository/Railway inventory
 
+> **Historical snapshot (2026-11-17), kept unchanged.** Current state as of 2026-11-20 — 9 apps incl. TIJARA OS and SCANFLOW PRO, updated SHAs, deployed SHAs and the resolved AMANZINE/Tech-Platform service mapping — is in [27_PORTFOLIO_BASELINE_V1.md](27_PORTFOLIO_BASELINE_V1.md) and `registry/portfolio-baseline.v1.json`.
+
 **Observed 2026-11-17 through user-authorized connected GitHub and Railway tools.** These observations are documented snapshots, not real-time NEXUS signals and not evidence that a NEXUS agent or API is connected. Verified SHA means GitHub's `main` ref was read at this time; it does not mean the same SHA is deployed.
 
 Machine-readable record: [registry/portfolio-discovery.v1.json](../registry/portfolio-discovery.v1.json)

@@ -1,5 +1,7 @@
 # 18 — Actual implementation status (as of 2026-11-17)
 
+> **Note 2026-11-20:** parts of "Not implemented" below are superseded by later evidence: the NEXUS PostgreSQL DB, Railway project, web service and probe cron are DEPLOYED (docs/25; Railway `bc8e6d13` in docs/31 E2). Portfolio-wide current state: [27_PORTFOLIO_BASELINE_V1.md](27_PORTFOLIO_BASELINE_V1.md). Text below is kept as the 2026-11-17 record.
+
 ## What is real and testable now
 - Versioned JSON schemas/OpenAPI design contracts and synthetic examples.
 - `packages/monitor-core` pure, read-only operational assessment library:
