@@ -40,7 +40,7 @@ export default async function KnowledgeCenter({searchParams}){
    <p>تغيّرات المهام المحفوظة: {summary.observations??'UNKNOWN'}</p>
    <p>آخر دورة محفوظة: {summary.last_state??'UNKNOWN'} · <span dir="ltr">{summary.completed_at??'—'}</span></p>
    <small>الاستيراد الدائم لا يعني اتصالاً خاصاً بالنماذج. تشغيل أمر المزامنة الدوري يحتاج إعداد خدمة مصرح بها.</small>
-   <details style={{marginTop:'12px'}}><summary>آخر التغيرات المحفوظة (20 كحد أقصى)</summary>{history===null?<p>UNKNOWN — التاريخ غير متاح</p>:history.length===0?<p>لا توجد دورة محفوظة بعد.</p>:<ul>{history.map((h,i)=><li key={h.app_id+':'+h.number+':'+h.observed_at+':'+i}>{APPLICATIONS[h.app_id]} · #{h.number} · {h.state} · <span dir="ltr">{h.observed_at}</span></li>)}</ul>}</details>
+   <details style={{marginTop:'12px'}}><summary>آخر التغيرات المحفوظة (20 كحد أقصى)</summary>{history===null?<p>UNKNOWN — التاريخ غير متاح</p>:history.length===0?<p>لا توجد دورة محفوظة بعد.</p>:<ul>{history.map((h,i)=><li key={h.app_id+':'+h.number+':'+h.observed_at+':'+i}>{APPLICATIONS[h.app_id]} · #{h.number} · {h.state}{h.ambiguous?' · ترتيب غير محسوم (نفس توقيت GitHub) / ordre ambigu':''} · <span dir="ltr">{h.observed_at}</span></li>)}</ul>}</details>
   </section>
   <p><a className="os-panel-link" href="#knowledge-tasks">مهام النماذج ({shownTasks.length}) ↓</a> · <a className="os-panel-link" href="#knowledge-results">سجلات المعرفة ({rows.length}) ↓</a></p>
   <section id="knowledge-results" className="os-map-surface" aria-label="Knowledge filters">
