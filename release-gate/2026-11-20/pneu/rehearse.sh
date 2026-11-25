@@ -9,7 +9,11 @@
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 IMG_OLD="${IMG_OLD:?set IMG_OLD (deployed version image)}"; IMG_NEW="${IMG_NEW:?set IMG_NEW (candidate image)}"
 OUT="${1:-$WORK/rehearse-result.json}"
-EXPECTED_MIGRATION="${EXPECTED_MIGRATION:-2026_11_20_100000_add_idempotency_to_payments,2026_11_23_090000_move_expense_receipts_to_private_disk}"
+# Expected = migration files shipped in the candidate image that the deployed image does not have
+# (derived from the two images, not hard-coded); override with EXPECTED_MIGRATION if needed.
+migfiles() { docker run --rm --entrypoint sh "$1" -c 'ls /app/database/migrations' | sed 's/\.php$//' | sort; }
+EXPECTED_MIGRATION="${EXPECTED_MIGRATION:-$(comm -13 <(migfiles "$IMG_OLD") <(migfiles "$IMG_NEW") | tr '\n' ',' | sed 's/,$//')}"
+[ -n "$EXPECTED_MIGRATION" ] || die "no new migration between $IMG_OLD and $IMG_NEW"
 RESEEDED="oil_catalogue_references tyre_catalogue_references"   # reference data re-seeded at every boot
 trap cleanup EXIT
 make_env

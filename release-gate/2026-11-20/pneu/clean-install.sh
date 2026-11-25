@@ -26,7 +26,16 @@ REF="$(SQL "select (select count(*) from roles)||'/'||(select count(*) from perm
 assert_eq "reference data present (roles/permissions/categories/tyre catalogue all > 0)" "$(python3 -c 'import sys; print(all(int(x)>0 for x in sys.argv[1].split("/")))' "$REF")" "True"
 
 AUDIT=0; docker exec "$WEB" php artisan app:go-live-audit --strict > "$WORK/audit.out" 2>&1 || AUDIT=$?
-assert_eq "go-live audit --strict passes on a fresh install" "$AUDIT" "0"
+if grep -q 'Invoice numbering approval:' "$WORK/audit.out"; then
+  # #20: a fresh install is NOT ready until the owner approves the first invoice number; then it is.
+  assert_eq "go-live audit --strict refuses a fresh install before the numbering approval" "$([ "$AUDIT" -ne 0 ] && grep -c 'Invoice numbering approval: FAIL' "$WORK/audit.out")" "1"
+  run_php "$WEB" approve-numbering.php "$WORK/approve.out"
+  AUDIT=0; docker exec "$WEB" php artisan app:go-live-audit --strict > "$WORK/audit2.out" 2>&1 || AUDIT=$?
+  assert_eq "go-live audit --strict passes once the owner approved the numbering" "$AUDIT" "0"
+  assert_eq "private documents storage reported PASS" "$(grep -c 'Private documents storage: PASS' "$WORK/audit2.out")" "1"
+else
+  assert_eq "go-live audit --strict passes on a fresh install" "$AUDIT" "0"
+fi
 
 DEMO=0; docker exec "$WEB" php artisan db:seed --class=DemoSeeder --force > "$WORK/demo.out" 2>&1 || DEMO=$?
 assert_eq "DemoSeeder refused in production (non-zero exit)" "$([ "$DEMO" -ne 0 ] && echo refused || echo ran)" "refused"

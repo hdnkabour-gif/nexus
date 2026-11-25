@@ -1,0 +1,150 @@
+{
+ "rehearsal": "pneu-backup-restore-drill",
+ "ok": true,
+ "assertions": [
+  {
+   "check": "web runs local/pneu-rc:5dae30e revision",
+   "actual": "5dae30e194865310985105e11487784adc25d530",
+   "expected": "5dae30e194865310985105e11487784adc25d530",
+   "pass": true
+  },
+  {
+   "check": "worker runs the same revision as web",
+   "actual": "5dae30e194865310985105e11487784adc25d530",
+   "expected": "5dae30e194865310985105e11487784adc25d530",
+   "pass": true
+  },
+  {
+   "check": "every file entry of the archive is encrypted (files/encrypted)",
+   "actual": "3/3",
+   "expected": "3/3",
+   "pass": true
+  },
+  {
+   "check": "tables compared is non-zero",
+   "actual": "yes",
+   "expected": "yes",
+   "pass": true
+  },
+  {
+   "check": "tables different between source and restored copy",
+   "actual": "0",
+   "expected": "0",
+   "pass": true
+  },
+  {
+   "check": "restored stock equals source",
+   "actual": "{\"DEP\": 15, \"M01\": 9, \"M02\": 4}",
+   "expected": "{\"DEP\": 15, \"M01\": 9, \"M02\": 4}",
+   "pass": true
+  },
+  {
+   "check": "restored transfers equals source",
+   "actual": "[\"received\", \"received\"]",
+   "expected": "[\"received\", \"received\"]",
+   "pass": true
+  },
+  {
+   "check": "restored m01_cash equals source",
+   "actual": "{\"card\": 0, \"cash_in\": 11000, \"cheque\": 0, \"expected\": 15500, \"expenses\": 500, \"float\": 5000, \"refunds\": 0}",
+   "expected": "{\"card\": 0, \"cash_in\": 11000, \"cheque\": 0, \"expected\": 15500, \"expenses\": 500, \"float\": 5000, \"refunds\": 0}",
+   "pass": true
+  },
+  {
+   "check": "restored debt equals source",
+   "actual": "1000",
+   "expected": "1000",
+   "pass": true
+  },
+  {
+   "check": "source stock DEP/M01/M02",
+   "actual": "{\"DEP\": 15, \"M01\": 9, \"M02\": 4}",
+   "expected": "{\"DEP\": 15, \"M01\": 9, \"M02\": 4}",
+   "pass": true
+  },
+  {
+   "check": "source photo hash present",
+   "actual": "yes",
+   "expected": "yes",
+   "pass": true
+  },
+  {
+   "check": "source receipt is on the private documents disk (not /storage)",
+   "actual": "\"live documents disk\"",
+   "expected": "\"live documents disk\"",
+   "pass": true
+  },
+  {
+   "check": "restored photo (restore folder) SHA-256 equals source",
+   "actual": "\"ea7740328b9a350fa9d797aaa8ac682663c2b85fbd1412e52b872a3d1817f197\"",
+   "expected": "\"ea7740328b9a350fa9d797aaa8ac682663c2b85fbd1412e52b872a3d1817f197\"",
+   "pass": true
+  },
+  {
+   "check": "go-live audit --strict on the restored copy refuses (non-zero exit)",
+   "actual": "refused",
+   "expected": "refused",
+   "pass": true
+  },
+  {
+   "check": "audit names the reason",
+   "actual": "1",
+   "expected": "1",
+   "pass": true
+  }
+ ],
+ "image_revision": "5dae30e194865310985105e11487784adc25d530",
+ "archive": "2026-11-25-16-49-02.zip",
+ "files_encrypted": "3/3",
+ "tables_compared": 74,
+ "source_figures": {
+  "database": "mouhim_rc",
+  "stock": {
+   "DEP": 15,
+   "M01": 9,
+   "M02": 4
+  },
+  "transfers": [
+   "received",
+   "received"
+  ],
+  "m01_cash": {
+   "float": 5000,
+   "cash_in": 11000,
+   "refunds": 0,
+   "expenses": 500,
+   "expected": 15500,
+   "card": 0,
+   "cheque": 0
+  },
+  "debt": 1000,
+  "photo_source": "live documents disk",
+  "photo_sha256": "ea7740328b9a350fa9d797aaa8ac682663c2b85fbd1412e52b872a3d1817f197"
+ },
+ "restored_figures": {
+  "database": "mouhim_restored",
+  "stock": {
+   "DEP": 15,
+   "M01": 9,
+   "M02": 4
+  },
+  "transfers": [
+   "received",
+   "received"
+  ],
+  "m01_cash": {
+   "float": 5000,
+   "cash_in": 11000,
+   "refunds": 0,
+   "expenses": 500,
+   "expected": 15500,
+   "card": 0,
+   "cheque": 0
+  },
+  "debt": 1000,
+  "photo_source": "restore folder",
+  "photo_sha256": "ea7740328b9a350fa9d797aaa8ac682663c2b85fbd1412e52b872a3d1817f197"
+ },
+ "restore_files_to": "/restore/files",
+ "go_live_audit_exit": 1
+}

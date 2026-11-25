@@ -13,6 +13,11 @@ use Illuminate\Support\Str;
 require '/app/vendor/autoload.php';
 $app = require '/app/bootstrap/app.php';
 $app->make(Kernel::class)->bootstrap();
+// #20 (PNEU >= 7680db4): a fresh install issues no invoice until the owner approves the exact first
+// number. This synthetic rehearsal performs that owner step explicitly; older images have no gate.
+if (class_exists(\App\Services\InvoiceNumberingApproval::class) && app(\App\Services\InvoiceNumberingApproval::class)->problem() !== null) {
+    app(\App\Services\InvoiceNumberingApproval::class)->approve(null);
+}
 if (config('database.connections.pgsql.host') !== 'pneu-rc-db' || config('database.connections.pgsql.database') !== 'mouhim_rc') { fwrite(STDERR, "REFUSED\n"); exit(2); }
 [$dep, $m01, $m02] = [Site::query()->where('code', 'DEP')->firstOrFail(), Site::query()->where('code', 'M01')->firstOrFail(), Site::query()->where('code', 'M02')->firstOrFail()];
 $mk = function (string $email, RoleName $role, Site ...$sites) {

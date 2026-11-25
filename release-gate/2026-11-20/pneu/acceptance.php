@@ -34,6 +34,11 @@ use Illuminate\Support\Str;
 require '/app/vendor/autoload.php';
 $app = require '/app/bootstrap/app.php';
 $app->make(Kernel::class)->bootstrap();
+// #20 (PNEU >= 7680db4): a fresh install issues no invoice until the owner approves the exact first
+// number. This synthetic rehearsal performs that owner step explicitly; older images have no gate.
+if (class_exists(\App\Services\InvoiceNumberingApproval::class) && app(\App\Services\InvoiceNumberingApproval::class)->problem() !== null) {
+    app(\App\Services\InvoiceNumberingApproval::class)->approve(null);
+}
 
 $checks = [];
 $ok = true;
