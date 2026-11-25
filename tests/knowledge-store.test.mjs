@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {getPool} from '../lib/db.js';
 import {knowledge} from '../lib/knowledge.js';
 import {TASKS} from '../lib/knowledge-tasks.js';
-import {importKnowledge,saveTaskHistory,startSyncReceipt,loadSyncSummary,RECEIPT_LEASE_MINUTES} from '../lib/knowledge-store.js';
+import {importKnowledge,saveTaskHistory,startSyncReceipt,finishSyncReceipt,loadSyncSummary,RECEIPT_LEASE_MINUTES} from '../lib/knowledge-store.js';
 import {readFile} from 'node:fs/promises';
 const isolated=process.env.CI==='true'&&(()=>{try{return new URL(process.env.NEXUS_DATABASE_URL).pathname==='/nexus_test'}catch{return false}})();
 async function transactionTest(run){
@@ -66,5 +66,24 @@ test('a receipt left running by a killed sync is shown as stale, then closed as 
   assert.equal(rows[1].state,'running');
   assert.equal((await loadSyncSummary(client)).last_state,'running','a fresh run inside its lease is still running');
   assert.equal((await startSyncReceipt(client)).reclassified,0,'a recent running receipt is not taken over');
+ });
+});
+
+test('a worker that finishes AFTER its receipt was classified orphaned_running cannot overwrite that classification',{skip:!isolated},async()=>{
+ await transactionTest(async client=>{
+  await client.query("DELETE FROM nexus_job_receipts WHERE job_kind='knowledge_public_sync'");
+  const slow=(await client.query(`INSERT INTO nexus_job_receipts(job_kind,state,started_at) VALUES('knowledge_public_sync','running',now()-make_interval(mins=>$1::int)) RETURNING id`,[RECEIPT_LEASE_MINUTES+5])).rows[0].id;
+  const next=await startSyncReceipt(client);                       // next run reclassifies the slow one
+  assert.equal(next.reclassified,1);
+  // The suspended first worker resumes and reports success, then a failure path also tries.
+  assert.equal(await finishSyncReceipt(slow,'succeeded',{checked:14,unknown:0,inserted:2},client),false);
+  assert.equal(await finishSyncReceipt(slow,'failed',{},client),false);
+  const row=(await client.query('SELECT state,info FROM nexus_job_receipts WHERE id=$1',[slow])).rows[0];
+  assert.equal(row.state,'unknown');assert.equal(row.info.reason,'orphaned_running','the expiry trace is kept');
+  assert.equal(row.info.late_completions.length,2,'late results are recorded separately');
+  assert.equal(row.info.late_completions[0].state,'succeeded');assert.equal(row.info.late_completions[0].result.inserted,2);
+  // The current run still closes normally.
+  assert.equal(await finishSyncReceipt(next.id,'succeeded',{checked:14,unknown:0,inserted:0},client),true);
+  assert.equal((await client.query('SELECT state FROM nexus_job_receipts WHERE id=$1',[next.id])).rows[0].state,'succeeded');
  });
 });
