@@ -98,3 +98,18 @@ test('the budget follows GitHub\'s real reset time: refused while GitHub\'s own 
  await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});
  assert.equal(calls,2*TASKS.length,'reopened at GitHub\'s reset time, not at our own window end');
 });
+
+test('if GitHub\'s quota cannot be recorded in the shared store, this process still obeys it and the failure is reported',async()=>{
+ let time=now(),calls=0;const reset=Math.floor(time/1000)+40*60;
+ const failing={reserve:async()=>true,observe:async()=>{throw new Error('db write failed');}};   // shared store accepts, cannot record
+ const local=createMemoryBudget({now:()=>time});
+ const f=async url=>{calls++;return {...response(byUrl(url)),headers:new Headers({'x-ratelimit-remaining':'3','x-ratelimit-reset':String(reset)})};};
+ const first=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:failing,local});
+ assert.equal(first.rateLimitRecorded,false,'reported, not swallowed');
+ const second=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:failing,local});
+ assert.equal(calls,TASKS.length,'GitHub said 3 left: the same process makes no further request even though the shared store said yes');
+ assert.ok(second.every(r=>r.reason==='budget'));
+ time=reset*1000+1000;
+ await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:failing,local});
+ assert.equal(calls,2*TASKS.length,'reopens at GitHub\'s reset');
+});
