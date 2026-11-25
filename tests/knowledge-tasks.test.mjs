@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {TASKS,readTask,createTaskReader} from '../lib/knowledge-tasks.js';
+import {TASKS,readTask,createTaskReader,readTasksWithinBudget} from '../lib/knowledge-tasks.js';
+import {createMemoryBudget,GITHUB_HOURLY_BUDGET,GITHUB_HOURLY_LIMIT} from '../lib/github-budget.js';
 import {RELATIONS} from '../lib/knowledge-relations.js';
 import {readFileSync} from 'node:fs';
 import {APPLICATIONS,knowledge,filterKnowledge} from '../lib/knowledge.js';
@@ -24,7 +25,7 @@ test('unavailable or invalid provider becomes UNKNOWN',async()=>{
  }
 });
 test('single-flight cache avoids repeated requests and refreshes after expiry',async()=>{
- let calls=0,time=now();const reader=createTaskReader({now:()=>time,ttlMs:100,fetchImpl:async(url)=>{calls++;const t=TASKS.find(t=>url.endsWith('/'+t.repo+'/'+t.type+'/'+t.number));return response(t);}});
+ let calls=0,time=now();const mb=createMemoryBudget({now:()=>time});const reader=createTaskReader({now:()=>time,ttlMs:100,budget:()=>mb,fetchImpl:async(url)=>{calls++;const t=TASKS.find(t=>url.endsWith('/'+t.repo+'/'+t.type+'/'+t.number));return response(t);}});
  const [a,b]=await Promise.all([reader(),reader()]);assert.equal(a,b);assert.equal(calls,TASKS.length);
  await reader();assert.equal(calls,TASKS.length);time+=101;await reader();assert.equal(calls,2*TASKS.length);
 });
@@ -56,4 +57,31 @@ test('historical risk scope is searchable without rewriting canonical IDs',()=>{
  assert.deepEqual(rows.map(r=>r.id).sort(),['R-003','R-008']);
  assert.ok(rows.every(r=>r.app_id==='nexus'&&r.status==='HISTORICAL'));
  assert.equal(filterKnowledge(knowledge,{app:'school-platform',kind:'risk'}).length,0);
+});
+
+const byUrl=url=>TASKS.find(t=>url.endsWith('/'+t.repo+'/'+t.type+'/'+t.number));
+test('console and sync share ONE hourly GitHub budget below the anonymous limit; a batch that does not fit makes no request',async()=>{
+ assert.ok(GITHUB_HOURLY_BUDGET<GITHUB_HOURLY_LIMIT);
+ let time=now(),calls=0;const shared=createMemoryBudget({now:()=>time});
+ const f=async url=>{calls++;return response(byUrl(url));};
+ const console1=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});   // page refresh
+ const sync1=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});      // hourly sync
+ const console2=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});
+ assert.equal(calls,3*TASKS.length);assert.ok(console1.every(r=>r.state!=='UNKNOWN')&&sync1.every(r=>r.state!=='UNKNOWN')&&console2.length===TASKS.length);
+ const refused=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});   // 4*14=56 > 50
+ assert.equal(calls,3*TASKS.length,'no request beyond the budget');
+ assert.ok(refused.every(r=>r.state==='UNKNOWN'&&r.reason==='budget'),'UNKNOWN, not success or failure');
+ time+=3600_000;
+ await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});
+ assert.equal(calls,4*TASKS.length,'a new hour opens a new window');
+});
+test('GitHub reporting 0 remaining closes the shared window; an unavailable budget store makes no request',async()=>{
+ const time=now();const shared=createMemoryBudget({now:()=>time});let calls=0;
+ const f=async url=>{calls++;return {...response(byUrl(url)),headers:new Headers({'x-ratelimit-remaining':'0'})};};
+ await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});
+ const next=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});
+ assert.equal(calls,TASKS.length);assert.ok(next.every(r=>r.reason==='budget'));
+ const broken={reserve:async()=>{throw new Error('db down');},exhaust:async()=>{}};
+ const rows=await readTasksWithinBudget(TASKS,{fetchImpl:async()=>{throw new Error('must not be called');},now:()=>time,budget:broken});
+ assert.ok(rows.every(r=>r.state==='UNKNOWN'&&r.reason==='budget'));
 });

@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import {getPool} from '../lib/db.js';
 import {knowledge} from '../lib/knowledge.js';
 import {TASKS} from '../lib/knowledge-tasks.js';
-import {importKnowledge,saveTaskHistory} from '../lib/knowledge-store.js';
+import {importKnowledge,saveTaskHistory,loadRecentTaskHistory} from '../lib/knowledge-store.js';
+import {createDbBudget,GITHUB_HOURLY_BUDGET} from '../lib/github-budget.js';
+import {checkRuntimePrivileges} from '../lib/db-privileges.js';
 import {readFile} from 'node:fs/promises';
 const isolated=process.env.CI==='true'&&(()=>{try{return new URL(process.env.NEXUS_DATABASE_URL).pathname==='/nexus_test'}catch{return false}})();
 async function transactionTest(run){
@@ -52,3 +54,66 @@ test('persistent storage path checks session first; the worker is not invoked by
 });
 
 after(async()=>{if(isolated)await getPool().end();});
+
+test('DB budget is shared: two processes (console + sync) cannot together exceed the hourly budget',{skip:!isolated},async()=>{
+ await transactionTest(async client=>{
+  await client.query('DELETE FROM nexus_github_budget');
+  const q=(sql,p)=>client.query(sql,p);
+  const consoleBudget=createDbBudget({query:q}),syncBudget=createDbBudget({query:q});
+  assert.equal(await consoleBudget.reserve(14),true);assert.equal(await syncBudget.reserve(14),true);assert.equal(await consoleBudget.reserve(14),true);
+  assert.equal(await syncBudget.reserve(14),false,'56 > 50: refused, nothing counted');
+  assert.equal((await client.query('SELECT used FROM nexus_github_budget')).rows[0].used,42);
+  await client.query("UPDATE nexus_github_budget SET window_start=now()-interval '61 minutes'");
+  assert.equal(await syncBudget.reserve(14),true,'expired window restarts');
+  await consoleBudget.exhaust();
+  assert.equal(await syncBudget.reserve(1),false);
+  assert.equal((await client.query('SELECT used FROM nexus_github_budget')).rows[0].used,GITHUB_HOURLY_BUDGET);
+ });
+});
+
+test('history tables are append-only in the database: UPDATE, DELETE and TRUNCATE are refused',{skip:!isolated},async()=>{
+ for(const [table,sql] of [
+  ['nexus_task_observation_history','UPDATE nexus_task_observation_history SET state=state'],
+  ['nexus_task_observation_history','DELETE FROM nexus_task_observation_history'],
+  ['nexus_task_observation_history','TRUNCATE nexus_task_observation_history'],
+  ['nexus_knowledge_revisions','UPDATE nexus_knowledge_revisions SET payload=payload'],
+  ['nexus_knowledge_revisions','DELETE FROM nexus_knowledge_revisions'],
+  ['nexus_knowledge_revisions','TRUNCATE nexus_knowledge_revisions']]){
+  await transactionTest(async client=>{
+   if(/nexus_task/.test(table))await saveTaskHistory(client,[{...TASKS[0],state:'OPEN',head_sha:null,updated_at:'2026-11-24T08:00:00Z',observed_at:'2031-01-01T00:00:00Z'}]);
+   await assert.rejects(client.query(sql),/nexus_history_append_only/,sql);
+  });
+ }
+});
+
+test('privilege attestation: the owner role is reported unsafe; a least-privilege runtime role passes and still cannot rewrite history',{skip:!isolated},async()=>{
+ await transactionTest(async client=>{
+  const owner=await checkRuntimePrivileges(client);
+  assert.equal(owner.ok,false);assert.ok(owner.problems.some(p=>/owned by the runtime role/.test(p)));
+  const can=(await client.query("SELECT rolsuper OR rolcreaterole AS ok FROM pg_roles WHERE rolname=current_user")).rows[0].ok;
+  if(!can)return;   // CI's service role can create roles; a restricted local role cannot (the owner case above still ran)
+  await client.query('CREATE ROLE nexus_runtime_probe NOLOGIN NOSUPERUSER NOBYPASSRLS');
+  await client.query('GRANT USAGE ON SCHEMA public TO nexus_runtime_probe');
+  await client.query('GRANT SELECT,INSERT ON nexus_task_observation_history,nexus_knowledge_revisions TO nexus_runtime_probe');
+  await client.query('GRANT nexus_runtime_probe TO CURRENT_USER');   // PG16+: membership is needed to SET ROLE
+  await client.query('SET LOCAL ROLE nexus_runtime_probe');
+  const rt=await checkRuntimePrivileges(client);
+  assert.equal(rt.ok,true,JSON.stringify(rt.problems));
+  await assert.rejects(client.query('DELETE FROM nexus_task_observation_history'),/permission denied|nexus_history_append_only/);
+ });
+});
+
+test('two different states with the same GitHub timestamp are kept and flagged ambiguous, never ordered by arrival',{skip:!isolated},async()=>{
+ await transactionTest(async client=>{
+  const t=TASKS[0],u='2026-11-24T08:00:00Z';
+  const obs=(state,at)=>({...t,state,head_sha:null,updated_at:u,observed_at:at});
+  assert.equal(await saveTaskHistory(client,[obs('OPEN','2032-01-01T00:00:00Z')]),1);
+  assert.equal(await saveTaskHistory(client,[obs('CLOSED','2032-01-01T00:01:00Z')]),1);
+  const rows=(await loadRecentTaskHistory(client)).filter(h=>h.number===t.number&&h.source_updated_at===new Date(u).toISOString());
+  assert.equal(rows.length,2);
+  assert.ok(rows.every(h=>h.ambiguous===true),'both flagged: arrival order is not provider order');
+  const other=TASKS[1];
+  await saveTaskHistory(client,[{...other,state:'OPEN',head_sha:null,updated_at:'2026-11-24T09:00:00Z',observed_at:'2032-01-02T00:00:00Z'}]);
+  assert.equal((await loadRecentTaskHistory(client)).find(h=>h.number===other.number&&h.app_id===other.app_id).ambiguous,false);
+ });
+});

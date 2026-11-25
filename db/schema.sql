@@ -83,3 +83,28 @@ CREATE TABLE IF NOT EXISTS nexus_task_observation_history (
 );
 CREATE INDEX IF NOT EXISTS nexus_task_history_lookup
  ON nexus_task_observation_history(repository,resource_kind,resource_number,observed_at DESC);
+
+-- V3 review (#31): ONE hourly budget for anonymous GitHub reads shared by every NEXUS process
+-- (console page and knowledge sync) behind the same egress IP. See lib/github-budget.js.
+CREATE TABLE IF NOT EXISTS nexus_github_budget (
+ id smallint PRIMARY KEY CHECK(id=1),
+ window_start timestamptz NOT NULL,
+ used integer NOT NULL CHECK(used>=0)
+);
+
+-- V3 review (#31): the two history tables are append-only in the DATABASE, not only in the
+-- application: UPDATE, DELETE and TRUNCATE are refused whatever the role's table privileges.
+-- (A table owner can still drop these triggers: the runtime role must not own the tables; see
+-- scripts/check-db-privileges.mjs.)
+CREATE OR REPLACE FUNCTION nexus_refuse_history_change() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ RAISE EXCEPTION 'nexus_history_append_only: % on % is not allowed', TG_OP, TG_TABLE_NAME USING ERRCODE='insufficient_privilege';
+END $$;
+CREATE OR REPLACE TRIGGER nexus_task_history_append_only BEFORE UPDATE OR DELETE ON nexus_task_observation_history
+ FOR EACH ROW EXECUTE FUNCTION nexus_refuse_history_change();
+CREATE OR REPLACE TRIGGER nexus_task_history_no_truncate BEFORE TRUNCATE ON nexus_task_observation_history
+ FOR EACH STATEMENT EXECUTE FUNCTION nexus_refuse_history_change();
+CREATE OR REPLACE TRIGGER nexus_knowledge_revisions_append_only BEFORE UPDATE OR DELETE ON nexus_knowledge_revisions
+ FOR EACH ROW EXECUTE FUNCTION nexus_refuse_history_change();
+CREATE OR REPLACE TRIGGER nexus_knowledge_revisions_no_truncate BEFORE TRUNCATE ON nexus_knowledge_revisions
+ FOR EACH STATEMENT EXECUTE FUNCTION nexus_refuse_history_change();

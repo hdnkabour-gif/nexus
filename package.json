@@ -8,11 +8,12 @@
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p ${PORT:-3000}",
     "test": "node --test tests/*.test.mjs && npm --prefix packages/monitor-core test",
-    "check": "node --check lib/auth.js && node --check lib/data.js && node --check lib/external.js && node --check scripts/hash-owner-password.mjs && node --check lib/db.js && node --check lib/owner-db.js && node --check scripts/migrate.mjs && node --check lib/public-probes.js && node --check scripts/public-probe.mjs && node --check lib/csrf.js",
+    "check": "node --check lib/auth.js && node --check lib/data.js && node --check lib/external.js && node --check scripts/hash-owner-password.mjs && node --check lib/db.js && node --check lib/owner-db.js && node --check scripts/migrate.mjs && node --check lib/public-probes.js && node --check scripts/public-probe.mjs && node --check lib/csrf.js && node --check lib/github-budget.js && node --check lib/db-privileges.js && node --check scripts/check-db-privileges.mjs",
     "owner:hash": "node scripts/hash-owner-password.mjs",
     "db:migrate": "node scripts/migrate.mjs",
     "probe:public": "node scripts/public-probe.mjs",
-    "knowledge:sync": "node scripts/knowledge-sync.mjs"
+    "knowledge:sync": "node scripts/knowledge-sync.mjs",
+    "db:check-privileges": "node scripts/check-db-privileges.mjs"
   },
   "dependencies": {
     "next": "16.4.6",
