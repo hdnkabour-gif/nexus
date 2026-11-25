@@ -89,8 +89,12 @@ CREATE INDEX IF NOT EXISTS nexus_task_history_lookup
 CREATE TABLE IF NOT EXISTS nexus_github_budget (
  id smallint PRIMARY KEY CHECK(id=1),
  window_start timestamptz NOT NULL,
- used integer NOT NULL CHECK(used>=0)
+ used integer NOT NULL CHECK(used>=0),
+ gh_remaining integer,
+ gh_reset_at timestamptz
 );
+ALTER TABLE nexus_github_budget ADD COLUMN IF NOT EXISTS gh_remaining integer;
+ALTER TABLE nexus_github_budget ADD COLUMN IF NOT EXISTS gh_reset_at timestamptz;
 
 -- V3 review (#31): the two history tables are append-only in the DATABASE, not only in the
 -- application: UPDATE, DELETE and TRUNCATE are refused whatever the role's table privileges.

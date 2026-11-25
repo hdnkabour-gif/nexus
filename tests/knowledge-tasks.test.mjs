@@ -75,13 +75,26 @@ test('console and sync share ONE hourly GitHub budget below the anonymous limit;
  await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});
  assert.equal(calls,4*TASKS.length,'a new hour opens a new window');
 });
-test('GitHub reporting 0 remaining closes the shared window; an unavailable budget store makes no request',async()=>{
+test('GitHub reporting 0 remaining closes the shared budget until its reset; an unavailable budget store makes no request',async()=>{
  const time=now();const shared=createMemoryBudget({now:()=>time});let calls=0;
- const f=async url=>{calls++;return {...response(byUrl(url)),headers:new Headers({'x-ratelimit-remaining':'0'})};};
+ const f=async url=>{calls++;return {...response(byUrl(url)),headers:new Headers({'x-ratelimit-remaining':'0','x-ratelimit-reset':String(Math.floor(time/1000)+3600)})};};
  await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});
  const next=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});
  assert.equal(calls,TASKS.length);assert.ok(next.every(r=>r.reason==='budget'));
- const broken={reserve:async()=>{throw new Error('db down');},exhaust:async()=>{}};
+ const broken={reserve:async()=>{throw new Error('db down');},observe:async()=>{}};
  const rows=await readTasksWithinBudget(TASKS,{fetchImpl:async()=>{throw new Error('must not be called');},now:()=>time,budget:broken});
  assert.ok(rows.every(r=>r.state==='UNKNOWN'&&r.reason==='budget'));
+});
+
+test('the budget follows GitHub\'s real reset time: refused while GitHub\'s own remaining is too low, reopened exactly at x-ratelimit-reset',async()=>{
+ let time=now(),calls=0;const shared=createMemoryBudget({now:()=>time});
+ const reset=Math.floor(time/1000)+40*60;   // GitHub window reopens in 40 minutes
+ const f=async url=>{calls++;return {...response(byUrl(url)),headers:new Headers({'x-ratelimit-remaining':'12','x-ratelimit-reset':String(reset)})};};
+ await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});   // our count 14, GitHub says 12 left
+ time+=30*60_000;
+ const early=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});
+ assert.equal(calls,TASKS.length,'12 left at GitHub < 14 needed: no request');assert.ok(early.every(r=>r.reason==='budget'));
+ time=reset*1000+1000;
+ await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});
+ assert.equal(calls,2*TASKS.length,'reopened at GitHub\'s reset time, not at our own window end');
 });

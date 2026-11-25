@@ -65,9 +65,9 @@ test('DB budget is shared: two processes (console + sync) cannot together exceed
   assert.equal((await client.query('SELECT used FROM nexus_github_budget')).rows[0].used,42);
   await client.query("UPDATE nexus_github_budget SET window_start=now()-interval '61 minutes'");
   assert.equal(await syncBudget.reserve(14),true,'expired window restarts');
-  await consoleBudget.exhaust();
-  assert.equal(await syncBudget.reserve(1),false);
-  assert.equal((await client.query('SELECT used FROM nexus_github_budget')).rows[0].used,GITHUB_HOURLY_BUDGET);
+  await consoleBudget.observe({remaining:0,reset:Math.floor(Date.now()/1000)+1200});   // GitHub: 0 left, reopens in 20 min
+  assert.equal(await syncBudget.reserve(1),false,'closed for every process until GitHub reopens');
+  assert.ok((await client.query('SELECT used FROM nexus_github_budget')).rows[0].used<=GITHUB_HOURLY_BUDGET);
  });
 });
 
@@ -116,4 +116,22 @@ test('two different states with the same GitHub timestamp are kept and flagged a
   await saveTaskHistory(client,[{...other,state:'OPEN',head_sha:null,updated_at:'2026-11-24T09:00:00Z',observed_at:'2032-01-02T00:00:00Z'}]);
   assert.equal((await loadRecentTaskHistory(client)).find(h=>h.number===other.number&&h.app_id===other.app_id).ambiguous,false);
  });
+});
+
+test('concurrent reservations from separate connections never exceed the budget; GitHub reset time is honoured in SQL',{skip:!isolated},async()=>{
+ const pool=getPool();
+ await pool.query('DELETE FROM nexus_github_budget');
+ try{
+  const budgets=Array.from({length:8},()=>createDbBudget({query:(sql,p)=>pool.query(sql,p)}));
+  const granted=(await Promise.all(budgets.map(b=>b.reserve(14)))).filter(Boolean).length;
+  assert.equal(granted,3,'50/14 = 3 batches, whatever the interleaving');
+  assert.equal((await pool.query('SELECT used FROM nexus_github_budget')).rows[0].used,42);
+  await pool.query('DELETE FROM nexus_github_budget');
+  const b=budgets[0];
+  await b.reserve(14);
+  await b.observe({remaining:3,reset:Math.floor(Date.now()/1000)+600});   // GitHub: 3 left, reopens in 10 min
+  assert.equal(await b.reserve(1),false,'below the safety margin until GitHub reopens');
+  await pool.query("UPDATE nexus_github_budget SET gh_reset_at=now()-interval '1 second'");
+  assert.equal(await b.reserve(14),true,'reopened at the reset time');
+ }finally{await pool.query('DELETE FROM nexus_github_budget');}
 });
