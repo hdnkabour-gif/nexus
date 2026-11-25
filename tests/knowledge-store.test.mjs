@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import {getPool} from '../lib/db.js';
 import {knowledge} from '../lib/knowledge.js';
 import {TASKS} from '../lib/knowledge-tasks.js';
-import {importKnowledge,saveTaskHistory} from '../lib/knowledge-store.js';
+import {importKnowledge,saveTaskHistory,startSyncReceipt,finishSyncReceipt,loadSyncSummary,RECEIPT_LEASE_MINUTES,loadRecentTaskHistory} from '../lib/knowledge-store.js';
+import {createDbBudget,GITHUB_HOURLY_BUDGET} from '../lib/github-budget.js';
+import {checkRuntimePrivileges} from '../lib/db-privileges.js';
 import {readFile} from 'node:fs/promises';
 const isolated=process.env.CI==='true'&&(()=>{try{return new URL(process.env.NEXUS_DATABASE_URL).pathname==='/nexus_test'}catch{return false}})();
 async function transactionTest(run){
@@ -52,3 +54,119 @@ test('persistent storage path checks session first; the worker is not invoked by
 });
 
 after(async()=>{if(isolated)await getPool().end();});
+
+test('a receipt left running by a killed sync is shown as stale, then closed as unknown by the next run; a recent one is left alone',{skip:!isolated},async()=>{
+ await transactionTest(async client=>{
+  await client.query("DELETE FROM nexus_job_receipts WHERE job_kind='knowledge_public_sync'");
+  // The process died after the history commit, before closing its receipt.
+  await client.query(`INSERT INTO nexus_job_receipts(job_kind,state,started_at) VALUES('knowledge_public_sync','running',now()-make_interval(mins=>$1::int))`,[RECEIPT_LEASE_MINUTES+5]);
+  assert.equal((await loadSyncSummary(client)).last_state,'stale','never displayed as running indefinitely');
+  const next=await startSyncReceipt(client);
+  assert.equal(next.reclassified,1);
+  const rows=(await client.query("SELECT id,state,info FROM nexus_job_receipts WHERE job_kind='knowledge_public_sync' ORDER BY id")).rows;
+  assert.equal(rows[0].state,'unknown');assert.equal(rows[0].info.reason,'orphaned_running');
+  assert.equal(rows[1].state,'running');
+  assert.equal((await loadSyncSummary(client)).last_state,'running','a fresh run inside its lease is still running');
+  assert.equal((await startSyncReceipt(client)).reclassified,0,'a recent running receipt is not taken over');
+ });
+});
+
+test('a worker that finishes AFTER its receipt was classified orphaned_running cannot overwrite that classification',{skip:!isolated},async()=>{
+ await transactionTest(async client=>{
+  await client.query("DELETE FROM nexus_job_receipts WHERE job_kind='knowledge_public_sync'");
+  const slow=(await client.query(`INSERT INTO nexus_job_receipts(job_kind,state,started_at) VALUES('knowledge_public_sync','running',now()-make_interval(mins=>$1::int)) RETURNING id`,[RECEIPT_LEASE_MINUTES+5])).rows[0].id;
+  const next=await startSyncReceipt(client);                       // next run reclassifies the slow one
+  assert.equal(next.reclassified,1);
+  // The suspended first worker resumes and reports success, then a failure path also tries.
+  assert.equal(await finishSyncReceipt(slow,'succeeded',{checked:14,unknown:0,inserted:2},client),false);
+  assert.equal(await finishSyncReceipt(slow,'failed',{},client),false);
+  const row=(await client.query('SELECT state,info FROM nexus_job_receipts WHERE id=$1',[slow])).rows[0];
+  assert.equal(row.state,'unknown');assert.equal(row.info.reason,'orphaned_running','the expiry trace is kept');
+  assert.equal(row.info.late_completions.length,2,'late results are recorded separately');
+  assert.equal(row.info.late_completions[0].state,'succeeded');assert.equal(row.info.late_completions[0].result.inserted,2);
+  // The current run still closes normally.
+  assert.equal(await finishSyncReceipt(next.id,'succeeded',{checked:14,unknown:0,inserted:0},client),true);
+  assert.equal((await client.query('SELECT state FROM nexus_job_receipts WHERE id=$1',[next.id])).rows[0].state,'succeeded');
+ });
+});
+
+test('DB budget is shared: two processes (console + sync) cannot together exceed the hourly budget',{skip:!isolated},async()=>{
+ await transactionTest(async client=>{
+  await client.query('DELETE FROM nexus_github_budget');
+  const q=(sql,p)=>client.query(sql,p);
+  const consoleBudget=createDbBudget({query:q}),syncBudget=createDbBudget({query:q});
+  assert.equal(await consoleBudget.reserve(14),true);assert.equal(await syncBudget.reserve(14),true);assert.equal(await consoleBudget.reserve(14),true);
+  assert.equal(await syncBudget.reserve(14),false,'56 > 50: refused, nothing counted');
+  assert.equal((await client.query('SELECT used FROM nexus_github_budget')).rows[0].used,42);
+  await client.query("UPDATE nexus_github_budget SET window_start=now()-interval '61 minutes'");
+  assert.equal(await syncBudget.reserve(14),true,'expired window restarts');
+  await consoleBudget.observe({remaining:0,reset:Math.floor(Date.now()/1000)+1200});   // GitHub: 0 left, reopens in 20 min
+  assert.equal(await syncBudget.reserve(1),false,'closed for every process until GitHub reopens');
+  assert.ok((await client.query('SELECT used FROM nexus_github_budget')).rows[0].used<=GITHUB_HOURLY_BUDGET);
+ });
+});
+
+test('history tables are append-only in the database: UPDATE, DELETE and TRUNCATE are refused',{skip:!isolated},async()=>{
+ for(const [table,sql] of [
+  ['nexus_task_observation_history','UPDATE nexus_task_observation_history SET state=state'],
+  ['nexus_task_observation_history','DELETE FROM nexus_task_observation_history'],
+  ['nexus_task_observation_history','TRUNCATE nexus_task_observation_history'],
+  ['nexus_knowledge_revisions','UPDATE nexus_knowledge_revisions SET payload=payload'],
+  ['nexus_knowledge_revisions','DELETE FROM nexus_knowledge_revisions'],
+  ['nexus_knowledge_revisions','TRUNCATE nexus_knowledge_revisions']]){
+  await transactionTest(async client=>{
+   if(/nexus_task/.test(table))await saveTaskHistory(client,[{...TASKS[0],state:'OPEN',head_sha:null,updated_at:'2026-11-24T08:00:00Z',observed_at:'2031-01-01T00:00:00Z'}]);
+   await assert.rejects(client.query(sql),/nexus_history_append_only/,sql);
+  });
+ }
+});
+
+test('privilege attestation: the owner role is reported unsafe; a least-privilege runtime role passes and still cannot rewrite history',{skip:!isolated},async()=>{
+ await transactionTest(async client=>{
+  const owner=await checkRuntimePrivileges(client);
+  assert.equal(owner.ok,false);assert.ok(owner.problems.some(p=>/owned by the runtime role/.test(p)));
+  const can=(await client.query("SELECT rolsuper OR rolcreaterole AS ok FROM pg_roles WHERE rolname=current_user")).rows[0].ok;
+  if(!can)return;   // CI's service role can create roles; a restricted local role cannot (the owner case above still ran)
+  await client.query('CREATE ROLE nexus_runtime_probe NOLOGIN NOSUPERUSER NOBYPASSRLS');
+  await client.query('GRANT USAGE ON SCHEMA public TO nexus_runtime_probe');
+  await client.query('GRANT SELECT,INSERT ON nexus_task_observation_history,nexus_knowledge_revisions TO nexus_runtime_probe');
+  await client.query('GRANT nexus_runtime_probe TO CURRENT_USER');   // PG16+: membership is needed to SET ROLE
+  await client.query('SET LOCAL ROLE nexus_runtime_probe');
+  const rt=await checkRuntimePrivileges(client);
+  assert.equal(rt.ok,true,JSON.stringify(rt.problems));
+  await assert.rejects(client.query('DELETE FROM nexus_task_observation_history'),/permission denied|nexus_history_append_only/);
+ });
+});
+
+test('two different states with the same GitHub timestamp are kept and flagged ambiguous, never ordered by arrival',{skip:!isolated},async()=>{
+ await transactionTest(async client=>{
+  const t=TASKS[0],u='2026-11-24T08:00:00Z';
+  const obs=(state,at)=>({...t,state,head_sha:null,updated_at:u,observed_at:at});
+  assert.equal(await saveTaskHistory(client,[obs('OPEN','2032-01-01T00:00:00Z')]),1);
+  assert.equal(await saveTaskHistory(client,[obs('CLOSED','2032-01-01T00:01:00Z')]),1);
+  const rows=(await loadRecentTaskHistory(client)).filter(h=>h.number===t.number&&h.source_updated_at===new Date(u).toISOString());
+  assert.equal(rows.length,2);
+  assert.ok(rows.every(h=>h.ambiguous===true),'both flagged: arrival order is not provider order');
+  const other=TASKS[1];
+  await saveTaskHistory(client,[{...other,state:'OPEN',head_sha:null,updated_at:'2026-11-24T09:00:00Z',observed_at:'2032-01-02T00:00:00Z'}]);
+  assert.equal((await loadRecentTaskHistory(client)).find(h=>h.number===other.number&&h.app_id===other.app_id).ambiguous,false);
+ });
+});
+
+test('concurrent reservations from separate connections never exceed the budget; GitHub reset time is honoured in SQL',{skip:!isolated},async()=>{
+ const pool=getPool();
+ await pool.query('DELETE FROM nexus_github_budget');
+ try{
+  const budgets=Array.from({length:8},()=>createDbBudget({query:(sql,p)=>pool.query(sql,p)}));
+  const granted=(await Promise.all(budgets.map(b=>b.reserve(14)))).filter(Boolean).length;
+  assert.equal(granted,3,'50/14 = 3 batches, whatever the interleaving');
+  assert.equal((await pool.query('SELECT used FROM nexus_github_budget')).rows[0].used,42);
+  await pool.query('DELETE FROM nexus_github_budget');
+  const b=budgets[0];
+  await b.reserve(14);
+  await b.observe({remaining:3,reset:Math.floor(Date.now()/1000)+600});   // GitHub: 3 left, reopens in 10 min
+  assert.equal(await b.reserve(1),false,'below the safety margin until GitHub reopens');
+  await pool.query("UPDATE nexus_github_budget SET gh_reset_at=now()-interval '1 second'");
+  assert.equal(await b.reserve(14),true,'reopened at the reset time');
+ }finally{await pool.query('DELETE FROM nexus_github_budget');}
+});

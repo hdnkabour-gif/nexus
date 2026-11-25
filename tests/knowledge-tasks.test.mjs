@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {TASKS,readTask,createTaskReader} from '../lib/knowledge-tasks.js';
+import {TASKS,readTask,createTaskReader,readTasksWithinBudget} from '../lib/knowledge-tasks.js';
+import {createMemoryBudget,GITHUB_HOURLY_BUDGET,GITHUB_HOURLY_LIMIT} from '../lib/github-budget.js';
 import {RELATIONS} from '../lib/knowledge-relations.js';
 import {readFileSync} from 'node:fs';
 import {APPLICATIONS,knowledge,filterKnowledge} from '../lib/knowledge.js';
@@ -24,7 +25,7 @@ test('unavailable or invalid provider becomes UNKNOWN',async()=>{
  }
 });
 test('single-flight cache avoids repeated requests and refreshes after expiry',async()=>{
- let calls=0,time=now();const reader=createTaskReader({now:()=>time,ttlMs:100,fetchImpl:async(url)=>{calls++;const t=TASKS.find(t=>url.endsWith('/'+t.repo+'/'+t.type+'/'+t.number));return response(t);}});
+ let calls=0,time=now();const mb=createMemoryBudget({now:()=>time});const reader=createTaskReader({now:()=>time,ttlMs:100,budget:()=>mb,fetchImpl:async(url)=>{calls++;const t=TASKS.find(t=>url.endsWith('/'+t.repo+'/'+t.type+'/'+t.number));return response(t);}});
  const [a,b]=await Promise.all([reader(),reader()]);assert.equal(a,b);assert.equal(calls,TASKS.length);
  await reader();assert.equal(calls,TASKS.length);time+=101;await reader();assert.equal(calls,2*TASKS.length);
 });
@@ -56,4 +57,59 @@ test('historical risk scope is searchable without rewriting canonical IDs',()=>{
  assert.deepEqual(rows.map(r=>r.id).sort(),['R-003','R-008']);
  assert.ok(rows.every(r=>r.app_id==='nexus'&&r.status==='HISTORICAL'));
  assert.equal(filterKnowledge(knowledge,{app:'school-platform',kind:'risk'}).length,0);
+});
+
+const byUrl=url=>TASKS.find(t=>url.endsWith('/'+t.repo+'/'+t.type+'/'+t.number));
+test('console and sync share ONE hourly GitHub budget below the anonymous limit; a batch that does not fit makes no request',async()=>{
+ assert.ok(GITHUB_HOURLY_BUDGET<GITHUB_HOURLY_LIMIT);
+ let time=now(),calls=0;const shared=createMemoryBudget({now:()=>time});
+ const f=async url=>{calls++;return response(byUrl(url));};
+ const console1=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});   // page refresh
+ const sync1=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});      // hourly sync
+ const console2=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});
+ assert.equal(calls,3*TASKS.length);assert.ok(console1.every(r=>r.state!=='UNKNOWN')&&sync1.every(r=>r.state!=='UNKNOWN')&&console2.length===TASKS.length);
+ const refused=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});   // 4*14=56 > 50
+ assert.equal(calls,3*TASKS.length,'no request beyond the budget');
+ assert.ok(refused.every(r=>r.state==='UNKNOWN'&&r.reason==='budget'),'UNKNOWN, not success or failure');
+ time+=3600_000;
+ await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});
+ assert.equal(calls,4*TASKS.length,'a new hour opens a new window');
+});
+test('GitHub reporting 0 remaining closes the shared budget until its reset; an unavailable budget store makes no request',async()=>{
+ const time=now();const shared=createMemoryBudget({now:()=>time});let calls=0;
+ const f=async url=>{calls++;return {...response(byUrl(url)),headers:new Headers({'x-ratelimit-remaining':'0','x-ratelimit-reset':String(Math.floor(time/1000)+3600)})};};
+ await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});
+ const next=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});
+ assert.equal(calls,TASKS.length);assert.ok(next.every(r=>r.reason==='budget'));
+ const broken={reserve:async()=>{throw new Error('db down');},observe:async()=>{}};
+ const rows=await readTasksWithinBudget(TASKS,{fetchImpl:async()=>{throw new Error('must not be called');},now:()=>time,budget:broken});
+ assert.ok(rows.every(r=>r.state==='UNKNOWN'&&r.reason==='budget'));
+});
+
+test('the budget follows GitHub\'s real reset time: refused while GitHub\'s own remaining is too low, reopened exactly at x-ratelimit-reset',async()=>{
+ let time=now(),calls=0;const shared=createMemoryBudget({now:()=>time});
+ const reset=Math.floor(time/1000)+40*60;   // GitHub window reopens in 40 minutes
+ const f=async url=>{calls++;return {...response(byUrl(url)),headers:new Headers({'x-ratelimit-remaining':'12','x-ratelimit-reset':String(reset)})};};
+ await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});   // our count 14, GitHub says 12 left
+ time+=30*60_000;
+ const early=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});
+ assert.equal(calls,TASKS.length,'12 left at GitHub < 14 needed: no request');assert.ok(early.every(r=>r.reason==='budget'));
+ time=reset*1000+1000;
+ await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:shared});
+ assert.equal(calls,2*TASKS.length,'reopened at GitHub\'s reset time, not at our own window end');
+});
+
+test('if GitHub\'s quota cannot be recorded in the shared store, this process still obeys it and the failure is reported',async()=>{
+ let time=now(),calls=0;const reset=Math.floor(time/1000)+40*60;
+ const failing={reserve:async()=>true,observe:async()=>{throw new Error('db write failed');}};   // shared store accepts, cannot record
+ const local=createMemoryBudget({now:()=>time});
+ const f=async url=>{calls++;return {...response(byUrl(url)),headers:new Headers({'x-ratelimit-remaining':'3','x-ratelimit-reset':String(reset)})};};
+ const first=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:failing,local});
+ assert.equal(first.rateLimitRecorded,false,'reported, not swallowed');
+ const second=await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:failing,local});
+ assert.equal(calls,TASKS.length,'GitHub said 3 left: the same process makes no further request even though the shared store said yes');
+ assert.ok(second.every(r=>r.reason==='budget'));
+ time=reset*1000+1000;
+ await readTasksWithinBudget(TASKS,{fetchImpl:f,now:()=>time,budget:failing,local});
+ assert.equal(calls,2*TASKS.length,'reopens at GitHub\'s reset');
 });
