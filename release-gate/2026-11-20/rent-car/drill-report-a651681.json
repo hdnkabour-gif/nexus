@@ -1,0 +1,104 @@
+{
+  "ok": true,
+  "startedAt": "2026-11-20T21:20:33.437Z",
+  "finishedAt": "2026-11-20T21:20:35.629Z",
+  "source": "offsite",
+  "offsiteKind": "dir",
+  "backupName": "fleetora-backup-20261120-212032-781",
+  "manifestSha256": "28222039b29cf318544230007d29bce58a5f44213f3c6380b0723c5ae39cb94d",
+  "encrypted": true,
+  "tables": 59,
+  "rowsTotal": 714,
+  "files": 1,
+  "filesVerified": 1,
+  "steps": [
+    {
+      "step": "choose backup",
+      "ok": true,
+      "ms": 7,
+      "detail": "fleetora-backup-20261120-212032-781"
+    },
+    {
+      "step": "fetch detached copy",
+      "ok": true,
+      "ms": 18,
+      "detail": "every object matched its size and SHA-256"
+    },
+    {
+      "step": "verify backup",
+      "ok": true,
+      "ms": 119,
+      "detail": "1 files + dump checked"
+    },
+    {
+      "step": "create isolated database",
+      "ok": true,
+      "ms": 48,
+      "detail": "fresh database created for this drill only"
+    },
+    {
+      "step": "restore and prove",
+      "ok": true,
+      "ms": 656,
+      "detail": "row counts, migrations and every file checksum equal the manifest"
+    },
+    {
+      "step": "re-hash every restored file",
+      "ok": true,
+      "ms": 0,
+      "detail": "1 files identical (SHA-256)"
+    }
+  ],
+  "negative": [
+    {
+      "check": "wrong passphrase is refused",
+      "passed": true,
+      "detail": "Wrong backup passphrase."
+    },
+    {
+      "check": "truncated dump is detected",
+      "passed": true,
+      "detail": "database dump unreadable or damaged: checksum differs"
+    },
+    {
+      "check": "missing file is detected",
+      "passed": true,
+      "detail": "file 44/445436762a5d6dcc6c586a6e14262ce902a75fa283f836ebc917fb46d438fab8 is missing from the backup"
+    },
+    {
+      "check": "damaged file is detected",
+      "passed": true,
+      "detail": "file 44/445436762a5d6dcc6c586a6e14262ce902a75fa283f836ebc917fb46d438fab8 is damaged in the backup"
+    },
+    {
+      "check": "altered manifest is detected",
+      "passed": true,
+      "detail": "manifest was altered (authentication failed)"
+    },
+    {
+      "check": "interrupted upload (no completion marker) is never restored",
+      "passed": true,
+      "detail": "refused: no completion marker"
+    },
+    {
+      "check": "network failures are retried, then the copy is verified",
+      "passed": true,
+      "detail": "upload and download succeeded after 2 simulated connection resets each"
+    },
+    {
+      "check": "a lasting network failure is reported, nothing half-restored",
+      "passed": true,
+      "detail": "reported after 3 attempts"
+    },
+    {
+      "check": "an unencrypted backup is never copied off-site",
+      "passed": true,
+      "detail": "refused"
+    },
+    {
+      "check": "restore into a non-empty database is refused",
+      "passed": true,
+      "detail": "refused, nothing changed"
+    }
+  ]
+}

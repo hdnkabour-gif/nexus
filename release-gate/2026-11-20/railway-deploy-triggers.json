@@ -1,0 +1,120 @@
+{
+ "read_at": "2026-11-20",
+ "method": "Railway GraphQL queries only (deploymentTriggers, serviceInstance, deployments); no mutation, no variables read",
+ "services": [
+  {
+   "service": "PNEU app (mouhim)",
+   "deploy_triggers": [
+    {
+     "branch": "main",
+     "checkSuites": false,
+     "repository": "hdnkabour-gif/Pneumatiques-MOUHIM",
+     "provider": "github"
+    }
+   ],
+   "watch_patterns": [],
+   "start_command": "/usr/local/bin/entrypoint.sh web",
+   "latest_deployment": {
+    "status": "SUCCESS",
+    "createdAt": "2026-11-17T15:53:36.999Z",
+    "commit": "ea55329fa3cf",
+    "branch": "main",
+    "reason": "deploy",
+    "canRollback": true
+   }
+  },
+  {
+   "service": "PNEU worker (mouhim)",
+   "deploy_triggers": [
+    {
+     "branch": "main",
+     "checkSuites": false,
+     "repository": "hdnkabour-gif/Pneumatiques-MOUHIM",
+     "provider": "github"
+    }
+   ],
+   "watch_patterns": [],
+   "start_command": "php artisan queue:work --queue=default --tries=3 --sleep=2 --timeout=60 --max-time=3600",
+   "latest_deployment": {
+    "status": "SUCCESS",
+    "createdAt": "2026-11-17T15:53:36.999Z",
+    "commit": "ea55329fa3cf",
+    "branch": "main",
+    "reason": "deploy",
+    "canRollback": true
+   }
+  },
+  {
+   "service": "RENT CAR (production)",
+   "deploy_triggers": [],
+   "watch_patterns": [
+    "/__railway_manual_approval_required__/**"
+   ],
+   "start_command": "npm run start -w server",
+   "latest_deployment": {
+    "status": "SUCCESS",
+    "createdAt": "2026-11-20T01:29:01.574Z",
+    "commit": "781ab81386c3",
+    "branch": "main",
+    "reason": "deploy",
+    "canRollback": true
+   }
+  },
+  {
+   "service": "AMANZINE (Amanzine/balanced-growth)",
+   "deploy_triggers": [],
+   "watch_patterns": [],
+   "start_command": null,
+   "latest_deployment": {
+    "status": "SUCCESS",
+    "createdAt": "2026-11-18T00:37:21.016Z",
+    "commit": "4ff08a99d494",
+    "branch": "main",
+    "reason": "deploy",
+    "canRollback": true
+   }
+  },
+  {
+   "service": "AMANZINE staging",
+   "deploy_triggers": [],
+   "watch_patterns": [],
+   "start_command": null,
+   "latest_deployment": {
+    "status": "SUCCESS",
+    "createdAt": "2026-11-16T21:56:02.836Z",
+    "commit": "4ff08a99d494",
+    "branch": "main",
+    "reason": "deploy",
+    "canRollback": true
+   }
+  },
+  {
+   "service": "PNEU staging app",
+   "deploy_triggers": [],
+   "watch_patterns": [],
+   "start_command": "/usr/local/bin/entrypoint.sh web",
+   "latest_deployment": {
+    "status": "SUCCESS",
+    "createdAt": "2026-11-17T15:46:54.467Z",
+    "commit": "a2691d7dcf47",
+    "branch": "fix/go-live-complete-strict-audit",
+    "reason": "deploy",
+    "canRollback": true
+   }
+  },
+  {
+   "service": "PNEU staging worker",
+   "deploy_triggers": [],
+   "watch_patterns": [],
+   "start_command": "php artisan queue:work --tries=3 --max-time=3600",
+   "latest_deployment": {
+    "status": "SUCCESS",
+    "createdAt": "2026-11-17T12:10:37.029Z",
+    "commit": "6a8118971356",
+    "branch": "staging/integration",
+    "reason": "deploy",
+    "canRollback": true
+   }
+  }
+ ]
+}

@@ -1,0 +1,196 @@
+{
+ "rehearsal": "pneu-upgrade-and-code-rollback",
+ "ok": true,
+ "assertions": [
+  {
+   "check": "web runs local/pneu-rc:ea55329 revision",
+   "actual": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "expected": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "pass": true
+  },
+  {
+   "check": "worker runs the same revision as web",
+   "actual": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "expected": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "pass": true
+  },
+  {
+   "check": "web runs local/pneu-rc:5dae30e revision",
+   "actual": "5dae30e194865310985105e11487784adc25d530",
+   "expected": "5dae30e194865310985105e11487784adc25d530",
+   "pass": true
+  },
+  {
+   "check": "worker runs the same revision as web",
+   "actual": "5dae30e194865310985105e11487784adc25d530",
+   "expected": "5dae30e194865310985105e11487784adc25d530",
+   "pass": true
+  },
+  {
+   "check": "migrations applied by the upgrade",
+   "actual": "2026_11_20_100000_add_idempotency_to_payments,2026_11_23_090000_move_expense_receipts_to_private_disk,2026_11_23_100000_add_idempotency_to_customer_opening_balances",
+   "expected": "2026_11_20_100000_add_idempotency_to_payments,2026_11_23_090000_move_expense_receipts_to_private_disk,2026_11_23_100000_add_idempotency_to_customer_opening_balances",
+   "pass": true
+  },
+  {
+   "check": "tables compared is non-zero",
+   "actual": "yes",
+   "expected": "yes",
+   "pass": true
+  },
+  {
+   "check": "tables changed outside the reseeded reference catalogues",
+   "actual": "",
+   "expected": "",
+   "pass": true
+  },
+  {
+   "check": "oil_catalogue_references identical apart from timestamps",
+   "actual": "oil_catalogue_references 46:5ce9aa2d16148a3861e15ea9a0cea7dc",
+   "expected": "oil_catalogue_references 46:5ce9aa2d16148a3861e15ea9a0cea7dc",
+   "pass": true
+  },
+  {
+   "check": "tyre_catalogue_references identical apart from timestamps",
+   "actual": "tyre_catalogue_references 120:23d8fbca24ccc26dc3046502344b0ac1",
+   "expected": "tyre_catalogue_references 120:23d8fbca24ccc26dc3046502344b0ac1",
+   "pass": true
+  },
+  {
+   "check": "after upgrade: summary unchanged",
+   "actual": "{\"card\": 0, \"cash_in\": 11000, \"cheque\": 0, \"expected\": 15500, \"expenses\": 500, \"float\": 5000, \"refunds\": 0}",
+   "expected": "{\"card\": 0, \"cash_in\": 11000, \"cheque\": 0, \"expected\": 15500, \"expenses\": 500, \"float\": 5000, \"refunds\": 0}",
+   "pass": true
+  },
+  {
+   "check": "after upgrade: debt unchanged",
+   "actual": "1000",
+   "expected": "1000",
+   "pass": true
+  },
+  {
+   "check": "after upgrade: stock unchanged",
+   "actual": "3",
+   "expected": "3",
+   "pass": true
+  },
+  {
+   "check": "before upgrade: receipt only on the public disk",
+   "actual": "{\"public\": \"6b7224e208f46f9c58dbe43884a63f68a056e2a6c96d000386ee8b5395e7dfa7\"}",
+   "expected": "{\"public\": \"6b7224e208f46f9c58dbe43884a63f68a056e2a6c96d000386ee8b5395e7dfa7\"}",
+   "pass": true
+  },
+  {
+   "check": "after upgrade: receipt only on the private disk, same SHA-256",
+   "actual": "{\"documents\": \"6b7224e208f46f9c58dbe43884a63f68a056e2a6c96d000386ee8b5395e7dfa7\"}",
+   "expected": "{\"documents\": \"6b7224e208f46f9c58dbe43884a63f68a056e2a6c96d000386ee8b5395e7dfa7\"}",
+   "pass": true
+  },
+  {
+   "check": "web runs local/pneu-rc:ea55329 revision",
+   "actual": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "expected": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "pass": true
+  },
+  {
+   "check": "worker runs the same revision as web",
+   "actual": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "expected": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "pass": true
+  },
+  {
+   "check": "after code rollback: receipt kept on the private disk, not lost (the old link cannot serve it)",
+   "actual": "{\"documents\": \"6b7224e208f46f9c58dbe43884a63f68a056e2a6c96d000386ee8b5395e7dfa7\"}",
+   "expected": "{\"documents\": \"6b7224e208f46f9c58dbe43884a63f68a056e2a6c96d000386ee8b5395e7dfa7\"}",
+   "pass": true
+  },
+  {
+   "check": "after code rollback: summary unchanged",
+   "actual": "{\"card\": 0, \"cash_in\": 11000, \"cheque\": 0, \"expected\": 15500, \"expenses\": 500, \"float\": 5000, \"refunds\": 0}",
+   "expected": "{\"card\": 0, \"cash_in\": 11000, \"cheque\": 0, \"expected\": 15500, \"expenses\": 500, \"float\": 5000, \"refunds\": 0}",
+   "pass": true
+  },
+  {
+   "check": "after code rollback: debt unchanged",
+   "actual": "1000",
+   "expected": "1000",
+   "pass": true
+  },
+  {
+   "check": "after code rollback: stock unchanged",
+   "actual": "3",
+   "expected": "3",
+   "pass": true
+  }
+ ],
+ "old": "local/pneu-rc:ea55329",
+ "new": "local/pneu-rc:5dae30e",
+ "tables_compared": 74,
+ "tables_changed": [
+  "oil_catalogue_references",
+  "tyre_catalogue_references"
+ ],
+ "snapshots": {
+  "A": {
+   "revision": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "receipt": {
+    "path": "expenses/test-old-receipt.jpg",
+    "on": {
+     "public": "6b7224e208f46f9c58dbe43884a63f68a056e2a6c96d000386ee8b5395e7dfa7"
+    }
+   },
+   "summary": {
+    "float": 5000,
+    "cash_in": 11000,
+    "refunds": 0,
+    "expenses": 500,
+    "expected": 15500,
+    "card": 0,
+    "cheque": 0
+   },
+   "debt": 1000,
+   "stock": 3
+  },
+  "B": {
+   "revision": "5dae30e194865310985105e11487784adc25d530",
+   "receipt": {
+    "path": "expenses/test-old-receipt.jpg",
+    "on": {
+     "documents": "6b7224e208f46f9c58dbe43884a63f68a056e2a6c96d000386ee8b5395e7dfa7"
+    }
+   },
+   "summary": {
+    "float": 5000,
+    "cash_in": 11000,
+    "refunds": 0,
+    "expenses": 500,
+    "expected": 15500,
+    "card": 0,
+    "cheque": 0
+   },
+   "debt": 1000,
+   "stock": 3
+  },
+  "C": {
+   "revision": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "receipt": {
+    "path": "expenses/test-old-receipt.jpg",
+    "on": {
+     "documents": "6b7224e208f46f9c58dbe43884a63f68a056e2a6c96d000386ee8b5395e7dfa7"
+    }
+   },
+   "summary": {
+    "float": 5000,
+    "cash_in": 11000,
+    "refunds": 0,
+    "expenses": 500,
+    "expected": 15500,
+    "card": 0,
+    "cheque": 0
+   },
+   "debt": 1000,
+   "stock": 3
+  }
+ },
+ "note": "A code-only rollback proves schema compatibility, NOT financial safety: the old version lacks the cash-close, credit-ceiling and receipt-idempotency fixes."
+}

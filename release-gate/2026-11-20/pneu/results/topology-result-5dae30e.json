@@ -1,0 +1,134 @@
+{
+ "rehearsal": "pneu-29-volume-topology",
+ "ok": true,
+ "assertions": [
+  {
+   "check": "web runs local/pneu-rc:ea55329 revision",
+   "actual": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "expected": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "pass": true
+  },
+  {
+   "check": "worker runs the same revision as web",
+   "actual": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "expected": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "pass": true
+  },
+  {
+   "check": "[A] deployed version stores the receipt publicly",
+   "actual": "public",
+   "expected": "public",
+   "pass": true
+  },
+  {
+   "check": "[A] candidate refuses to start while a receipt is still on the public disk",
+   "actual": "exited",
+   "expected": "exited",
+   "pass": true
+  },
+  {
+   "check": "[A] the refusal is the receipts safety check (safe=no)",
+   "actual": "1",
+   "expected": "1",
+   "pass": true
+  },
+  {
+   "check": "[A] still refused after a redeploy",
+   "actual": "exited",
+   "expected": "exited",
+   "pass": true
+  },
+  {
+   "check": "[A] receipt NOT moved, kept intact on the public volume",
+   "actual": "public:6b7224e208f46f9c58dbe43884a63f68a056e2a6c96d000386ee8b5395e7dfa7",
+   "expected": "public:6b7224e208f46f9c58dbe43884a63f68a056e2a6c96d000386ee8b5395e7dfa7",
+   "pass": true
+  },
+  {
+   "check": "web runs local/pneu-rc:ea55329 revision",
+   "actual": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "expected": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "pass": true
+  },
+  {
+   "check": "worker runs the same revision as web",
+   "actual": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "expected": "ea55329fa3cf77ee5f4343ed627b1e8b9aa187a2",
+   "pass": true
+  },
+  {
+   "check": "[B] deployed version stores the receipt publicly",
+   "actual": "public",
+   "expected": "public",
+   "pass": true
+  },
+  {
+   "check": "web runs local/pneu-rc:5dae30e revision",
+   "actual": "5dae30e194865310985105e11487784adc25d530",
+   "expected": "5dae30e194865310985105e11487784adc25d530",
+   "pass": true
+  },
+  {
+   "check": "worker runs the same revision as web",
+   "actual": "5dae30e194865310985105e11487784adc25d530",
+   "expected": "5dae30e194865310985105e11487784adc25d530",
+   "pass": true
+  },
+  {
+   "check": "web runs local/pneu-rc:5dae30e revision",
+   "actual": "5dae30e194865310985105e11487784adc25d530",
+   "expected": "5dae30e194865310985105e11487784adc25d530",
+   "pass": true
+  },
+  {
+   "check": "worker runs the same revision as web",
+   "actual": "5dae30e194865310985105e11487784adc25d530",
+   "expected": "5dae30e194865310985105e11487784adc25d530",
+   "pass": true
+  },
+  {
+   "check": "[B] durability check PASSES",
+   "actual": "PASS",
+   "expected": "PASS",
+   "pass": true
+  },
+  {
+   "check": "[B] receipt only on the private disk, intact after recreate",
+   "actual": "documents:6b7224e208f46f9c58dbe43884a63f68a056e2a6c96d000386ee8b5395e7dfa7",
+   "expected": "documents:6b7224e208f46f9c58dbe43884a63f68a056e2a6c96d000386ee8b5395e7dfa7",
+   "pass": true
+  },
+  {
+   "check": "[B] direct /storage URL no longer serves it",
+   "actual": "404",
+   "expected": "404",
+   "pass": true
+  },
+  {
+   "check": "[B] guest is redirected to login",
+   "actual": "302",
+   "expected": "302",
+   "pass": true
+  },
+  {
+   "check": "[B] seller of another site: 403",
+   "actual": "403",
+   "expected": "403",
+   "pass": true
+  },
+  {
+   "check": "[B] seller of the site: 200",
+   "actual": "200",
+   "expected": "200",
+   "pass": true
+  },
+  {
+   "check": "[B] bytes served = original SHA-256",
+   "actual": "6b7224e208f46f9c58dbe43884a63f68a056e2a6c96d000386ee8b5395e7dfa7",
+   "expected": "6b7224e208f46f9c58dbe43884a63f68a056e2a6c96d000386ee8b5395e7dfa7",
+   "pass": true
+  }
+ ],
+ "old": "local/pneu-rc:ea55329",
+ "new": "local/pneu-rc:5dae30e"
+}

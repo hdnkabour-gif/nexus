@@ -1,0 +1,131 @@
+{
+ "rehearsal": "pneu-clean-install",
+ "ok": true,
+ "assertions": [
+  {
+   "check": "web runs local/pneu-rc:5dae30e revision",
+   "actual": "5dae30e194865310985105e11487784adc25d530",
+   "expected": "5dae30e194865310985105e11487784adc25d530",
+   "pass": true
+  },
+  {
+   "check": "worker runs the same revision as web",
+   "actual": "5dae30e194865310985105e11487784adc25d530",
+   "expected": "5dae30e194865310985105e11487784adc25d530",
+   "pass": true
+  },
+  {
+   "check": "business tables empty after install",
+   "actual": "customers=0 customer_vehicles=0 products=0 stock_levels=0 stock_movements=0 tyre_lots=0 sales=0 sale_lines=0 payments=0 payment_allocations=0 issued_invoice_documents=0 cash_days=0 expenses=0 transfers=0 transfer_lines=0 approval_requests=0 customer_opening_balances=0",
+   "expected": "customers=0 customer_vehicles=0 products=0 stock_levels=0 stock_movements=0 tyre_lots=0 sales=0 sale_lines=0 payments=0 payment_allocations=0 issued_invoice_documents=0 cash_days=0 expenses=0 transfers=0 transfer_lines=0 approval_requests=0 customer_opening_balances=0",
+   "pass": true
+  },
+  {
+   "check": "only the owner account exists",
+   "actual": "owner.rc@example.test",
+   "expected": "owner.rc@example.test",
+   "pass": true
+  },
+  {
+   "check": "owner has the owner role",
+   "actual": "1",
+   "expected": "1",
+   "pass": true
+  },
+  {
+   "check": "three sites (DEP, M01, M02)",
+   "actual": "DEP,M01,M02",
+   "expected": "DEP,M01,M02",
+   "pass": true
+  },
+  {
+   "check": "reference data present (roles/permissions/categories/tyre catalogue all > 0)",
+   "actual": "True",
+   "expected": "True",
+   "pass": true
+  },
+  {
+   "check": "go-live audit --strict refuses a fresh install before the numbering approval",
+   "actual": "1",
+   "expected": "1",
+   "pass": true
+  },
+  {
+   "check": "go-live audit --strict passes once the owner approved the numbering",
+   "actual": "0",
+   "expected": "0",
+   "pass": true
+  },
+  {
+   "check": "private documents storage reported PASS",
+   "actual": "1",
+   "expected": "1",
+   "pass": true
+  },
+  {
+   "check": "DemoSeeder refused in production (non-zero exit)",
+   "actual": "refused",
+   "expected": "refused",
+   "pass": true
+  },
+  {
+   "check": "staging demo data refused in production (non-zero exit)",
+   "actual": "refused",
+   "expected": "refused",
+   "pass": true
+  },
+  {
+   "check": "DemoSeeder refusal is the production guard",
+   "actual": "yes",
+   "expected": "yes",
+   "pass": true
+  },
+  {
+   "check": "staging refusal is the staging-project guard",
+   "actual": "1",
+   "expected": "1",
+   "pass": true
+  },
+  {
+   "check": "business tables still empty after the refused demo commands",
+   "actual": "customers=0 customer_vehicles=0 products=0 stock_levels=0 stock_movements=0 tyre_lots=0 sales=0 sale_lines=0 payments=0 payment_allocations=0 issued_invoice_documents=0 cash_days=0 expenses=0 transfers=0 transfer_lines=0 approval_requests=0 customer_opening_balances=0",
+   "expected": "customers=0 customer_vehicles=0 products=0 stock_levels=0 stock_movements=0 tyre_lots=0 sales=0 sale_lines=0 payments=0 payment_allocations=0 issued_invoice_documents=0 cash_days=0 expenses=0 transfers=0 transfer_lines=0 approval_requests=0 customer_opening_balances=0",
+   "pass": true
+  },
+  {
+   "check": "web runs local/pneu-rc:5dae30e revision",
+   "actual": "5dae30e194865310985105e11487784adc25d530",
+   "expected": "5dae30e194865310985105e11487784adc25d530",
+   "pass": true
+  },
+  {
+   "check": "worker runs the same revision as web",
+   "actual": "5dae30e194865310985105e11487784adc25d530",
+   "expected": "5dae30e194865310985105e11487784adc25d530",
+   "pass": true
+  },
+  {
+   "check": "business tables still empty after a redeploy",
+   "actual": "customers=0 customer_vehicles=0 products=0 stock_levels=0 stock_movements=0 tyre_lots=0 sales=0 sale_lines=0 payments=0 payment_allocations=0 issued_invoice_documents=0 cash_days=0 expenses=0 transfers=0 transfer_lines=0 approval_requests=0 customer_opening_balances=0",
+   "expected": "customers=0 customer_vehicles=0 products=0 stock_levels=0 stock_movements=0 tyre_lots=0 sales=0 sale_lines=0 payments=0 payment_allocations=0 issued_invoice_documents=0 cash_days=0 expenses=0 transfers=0 transfer_lines=0 approval_requests=0 customer_opening_balances=0",
+   "pass": true
+  },
+  {
+   "check": "still only the owner after a redeploy",
+   "actual": "owner.rc@example.test",
+   "expected": "owner.rc@example.test",
+   "pass": true
+  },
+  {
+   "check": "reference counts unchanged by a redeploy",
+   "actual": "5/38/33/120",
+   "expected": "5/38/33/120",
+   "pass": true
+  }
+ ],
+ "image_revision": "5dae30e194865310985105e11487784adc25d530",
+ "reference_counts_roles_permissions_categories_tyrecatalogue": "5/38/33/120",
+ "go_live_audit_exit": 0,
+ "demo_seeder_exit": 1,
+ "staging_demo_exit": 1
+}
