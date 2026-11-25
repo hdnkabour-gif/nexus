@@ -1,16 +1,17 @@
-import {syncKnowledgeTasks} from '../lib/knowledge-store.js';
-import {getPool,dbQuery} from '../lib/db.js';
+import {syncKnowledgeTasks,startSyncReceipt,finishSyncReceipt} from '../lib/knowledge-store.js';
+import {getPool} from '../lib/db.js';
 let receipt;
 try{
- const q=await dbQuery("INSERT INTO nexus_job_receipts(job_kind,state) VALUES('knowledge_public_sync','running') RETURNING id");
- receipt=q.rows[0].id;
+ // Closes receipts left `running` by a killed earlier run (as unknown) before opening this one.
+ receipt=(await startSyncReceipt()).id;
  const result=await syncKnowledgeTasks();
  const state=result.unknown?'unknown':'succeeded';
- await dbQuery("UPDATE nexus_job_receipts SET state=$2,completed_at=now(),info=$3::jsonb WHERE id=$1",[receipt,state,JSON.stringify(result)]);
+ // Only a receipt still `running` is closed; a late finish after reclassification is recorded separately.
+ await finishSyncReceipt(receipt,state,result);
  process.stdout.write('NEXUS knowledge sync: '+JSON.stringify(result)+'\n');
  if(result.unknown)process.exitCode=1;
 }catch{
- if(receipt)await dbQuery("UPDATE nexus_job_receipts SET state='failed',completed_at=now() WHERE id=$1",[receipt]).catch(()=>{});
+ if(receipt)await finishSyncReceipt(receipt,'failed',{}).catch(()=>{});
  process.stderr.write('NEXUS knowledge sync failed (details withheld).\n');
  process.exitCode=1;
 }finally{try{await getPool().end();}catch{}}
