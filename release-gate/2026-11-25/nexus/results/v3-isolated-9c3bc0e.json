@@ -1,0 +1,127 @@
+{
+ "rehearsal": "nexus-v3-isolated",
+ "postgres": "18",
+ "ok": true,
+ "assertions": [
+  {
+   "check": "V3 migration on the V2 database succeeds",
+   "actual": "0",
+   "expected": "0",
+   "pass": true
+  },
+  {
+   "check": "V3 migration re-run is idempotent",
+   "actual": "0",
+   "expected": "0",
+   "pass": true
+  },
+  {
+   "check": "V2 rows unchanged by the V3 migration",
+   "actual": "audit:1/1cb831bee9ca47515dc068e202437ad7 obs:1/ff6c71e8c159a50c67a01087d675ceb0 receipts:1/f75fddaffc4785bddceedd856adbea44",
+   "expected": "audit:1/1cb831bee9ca47515dc068e202437ad7 obs:1/ff6c71e8c159a50c67a01087d675ceb0 receipts:1/f75fddaffc4785bddceedd856adbea44",
+   "pass": true
+  },
+  {
+   "check": "V3 tables present",
+   "actual": "3",
+   "expected": "3",
+   "pass": true
+  },
+  {
+   "check": "append-only triggers installed",
+   "actual": "4",
+   "expected": "4",
+   "pass": true
+  },
+  {
+   "check": "V3 suite on the migrated database",
+   "actual": "fail 0",
+   "expected": "fail 0",
+   "pass": true
+  },
+  {
+   "check": "V2 code still passes on the V3 schema (rollback)",
+   "actual": "fail 0",
+   "expected": "fail 0",
+   "pass": true
+  },
+  {
+   "check": "restore identical: nexus_audit",
+   "actual": "0:d41d8cd98f00b204e9800998ecf8427e",
+   "expected": "0:d41d8cd98f00b204e9800998ecf8427e",
+   "pass": true
+  },
+  {
+   "check": "restore identical: nexus_connections",
+   "actual": "0:d41d8cd98f00b204e9800998ecf8427e",
+   "expected": "0:d41d8cd98f00b204e9800998ecf8427e",
+   "pass": true
+  },
+  {
+   "check": "restore identical: nexus_github_budget",
+   "actual": "0:d41d8cd98f00b204e9800998ecf8427e",
+   "expected": "0:d41d8cd98f00b204e9800998ecf8427e",
+   "pass": true
+  },
+  {
+   "check": "restore identical: nexus_job_receipts",
+   "actual": "1:f75fddaffc4785bddceedd856adbea44",
+   "expected": "1:f75fddaffc4785bddceedd856adbea44",
+   "pass": true
+  },
+  {
+   "check": "restore identical: nexus_knowledge_revisions",
+   "actual": "111:62951d3d3af4fdb1f1dc0243bbedb381",
+   "expected": "111:62951d3d3af4fdb1f1dc0243bbedb381",
+   "pass": true
+  },
+  {
+   "check": "restore identical: nexus_observations",
+   "actual": "0:d41d8cd98f00b204e9800998ecf8427e",
+   "expected": "0:d41d8cd98f00b204e9800998ecf8427e",
+   "pass": true
+  },
+  {
+   "check": "restore identical: nexus_owner_credentials",
+   "actual": "0:d41d8cd98f00b204e9800998ecf8427e",
+   "expected": "0:d41d8cd98f00b204e9800998ecf8427e",
+   "pass": true
+  },
+  {
+   "check": "restore identical: nexus_sessions",
+   "actual": "0:d41d8cd98f00b204e9800998ecf8427e",
+   "expected": "0:d41d8cd98f00b204e9800998ecf8427e",
+   "pass": true
+  },
+  {
+   "check": "restore identical: nexus_task_observation_history",
+   "actual": "1:d00dc4aae93b064e6d3b98e58db26c3c",
+   "expected": "1:d00dc4aae93b064e6d3b98e58db26c3c",
+   "pass": true
+  },
+  {
+   "check": "append-only still enforced after restore",
+   "actual": "refused",
+   "expected": "refused",
+   "pass": true
+  },
+  {
+   "check": "least-privilege runtime role passes the attestation",
+   "actual": "0",
+   "expected": "0",
+   "pass": true
+  },
+  {
+   "check": "owner/migration role is reported unsafe",
+   "actual": "1",
+   "expected": "1",
+   "pass": true
+  },
+  {
+   "check": "runtime role cannot delete history",
+   "actual": "refused",
+   "expected": "refused",
+   "pass": true
+  }
+ ]
+}
